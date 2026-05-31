@@ -1,0 +1,30 @@
+# Jupyter
+.ipynb_checkpoints/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+
+# Large data, checkpoints, and run outputs (keep code + notebooks only)
+embedding/
+best_model/
+outputs_*/
+*.pt
+*.pth
+*.ckpt
+*.npy
+*.npz
+*.h5
+*.pkl
+*.pickle
+*.parquet
+*.feather
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
