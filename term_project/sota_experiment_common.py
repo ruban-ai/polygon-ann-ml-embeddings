@@ -32,6 +32,24 @@ def load_dataset(name):
     return qt, gt, query_start, corpus_qt, query_qt, corpus_sums
 
 
+def load_dataset_normalized(name):
+    """Like load_dataset but also returns qt_norm (L1-simplex normalized qt).
+    qt_norm is cached to /tmp/qt_norm_{name}.npy after first computation."""
+    qt, gt, query_start, corpus_qt, query_qt, corpus_sums = load_dataset(name)
+    cache_path = f"/tmp/qt_norm_{name}.npy"
+    if Path(cache_path).exists():
+        t0 = time.time()
+        qt_norm = np.load(cache_path)
+        print(f"qt_norm loaded from cache {qt_norm.shape} in {time.time()-t0:.1f}s")
+    else:
+        print("Computing qt_norm (first run — caching to /tmp)...", flush=True)
+        t0 = time.time()
+        qt_norm = l1_simplex(qt.copy())
+        np.save(cache_path, qt_norm)
+        print(f"qt_norm computed+cached {qt_norm.shape} ({qt_norm.nbytes/1024**3:.2f} GB) in {time.time()-t0:.1f}s")
+    return qt, gt, query_start, corpus_qt, query_qt, corpus_sums, qt_norm
+
+
 def l1_simplex(x, eps=1e-10):
     x = np.maximum(x, 0).astype(np.float32, copy=False)
     return x / np.maximum(x.sum(axis=1, keepdims=True), eps)
