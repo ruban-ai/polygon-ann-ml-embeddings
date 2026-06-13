@@ -202,6 +202,88 @@ def rerank_raw_wj_numpy(query_qt, candidate_ids, corpus_qt, corpus_sums, top_k=5
     return reranked
 
 
+_rerank_corpus_cache = {}
+
+
+def preload_rerank_corpus(corpus_qt, corpus_sums):
+    """Load corpus onto GPU once before a batch of rerank calls. Call release_rerank_corpus() after."""
+    try:
+        import torch
+        if not torch.cuda.is_available():
+            return
+    except ImportError:
+        return
+    dev = torch.device("cuda:0")
+    _rerank_corpus_cache["corpus_t"] = torch.from_numpy(
+        np.ascontiguousarray(corpus_qt, dtype=np.float32)).to(dev)
+    _rerank_corpus_cache["corpus_sums_t"] = torch.from_numpy(
+        np.ascontiguousarray(corpus_sums, dtype=np.float32)).to(dev)
+    print(f"Corpus pre-loaded to GPU: {corpus_qt.nbytes/1024**3:.2f} GB")
+
+
+def release_rerank_corpus():
+    """Free pre-loaded corpus from GPU."""
+    _rerank_corpus_cache.clear()
+    try:
+        import torch
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+    except ImportError:
+        pass
+
+
+def rerank_wj_gpu(query_qt, candidate_ids, corpus_qt, corpus_sums, top_k=500, batch_size=16):
+    """GPU-accelerated WJ rerank. Uses pre-loaded corpus if available (call preload_rerank_corpus first).
+    Falls back to numpy if CUDA unavailable."""
+    try:
+        import torch
+        if not torch.cuda.is_available():
+            raise RuntimeError("no cuda")
+    except Exception:
+        return rerank_raw_wj_numpy(query_qt, candidate_ids, corpus_qt, corpus_sums, top_k)
+
+    dev = torch.device("cuda:0")
+    owns_corpus = "corpus_t" not in _rerank_corpus_cache
+    if owns_corpus:
+        corpus_t = torch.from_numpy(np.ascontiguousarray(corpus_qt, dtype=np.float32)).to(dev)
+        corpus_sums_t = torch.from_numpy(np.ascontiguousarray(corpus_sums, dtype=np.float32)).to(dev)
+    else:
+        corpus_t = _rerank_corpus_cache["corpus_t"]
+        corpus_sums_t = _rerank_corpus_cache["corpus_sums_t"]
+    reranked = []
+
+    for start in range(0, len(candidate_ids), batch_size):
+        batch = candidate_ids[start:start + batch_size]
+        groups = {}
+        for offset, ids in enumerate(batch):
+            ids_arr = np.asarray(ids, dtype=np.int64)
+            groups.setdefault(len(ids_arr), []).append((offset, ids_arr))
+
+        slot = [None] * len(batch)
+        for cand_len, items in groups.items():
+            if cand_len == 0:
+                for offset, _ in items:
+                    slot[offset] = []
+                continue
+            ids_np = np.stack([ids for _, ids in items])
+            q_np = np.ascontiguousarray(
+                query_qt[[start + off for off, _ in items]], dtype=np.float32)
+            ids_t = torch.from_numpy(ids_np).to(dev)
+            q_t = torch.from_numpy(q_np).to(dev)
+            c_t = corpus_t[ids_t]                                      # (B, K, D)
+            mins = torch.minimum(q_t.unsqueeze(1), c_t).sum(2)        # (B, K)
+            maxs = (q_t.sum(1, keepdim=True) + corpus_sums_t[ids_t] - mins).clamp_min(1e-10)
+            order = torch.argsort(mins / maxs, dim=1, descending=True)[:, :top_k].cpu().numpy()
+            for (offset, ids), row in zip(items, order):
+                slot[offset] = ids[row].tolist()
+        reranked.extend(slot)
+
+    if owns_corpus:
+        del corpus_t, corpus_sums_t
+        torch.cuda.empty_cache()
+    return reranked
+
+
 def save_result(path, dataset_name, method_name, metrics, meta=None):
     path = Path(path)
     payload = {}
@@ -219,6 +301,86 @@ def save_result(path, dataset_name, method_name, metrics, meta=None):
     with open(path, "wb") as f:
         pickle.dump(payload, f)
     print(f"saved {method_name} -> {path}")
+
+
+def build_gt_cache(gt, n_items, query_start, dataset_name):
+    """Build (or load from disk) row-sorted GT array for FN masking.
+
+    Rows are sorted ascending so GPU searchsorted works directly.
+    -1 padding sorts to the front (smallest value) — handled by callers.
+
+    Returns
+    -------
+    gt_stacked : np.int32 (n_queries, max_K), each row sorted, padded with -1.
+                 Row i → query ID (query_start + i).
+    """
+    cache_path = f"/tmp/gt_stacked_{dataset_name}.npy"
+    n_queries = n_items - query_start
+
+    if Path(cache_path).exists():
+        t0 = time.time()
+        gt_stacked = np.load(cache_path)
+        print(f"gt_stacked loaded from cache {gt_stacked.shape} in {time.time()-t0:.1f}s")
+    else:
+        print("Building gt_stacked (first run — caches to /tmp)...")
+        t0 = time.time()
+        max_K = max((len(gt.get(query_start + i, [])) for i in range(n_queries)), default=0)
+        gt_stacked = np.full((n_queries, max_K), -1, dtype=np.int32)
+        for i in range(n_queries):
+            nbrs = gt.get(query_start + i, [])
+            if nbrs:
+                gt_stacked[i, :len(nbrs)] = nbrs
+        gt_stacked.sort(axis=1)          # sort in-place; -1 padding moves to front
+        np.save(cache_path, gt_stacked)
+        print(f"Built+sorted+cached {gt_stacked.shape} "
+              f"({gt_stacked.nbytes/1024**3:.2f} GB) in {time.time()-t0:.1f}s → {cache_path}")
+
+    return gt_stacked
+
+
+def build_gt_gpu(gt_stacked, device):
+    """Move sorted GT array to GPU for fast per-step searchsorted.
+    Call once after build_gt_cache; store result in training cell.
+    """
+    try:
+        import torch
+    except ImportError:
+        raise RuntimeError("torch required")
+    t0 = time.time()
+    gt_gpu = torch.from_numpy(gt_stacked).to(device)
+    print(f"gt_gpu on {device}: {tuple(gt_gpu.shape)} "
+          f"({gt_gpu.nbytes/1024**3:.2f} GB) in {time.time()-t0:.1f}s")
+    return gt_gpu
+
+
+def build_fn_mask(a_ids, p_ids, gt_gpu, query_start):
+    """GPU-accelerated (B,B) FN mask via searchsorted — ~1.5ms vs ~440ms on CPU.
+
+    a_ids  : query IDs  >= query_start, shape (B,) — CPU tensor or ndarray
+    p_ids  : corpus IDs <  query_start, shape (B,) — CPU tensor or ndarray
+    gt_gpu : (n_queries, max_K) int32 GPU tensor, each row sorted ascending,
+             -1-padded (padding is at front after sort). Lives on vecs_device.
+    """
+    try:
+        import torch
+    except ImportError:
+        raise RuntimeError("torch required")
+
+    dev = gt_gpu.device
+    B   = len(a_ids)
+    K   = gt_gpu.shape[1]
+
+    a_idx = (a_ids if isinstance(a_ids, torch.Tensor) else torch.as_tensor(a_ids))
+    p_t   = (p_ids if isinstance(p_ids, torch.Tensor) else torch.as_tensor(p_ids))
+
+    gt_rows = gt_gpu[(a_idx - query_start).to(dev)]        # (B, K) sorted rows on GPU
+    p_exp   = p_t.to(dev).unsqueeze(0).expand(B, -1)      # (B, B)
+
+    # For each anchor row i, binary-search all B positive IDs
+    pos  = torch.searchsorted(gt_rows, p_exp).clamp(0, K - 1)   # (B, B)
+    mask = gt_rows.gather(1, pos) == p_exp                        # (B, B) bool
+    mask.fill_diagonal_(False)
+    return mask.cpu()
 
 
 def cleanup():
