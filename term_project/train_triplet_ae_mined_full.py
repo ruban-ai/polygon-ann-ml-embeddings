@@ -319,18 +319,11 @@ def run_warmup(
             print(f"  → saved {CKPT_PATH}")
 
 
-def run_finetune(
-    model: nn.Module,
-    vecs_gpu: torch.Tensor,
-    triplets: list[tuple[int, int, int]],
-    epochs: int,
-    remine_fn,
-) -> None:
+def _finetune_loader(triplets: list[tuple[int, int, int]]) -> DataLoader:
     val_n = max(1, int(len(triplets) * 0.1))
     train_triplets = triplets[val_n:]
-    dataset = HardNegTripletDataset(train_triplets)
-    loader = DataLoader(
-        dataset,
+    return DataLoader(
+        HardNegTripletDataset(train_triplets),
         batch_size=BATCH_SIZE_MINED,
         shuffle=True,
         num_workers=4,
@@ -338,6 +331,16 @@ def run_finetune(
         drop_last=True,
         persistent_workers=True,
     )
+
+
+def run_finetune(
+    model: nn.Module,
+    vecs_gpu: torch.Tensor,
+    triplets: list[tuple[int, int, int]],
+    epochs: int,
+    remine_fn,
+) -> None:
+    loader = _finetune_loader(triplets)
     opt = torch.optim.AdamW(model.parameters(), lr=LR_FINETUNE, weight_decay=WEIGHT_DECAY)
     sch = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=max(epochs, 1))
     best = float("inf")
@@ -346,9 +349,7 @@ def run_finetune(
         if epoch > 1 and (epoch - 1) % REMINE_EVERY == 0 and remine_fn is not None:
             print(f"re-mining at finetune ep{epoch}...")
             triplets = remine_fn()
-            val_n = max(1, int(len(triplets) * 0.1))
-            train_triplets = triplets[val_n:]
-            dataset.triplets = train_triplets
+            loader = _finetune_loader(triplets)
 
         model.train()
         tot_loss = tot_trip = tot_rec = tot_viol = steps = 0
