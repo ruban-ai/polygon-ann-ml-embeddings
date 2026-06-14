@@ -478,8 +478,10 @@ def main():
     init = None if args.no_init else args.init_ckpt
     model = make_model(qt_norm.shape[1], init_ckpt=init)
 
-    if Path(CKPT_PATH).exists() and args.phase in ("mine", "finetune", "eval"):
-        model.load_state_dict(torch.load(CKPT_PATH, map_location=DEVICE, weights_only=True), strict=False)
+    if Path(CKPT_PATH).exists() and args.phase in ("finetune", "eval"):
+        module(model).load_state_dict(
+            torch.load(CKPT_PATH, map_location=DEVICE, weights_only=True), strict=False
+        )
         print(f"resumed from {CKPT_PATH}")
 
     gt_stacked = None
