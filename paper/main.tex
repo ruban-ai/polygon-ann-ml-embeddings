@@ -220,17 +220,12 @@ PolyMinHash~\cite{polyminhash25} applies area-based MinHashing directly to polyg
 geometry with LSH banding for candidate pruning, but is non-learned.
 
 \paragraph{Learned hashing and metric learning.}
-Learning-to-hash methods~\cite{hashsurvey14,deephashsurvey22} train networks to
-map inputs to compact binary codes for Hamming-distance search.
-Metric learning with triplet~\cite{hashsurvey14} or contrastive losses produces
-real-valued embeddings for Euclidean/cosine ANN search.
-Matryoshka Representation Learning~\cite{matryoshka22} trains nested prefix
-embeddings for flexible truncation; designed for cosine space, it degrades on the
-WJ-simplex task (Table~\ref{tab:results}).
-NMF~\cite{nmf99} factorises the data matrix into non-negative components, yielding
-simplex-compatible embeddings without labels but optimising reconstruction rather
-than WJ retrieval.
-None of the above methods target WJ as the native similarity metric.
+Learning-to-hash~\cite{hashsurvey14,deephashsurvey22} and metric-learning methods
+produce binary or real-valued embeddings for Hamming/cosine ANN search; Matryoshka
+Representation Learning~\cite{matryoshka22} adds nested truncation but, being
+cosine-space, degrades on the WJ simplex (Table~\ref{tab:results}).
+NMF~\cite{nmf99} yields label-free simplex-compatible factors but optimises
+reconstruction, not WJ retrieval. None target WJ as the native metric.
 
 %% -------------------------------------------------------
 %%  3. Method
