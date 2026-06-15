@@ -407,22 +407,30 @@ retrieval with WJ as the index metric.
 
 The encoder $h_\theta$ is a three-layer MLP with Batch Normalization (BN) and
 ReLU activations ($18{,}219 \to 4{,}096 \to 1{,}024 \to 512$, total $\sim$80M
-parameters, of which $\sim$75M reside in the first layer). Two design choices are
-dictated by the structure of WJ and of the quadtree input, rather than by
-convention.
+parameters, of which $\sim$75M reside in the first layer). Three considerations
+dictate this design, each driven by the structure of WJ and of the quadtree
+input rather than by convention.
+
+\noindent\textbf{Why an MLP, not a Transformer or graph encoder.}
+The neural polygon encoders common in the literature --- boundary Transformers,
+vertex graph networks, and set encoders --- target cosine or Euclidean output
+spaces and fail catastrophically when repurposed for WJ retrieval
+($R@50<0.02$~\cite{sampath25}). Two mismatches explain this. First,
+\emph{space mismatch}: an encoder trained under an L2 or cosine objective learns
+a metric structure that is destroyed when its outputs are forced onto the WJ
+simplex via ReLU\,+\,$\ell_1$-normalisation. Second, \emph{loss of global
+structure}: sequence- and graph-based encoders aggregate \emph{local} context
+(token windows, vertex hops), whereas WJ is a global statistic summed over all
+$D$ dimensions that cannot be decomposed into local sub-computations. A plain
+MLP trained \emph{natively} in WJ space avoids both --- it has no local
+decomposition, and (below) its first layer is a single global projection.
 
 \noindent\textbf{Global projection.}
-WJ (Eq.~\ref{eq:wj}) is a \emph{global} statistic: its $\min$/$\max$ are summed
-over all $D=18{,}219$ dimensions simultaneously and cannot be decomposed into
-local sub-computations. The encoder must therefore preserve cross-dimension
-co-occurrence structure. We enforce this by making the first layer a single
-dense projection $\mathbb{R}^{18{,}219}\!\to\!\mathbb{R}^{4{,}096}$ that mixes
-\emph{all} input dimensions in one matrix multiply, so every pair of quadtree
-cells can interact. This is the critical distinction from sequence- or
-patch-based encoders (e.g.\ Transformers), which decompose the input into local
-token windows and aggregate them, destroying the long-range co-occurrence
-statistics WJ depends on; such encoders collapse to $R@50<0.02$ on this task
-regardless of the training loss~\cite{sampath25}.
+Concretely, the first layer is a single dense projection
+$\mathbb{R}^{18{,}219}\!\to\!\mathbb{R}^{4{,}096}$ that mixes \emph{all} input
+dimensions in one matrix multiply, so every pair of quadtree cells can interact
+and the cross-dimension co-occurrence statistics WJ depends on are preserved.
+This is why $\sim$75M of the $\sim$80M parameters reside in this first layer.
 
 \noindent\textbf{BatchNorm before ReLU.}
 Quadtree rasterization yields extremely sparse vectors (mean $\sim$73\% zeros,
