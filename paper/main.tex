@@ -541,15 +541,15 @@ random projection's recall keeps climbing (0.722). The margin objective preserve
 only the immediate neighbourhood; the broad neighbourhood is lost
 (Sec.~\ref{sec:filter}).
 
-\noindent\textbf{The filter objective restores scale.}
+\noindent\textbf{The recall-oriented objective restores scale.}
 Training for pool membership (Eq.~\ref{eq:filter}) instead of rank trades
 Stage-1 R@50 (0.606, by design) for two properties that matter in the two-stage
 pipeline: its recall climbs with $k$ (R@500 $=$ 0.727, now exceeding random
 projection), and it yields a $1.7\times$ more navigable HNSW index
-(2{,}191 vs.\ 1{,}275 QPS). After reranking, the filter delivers the
+(2{,}191 vs.\ 1{,}275 QPS). After reranking, Recall-CG delivers the
 \emph{highest} top-50 recall at the \emph{highest} throughput: at $K{=}1000$,
 R@50 $=$ 0.992 at 1{,}108 QPS, versus random projection's 0.985 at 874 QPS.
-Equivalently, the filter reaches R@50 $=$ 0.992 with $K{=}1000$ candidates, while
+Equivalently, Recall-CG reaches R@50 $=$ 0.992 with $K{=}1000$ candidates, while
 random projection needs $K{=}2000$ to match it --- $\sim$$1.9\times$ fewer
 candidates, and higher end-to-end QPS, at equal top-50 reranked recall. To our
 knowledge this is the first \emph{learned} WJ embedding to beat random projection
