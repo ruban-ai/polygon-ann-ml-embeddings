@@ -138,11 +138,20 @@ Weighted Jaccard (WJ) similarity,
   \label{eq:wj}
 \end{equation}
 captures area-weighted shape overlap and is the standard metric for this task.
-ShapeToVec~\cite{shape2vec} encodes polygons as 18{,}219-dimensional probability
-simplex vectors that preserve WJ, achieving 97\% R@50 on datasets up to 1.7M
-polygons via direct HNSW indexing. However, indexing such large vectors becomes
-increasingly expensive as corpora grow; compressing them while preserving WJ
-structure enables faster search and lower memory overhead at scale.
+A central obstacle in encoding such polygons is \emph{extreme area variability}:
+in real-world GIS corpora, polygon areas span several orders of magnitude (e.g.\
+a neighbourhood park versus a national forest). A uniform rasterisation grid
+cannot serve both regimes --- a grid fine enough to resolve small polygons
+explodes in dimensionality, while a grid coarse enough to be tractable leaves
+small polygons occupying only a handful of cells, collapsing their shape
+information into near-empty vectors. ShapeToVec~\cite{shape2vec} resolves this
+with an adaptive \emph{quadtree} grid that recursively subdivides space where
+polygon detail is concentrated, encoding each polygon as an 18{,}219-dimensional
+probability-simplex vector whose WJ preserves area-weighted shape overlap across
+all scales. Indexed directly with HNSW, ShapeToVec attains 97\% R@50 on corpora
+up to 1.7M polygons. However, indexing such large vectors becomes increasingly
+expensive as corpora grow; compressing them while preserving WJ structure
+enables faster search and lower memory overhead at scale.
 
 Classical Locality-Sensitive Hashing (LSH) methods such as Improved Consistent
 Weighted Sampling (ICWS)~\cite{ioffe10} and ProbMinHash~\cite{probminhash20} produce
