@@ -520,7 +520,7 @@ Method & $K$ & R@50 & R@500 & QPS \\
 \multicolumn{5}{@{}l@{}}{\textit{Stage 1 — No Rerank}} \\[1pt]
 Rand.\ Proj.~\cite{achlioptas03}      & --- & \textbf{0.663} & 0.722 &  1{,}275 \\
 AE WJ-tri+recon$^\ddagger$            & --- & 0.656 & 0.656 &  1{,}188 \\
-Filter (ours)$^\ddagger$              & --- & 0.606 & \textbf{0.727} & \textbf{2{,}191} \\
+Recall-CG (ours)$^\ddagger$              & --- & 0.606 & \textbf{0.727} & \textbf{2{,}191} \\
 \midrule
 \multicolumn{5}{@{}l@{}}{\textit{Stage 2 — Exact WJ Rerank}} \\[1pt]
 Rand.\ Proj.~\cite{achlioptas03}      & 1000 & 0.985 & 0.872 & 874 \\
@@ -528,7 +528,7 @@ AE WJ-tri+recon$^\ddagger$            & 1000 & 0.989 & 0.785 & 850 \\
 \textbf{Filter (ours)}$^\ddagger$     & 1000 & \textbf{0.992} & 0.854 & \textbf{1{,}108} \\
 \addlinespace[3pt]
 Rand.\ Proj.~\cite{achlioptas03}      & 2000 & 0.991 & \textbf{0.927} & 585 \\
-Filter (ours)$^\ddagger$              & 2000 & \textbf{0.992} & 0.863 & \textbf{730} \\
+Recall-CG (ours)$^\ddagger$              & 2000 & \textbf{0.992} & 0.863 & \textbf{730} \\
 \bottomrule
 \end{tabular}
 \end{table}
