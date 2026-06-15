@@ -81,6 +81,13 @@ After Stage-2 exact-WJ reranking, R@10 exceeds 0.996 across all our variants.
 Systematic ablations reveal that false-negative filtering and reconstruction are
 complementary: without filtering, adding reconstruction causes conflicting gradients
 that collapse recall to 0.510.
+Scaling to the full 187k-polygon corpus, we find that ranking-based objectives no
+longer outperform an untrained random projection. We close this gap by training the
+encoder as a candidate \emph{filter} --- a non-saturating contrastive objective over
+the broad neighbourhood --- which restores recall and yields a more navigable index.
+This is, to our knowledge, the first learned WJ embedding to surpass random
+projection on the recall--throughput frontier at scale: equal top-50 reranked recall
+at $\sim$1.9$\times$ higher query throughput.
 \end{abstract}
 
 \keywords{polygon similarity search, weighted Jaccard, metric learning, approximate
