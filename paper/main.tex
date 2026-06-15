@@ -11,8 +11,6 @@
 \usepackage{graphicx}
 \usepackage{microtype}
 \usepackage{xcolor}
-\usepackage{tikz}
-\usetikzlibrary{arrows.meta, positioning, shapes.geometric, fit, backgrounds, calc}
 \usepackage{pifont}
 \newcommand{\cmark}{\ding{51}}
 \newcommand{\xmark}{\ding{55}}
@@ -204,146 +202,18 @@ Figure~\ref{fig:pipeline} illustrates the full two-stage retrieval pipeline.
 %% -------------------------------------------------------
 %%  Architecture figure  (infographic style)
 %% -------------------------------------------------------
-\begin{figure*}[t]
+\begin{figure}[t]
 \centering
-\begin{tikzpicture}[
-  x=1cm, y=1cm,
-  font=\footnotesize,
-  arr/.style  = {-{Latex[length=1.8mm]}, thick, black!70},
-  darr/.style = {-{Latex[length=1.8mm]}, thick, dashed, gray!55},
-]
-
-%% ── Row 0: inputs ─────────────────────────────────────────────────────────
-\fill[gray!18, rounded corners=3pt] (0.3, 0.32) rectangle (5.7,-0.32);
-\node at (3.0, 0) {Anchor $\mathbf{x}_a \in \Delta^{D}$};
-
-\fill[gray!18, rounded corners=3pt] (10.3, 0.32) rectangle (15.7,-0.32);
-\node at (13.0, 0) {Positive $\mathbf{x}_p \in \Delta^{D}$};
-
-\node[font=\footnotesize\itshape, text=gray!55, anchor=east]
-  at (16.3, 0) {$D{=}18{,}219$};
-
-\draw[arr] (3.0,-0.32) -- (3.0,-0.62);
-\draw[arr] (13.0,-0.32) -- (13.0,-0.62);
-
-%% ── Row 1: encoder ─────────────────────────────────────────────────────────
-\fill[blue!10, rounded corners=4pt] (0.0,-0.62) rectangle (16.0,-2.22);
-\draw[blue!35, rounded corners=4pt] (0.0,-0.62) rectangle (16.0,-2.22);
-\draw[blue!22] (0.08,-1.07) -- (15.92,-1.07);
-\draw[blue!22] (0.08,-1.62) -- (15.92,-1.62);
-\node[text=blue!80] at (8.0,-0.845)
-  {\texttt{Linear}($D$,\;4096) + BN + ReLU};
-\node[text=blue!80] at (8.0,-1.345)
-  {\texttt{Linear}(4096,\;1024) + BN + ReLU};
-\node[text=blue!80] at (8.0,-1.920)
-  {\texttt{Linear}(1024,\;512) + ReLU + $\ell_1$-norm $\;\to\; \Delta^{512}$};
-\node[font=\footnotesize\itshape, text=blue!55, anchor=north east]
-  at (15.9,-0.65) {Encoder $f_\theta$ (shared)};
-
-\draw[arr] (3.0,-2.22) -- (3.0,-2.55);
-\draw[arr] (13.0,-2.22) -- (13.0,-2.55);
-
-%% ── Row 2: compact embeddings ───────────────────────────────────────────────
-\fill[blue!28, rounded corners=3pt] (1.2,-2.55) rectangle (4.8,-2.95);
-\node at (3.0,-2.75) {$\mathbf{z}_a\!\in\!\Delta^{512}$};
-
-\fill[blue!28, rounded corners=3pt] (11.2,-2.55) rectangle (14.8,-2.95);
-\node at (13.0,-2.75) {$\mathbf{z}_p\!\in\!\Delta^{512}$};
-
-\node[font=\footnotesize\itshape, text=gray!55, anchor=east]
-  at (16.3,-2.75) {$36{\times}$ smaller};
-
-%% ── Arrows to Row 3 ─────────────────────────────────────────────────────────
-\draw[arr] (3.0,-2.95) -- (3.0,-3.30);
-\draw[arr] (13.0,-2.95) -- ++(0,-0.17) -| (7.0,-3.30);
-\draw[darr] (4.8,-2.75) -- (8.8,-2.75) -- (8.8,-3.30);
-
-%% ── Row 3: FN filter (left) + Decoder (right) ──────────────────────────────
-\fill[yellow!25, rounded corners=4pt] (0.0,-3.30) rectangle (7.7,-4.55);
-\draw[orange!50, rounded corners=4pt] (0.0,-3.30) rectangle (7.7,-4.55);
-\node[font=\footnotesize\bfseries, text=orange!80] at (3.85,-3.58)
-  {False-Negative (FN) Filter};
-\node[text=black!70] at (3.85,-3.97)
-  {$B{\times}B$ cross-WJ matrix $S_{ij}$,\; mask GT adj.\ set $\mathcal{G}$};
-\node[text=black!70] at (3.85,-4.28)
-  {$\Longrightarrow$ hard negative $\mathbf{z}_n$};
-
-\fill[orange!12, rounded corners=4pt] (8.3,-3.30) rectangle (16.0,-4.55);
-\draw[orange!45, rounded corners=4pt] (8.3,-3.30) rectangle (16.0,-4.55);
-\node[font=\footnotesize\bfseries, text=orange!75] at (12.15,-3.58)
-  {Decoder $g_\phi$ \enspace {\normalfont\footnotesize\itshape(AE variant only)}};
-\node[text=gray!65] at (12.15,-3.97) {$512 \to 1024 \to D$};
-\node[font=\footnotesize\itshape, text=gray!55] at (12.15,-4.28)
-  {Discarded at inference};
-
-%% ── Arrows to Row 4 ─────────────────────────────────────────────────────────
-\draw[arr] (3.85,-4.55) -- (3.85,-4.88);
-\draw[arr] (12.15,-4.55) -- (12.15,-4.88);
-
-%% ── Row 4: losses ───────────────────────────────────────────────────────────
-\fill[red!8, rounded corners=3pt] (0.0,-4.88) rectangle (7.7,-6.05);
-\draw[red!35, rounded corners=3pt] (0.0,-4.88) rectangle (7.7,-6.05);
-\node[font=\footnotesize\bfseries, text=red!60] at (3.85,-5.14)
-  {Triplet Loss $\mathcal{L}_{\text{trip}}$};
-\node[text=black!70] at (3.85,-5.55)
-  {$\frac{1}{|\mathcal{V}|}\!\sum_{i\in\mathcal{V}}
-    \bigl[WJ(\mathbf{z}_n,\mathbf{z}_a) - WJ(\mathbf{z}_p,\mathbf{z}_a)+0.3\bigr]_+$};
-
-\fill[orange!9, rounded corners=3pt] (8.3,-4.88) rectangle (16.0,-6.05);
-\draw[orange!35, rounded corners=3pt] (8.3,-4.88) rectangle (16.0,-6.05);
-\node[font=\footnotesize\bfseries, text=orange!70] at (12.15,-5.14)
-  {Reconstruction Loss $\mathcal{L}_{\text{recon}}$};
-\node[text=black!70] at (12.15,-5.55)
-  {$\tfrac{1}{2}\bigl(\mathrm{MSE}(g_\phi(\mathbf{z}_a),\,\mathbf{x}_a)
-    + \mathrm{MSE}(g_\phi(\mathbf{z}_p),\,\mathbf{x}_p)\bigr)$};
-
-%% ── Row 5: combined loss ────────────────────────────────────────────────────
-\fill[red!14, rounded corners=4pt] (2.5,-6.22) rectangle (13.5,-6.68);
-\draw[red!45, rounded corners=4pt] (2.5,-6.22) rectangle (13.5,-6.68);
-\node at (8.0,-6.45)
-  {$\mathcal{L} = \mathcal{L}_{\text{trip}} + \lambda\,\mathcal{L}_{\text{recon}},
-    \quad \lambda=0.1$};
-
-\draw[arr]  (3.85,-6.05) -- (3.85,-6.22);
-\draw[darr] (12.15,-6.05) -- (12.15,-6.22);
-
-%% ── Training background ─────────────────────────────────────────────────────
-\begin{scope}[on background layer]
-  \fill[blue!4, rounded corners=6pt]
-    (-0.4, 0.50) rectangle (16.5,-6.85);
-  \draw[blue!18, rounded corners=6pt]
-    (-0.4, 0.50) rectangle (16.5,-6.85);
-\end{scope}
-\node[font=\footnotesize\bfseries, text=blue!60, anchor=north west]
-  at (-0.30, 0.48) {Training};
-
-%% ── Inference strip ─────────────────────────────────────────────────────────
-\fill[green!10, rounded corners=4pt]
-  (-0.4,-6.95) rectangle (16.5,-7.55);
-\draw[green!38, rounded corners=4pt]
-  (-0.4,-6.95) rectangle (16.5,-7.55);
-\node[font=\footnotesize\bfseries, text=green!50!black, anchor=west]
-  at (-0.25,-7.10) {Inference};
-\node at (8.5,-7.28)
-  {$\mathbf{x}
-    \xrightarrow{\;f_\theta\;}
-    \mathbf{z}\!\in\!\Delta^{512}
-    \;\xrightarrow{\;\mathrm{HNSW}(WJ)\;}
-    \text{top-}K
-    \;\xrightarrow{\;\text{exact }WJ\;}
-    \text{top-}k$\quad(decoder $g_\phi$ discarded)};
-\draw[arr] (8.0,-6.68) -- (8.0,-6.95);
-
-\end{tikzpicture}
+\includegraphics[width=\columnwidth]{final_architecture_diagram.png}
 \caption{Training pipeline and two-stage inference.
-  Anchor and positive are encoded by the shared encoder $f_\theta$
-  ($36\times$ compression: $D{=}18{,}219 \to 512$).
-  Hard negatives are mined from the in-batch cross-WJ matrix after
-  masking GT neighbours (FN filter $\mathcal{G}$).
-  The decoder $g_\phi$ (dashed; AE variant only) contributes
-  $\mathcal{L}_{\text{recon}}$ and is discarded at inference.}
+  The shared encoder $f_\theta$ compresses ShapeToVec vectors
+  ($D{=}18{,}219 \to 512$, $36{\times}$ smaller).
+  Hard negatives are mined from the in-batch cross-WJ matrix
+  after masking GT neighbours (FN filter).
+  The decoder $g_\phi$ (AE variant only) adds $\mathcal{L}_{\text{recon}}$
+  and is discarded at inference.}
 \label{fig:pipeline}
-\end{figure*}
+\end{figure}
 
 %% -------------------------------------------------------
 %%  2. Related Work
