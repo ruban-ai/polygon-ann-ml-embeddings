@@ -230,13 +230,14 @@ def mine_triplets(model, qt_norm, gt, query_start, hard_pool_k=HARD_POOL_K):
     query_ids = [qid for qid in sorted(gt) if query_start <= qid < len(qt_norm)]
     triplets = []
     missed = 0
-    for local_i, qid in enumerate(tqdm(query_ids, desc="build triplets")):
+    for qid in tqdm(query_ids, desc="build triplets"):
         positives = [pid for pid in gt.get(qid, []) if 0 <= pid < corpus_size]
         if not positives:
             continue
         pos_train = positives[:POSITIVE_PER_QUERY]
         exclude = set(positives[:EXCLUDE_GT_TOP])
-        cand_ids, _ = nbrs[local_i]
+        # nmslib_neighbors returns list[list[int]]; index by query offset, not enumerate idx
+        cand_ids = nbrs[qid - query_start]
         hard_negs = [int(cid) for cid in cand_ids if int(cid) not in exclude]
         if not hard_negs:
             missed += 1
