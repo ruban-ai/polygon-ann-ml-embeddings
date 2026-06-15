@@ -406,10 +406,9 @@ retrieval with WJ as the index metric.
 \label{sec:arch}
 
 The encoder $h_\theta$ is a three-layer MLP with Batch Normalization (BN) and
-ReLU activations ($18{,}219 \to 4{,}096 \to 1{,}024 \to 512$, total $\sim$80M
-parameters, of which $\sim$75M reside in the first layer). Three considerations
-dictate this design, each driven by the structure of WJ and of the quadtree
-input rather than by convention.
+ReLU activations ($18{,}219 \to 4{,}096 \to 1{,}024 \to 512$, $\sim$80M
+parameters). Three considerations dictate this design, each driven by the
+structure of WJ and of the quadtree input rather than by convention.
 
 \noindent\textbf{Why an MLP, not a Transformer or graph encoder.}
 The neural polygon encoders common in the literature --- boundary Transformers,
