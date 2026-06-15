@@ -398,13 +398,9 @@ full corpus (187{,}019 database, 46{,}754 queries) for the scaling study
 precomputed exactly by brute force.
 We report Recall at $k$ (R@$k$) --- the fraction of true top-$k$ WJ neighbours
 retrieved --- at $k \in \{10, 50, 500\}$, and throughput in QPS.
-All models are implemented in PyTorch and trained with AdamW
-($\text{lr}=10^{-3}$, weight\_decay=$10^{-4}$) and a CosineAnnealingLR scheduler.
-The AE triplet+recon model (our best) uses batch size 2{,}048 and 50 epochs;
-the reconstruction-only AE uses batch size 512 and 30 epochs; MLP variants use
-batch size 2{,}048 and 50 epochs.
-All QPS measurements use 32 parallel threads via nmslib's batch query interface.
-Experiments were run on a single NVIDIA GPU.
+All models use PyTorch with AdamW ($\text{lr}{=}10^{-3}$) and cosine annealing,
+batch 2{,}048 for 50 epochs (recon-only AE: 512 for 30). QPS is measured with 32
+nmslib query threads on a single NVIDIA GPU.
 
 \subsection{Baselines and Ablations}
 
