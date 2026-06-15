@@ -161,29 +161,19 @@ target Euclidean or Hamming spaces --- none produce WJ-compatible embeddings.
 
 We address this gap. Our contributions are:
 \begin{enumerate}
-  \item \textbf{WJ-native embedding}: we constrain encoder outputs to the
-    probability simplex via Rectified Linear Unit (ReLU)\,+\,L1-normalisation,
-    so that WJ is directly computable between compressed embeddings and nmslib's
-    \texttt{WeightedJaccard} HNSW space can be used without any post-processing.
-  \item \textbf{MLP cosine triplet encoder (ours)}: we design a three-layer
-    multi-layer perceptron (MLP) encoder trained with cosine triplet loss as a
-    strong learned baseline, demonstrating that neural compression substantially
-    outperforms Principal Component Analysis (PCA), Non-negative Matrix
-    Factorization (NMF), and random projection on WJ retrieval
-    (Table~\ref{tab:results}).
-  \item \textbf{WJ triplet training with false-negative filtering}: we replace cosine
-    similarity with WJ in the triplet loss and add ground-truth (GT) masking to
-    prevent known GT neighbours from corrupting hard-negative gradients.
-  \item \textbf{Autoencoder reconstruction improves WJ metric learning}: adding a
-    decoder reconstruction objective improves Stage-1 R@50 by
-    5.0\,percentage points (pp) over the triplet-only MLP, but \emph{only} when
-    false-negative filtering is active --- without it, conflicting gradients collapse
-    recall to 0.510.
+  \item \textbf{WJ-native embedding}: ReLU\,+\,$\ell_1$ outputs keep embeddings on
+    the probability simplex, so WJ is computed directly in nmslib's
+    \texttt{WeightedJaccard} HNSW space with no post-processing.
+  \item \textbf{WJ-native metric learning}: a three-layer MLP trained with a WJ
+    triplet loss and false-negative filtering substantially outperforms PCA, NMF,
+    and random projection (Table~\ref{tab:results}); a decoder reconstruction term
+    adds a further 5.0\,pp R@50 --- but only with filtering active, else
+    conflicting gradients collapse recall to 0.510.
   \item \textbf{Filter training scales where ranking does not}: on the full
     187k-polygon corpus, ranking objectives degrade to the level of an untrained
     random projection. Training the encoder as a candidate filter --- a
     non-saturating contrastive objective over the broad neighbourhood --- restores
-    recall and produces a more navigable index, beating random projection by
+    recall, yields a more navigable index, and beats random projection by
     $\sim$1.9$\times$ in throughput at equal top-50 reranked recall
     (Sec.~\ref{sec:fullscale}).
 \end{enumerate}
