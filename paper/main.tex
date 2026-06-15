@@ -504,13 +504,11 @@ After Stage-2 reranking with $K$=500, R@10 reaches 0.997 at 75--1{,}139\,QPS
 depending on the variant.
 
 \smallskip\noindent\textbf{Why R@500 does not improve with reranking.}
-After reranking $K$ candidates, the \emph{set} of retrieved polygons is unchanged;
-only their ordering improves. Hence R@500 with $K$=500 equals Stage-1 R@500 by
-construction: items missed by HNSW cannot be recovered. R@10 and R@50 improve
-because Stage-1 reliably includes the most similar polygons within the 500
-candidates, and exact WJ ordering promotes them to the correct positions.
-Doubling $K$ to 1{,}000 raises R@500 from 0.977 to 0.990, confirming this is a
-coverage--speed tradeoff, not a model deficiency.
+Reranking $K$ candidates reorders but cannot enlarge the retrieved set, so R@500
+at $K{=}500$ equals Stage-1 R@500 by construction; R@10/R@50 improve because the
+true nearest neighbours, reliably within the pool, are promoted to their correct
+positions. Raising $K$ to 1{,}000 lifts R@500 to 0.990 --- a coverage--speed
+tradeoff, not a model deficiency.
 
 \subsection{Ablation Study}
 \label{sec:ablation}
