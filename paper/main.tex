@@ -343,26 +343,25 @@ active: otherwise it anchors positives at high WJ while corrupted triplet
 gradients push in-batch false negatives below the margin, a conflict that
 collapses recall (Sec.~\ref{sec:ablation}).
 
-\subsection{Filter Training at Scale}
+\subsection{Recall-Oriented Candidate Generation at Scale}
 \label{sec:filter}
 
-The triplet objective (Sec.~\ref{sec:triplet}) optimises \emph{rank order}: it
-pushes the single hardest in-batch negative below the positive by a margin and
-saturates once that margin is met. At small scale this is sufficient, but as the
-corpus grows the hardest in-batch negative is drawn from a vanishing fraction of
-the corpus, the margin is satisfied by coarse separation, and the embedding
-preserves only the immediate neighbourhood --- recall stops improving with $k$
-(Sec.~\ref{sec:fullscale}).
+Every encoder above serves the same role: a Stage-1 \emph{candidate generator}
+whose top-$K$ output is reranked exactly in Stage~2. What matters is therefore not
+the order it produces but \emph{which} polygons reach the pool. The triplet
+objective (Sec.~\ref{sec:triplet}) is nonetheless \emph{ranking-style}: it pushes
+the single hardest in-batch negative below the positive by a margin and saturates
+once that margin is met. As the corpus grows, that hardest negative is drawn from
+a vanishing fraction of the data, the margin is satisfied by coarse separation,
+and the generator preserves only the immediate neighbourhood --- recall stops
+improving with $k$ (Sec.~\ref{sec:fullscale}).
 
-In a two-stage system, however, Stage~1 does not need correct order: it only
-needs to place every true neighbour \emph{inside} the top-$K$ candidate pool,
-since Stage~2 reranks exactly. We therefore train the encoder as a \emph{filter}
-optimising pool membership rather than rank. We replace the saturating margin
-loss with a non-saturating in-batch InfoNCE over WJ similarity, and supervise the
-\emph{broad} neighbourhood (top-$P$ GT neighbours, $P{=}256$, rather than
-$P{=}30$):
+We instead train the candidate generator with a \emph{recall-oriented} objective
+that targets pool membership directly: a non-saturating in-batch InfoNCE over WJ
+similarity, supervising the \emph{broad} neighbourhood (top-$P$ GT neighbours,
+$P{=}256$, vs.\ $P{=}30$):
 \begin{equation}
-  \mathcal{L}_{\text{filt}} = -\frac{1}{B}\sum_{i=1}^{B}
+  \mathcal{L}_{\text{CG}} = -\frac{1}{B}\sum_{i=1}^{B}
     \log \frac{\exp\!\bigl(S_{ii}/\tau\bigr)}
               {\sum_{j:\,(i,j)\notin\mathcal{G}} \exp\!\bigl(S_{ij}/\tau\bigr)},
   \label{eq:filter}
