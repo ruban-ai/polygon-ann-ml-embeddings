@@ -447,9 +447,9 @@ MLP WJ-triplet$^\ddagger$               & 512  & 0.677 & 0.806 & 0.964 & 10{,}75
 Table~\ref{tab:results} shows the main results. AE WJ-triplet+recon achieves the
 highest Stage-1 recall of all ANN-compatible methods: $+5.0$\,pp R@50 over the
 triplet-only MLP and $+16.3$\,pp over the best non-learned baseline, at 78$\times$
-the QPS of brute-force ICWS. After Stage-2 reranking ($K{=}500$), R@10 reaches
-0.997 at 75--1{,}139\,QPS. Reranking reorders but cannot enlarge the pool, so
-R@500 at $K{=}500$ equals Stage-1 R@500; raising $K$ to 1{,}000 lifts it to 0.990.
+the QPS of brute-force ICWS. Stage-2 exact-WJ reranking lifts R@10 above 0.996 for
+all our variants; since reranking reorders but cannot enlarge the candidate pool,
+recovering broad (R@500) recall instead requires a larger $K$ (Table~\ref{tab:full}).
 
 \subsection{Ablation Study}
 \label{sec:ablation}
