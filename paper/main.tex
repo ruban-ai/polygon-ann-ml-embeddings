@@ -411,10 +411,10 @@ parameters). Three considerations dictate this design, each driven by the
 structure of WJ and of the quadtree input rather than by convention.
 
 \noindent\textbf{Why an MLP, not a Transformer or graph encoder.}
-The neural polygon encoders common in the literature --- boundary Transformers,
-vertex graph networks, and set encoders --- target cosine or Euclidean output
-spaces and fail catastrophically when repurposed for WJ retrieval
-($R@50<0.02$~\cite{sampath25}). Two mismatches explain this. First,
+The neural polygon encoders common in the literature --- boundary
+Transformers~\cite{mai22}, vertex graph networks~\cite{polygongnn24}, and set
+encoders~\cite{deepsets17} --- target cosine or Euclidean output spaces and are
+ill-suited to WJ retrieval. Two mismatches explain this. First,
 \emph{space mismatch}: an encoder trained under an L2 or cosine objective learns
 a metric structure that is destroyed when its outputs are forced onto the WJ
 simplex via ReLU\,+\,$\ell_1$-normalisation. Second, \emph{loss of global
