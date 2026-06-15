@@ -190,6 +190,13 @@ We address this gap. Our contributions are:
     5.0\,percentage points (pp) over the triplet-only MLP, but \emph{only} when
     false-negative filtering is active --- without it, conflicting gradients collapse
     recall to 0.510.
+  \item \textbf{Filter training scales where ranking does not}: on the full
+    187k-polygon corpus, ranking objectives degrade to the level of an untrained
+    random projection. Training the encoder as a candidate filter --- a
+    non-saturating contrastive objective over the broad neighbourhood --- restores
+    recall and produces a more navigable index, beating random projection by
+    $\sim$1.9$\times$ in throughput at equal top-50 reranked recall
+    (Sec.~\ref{sec:fullscale}).
 \end{enumerate}
 
 Figure~\ref{fig:pipeline} illustrates the full two-stage retrieval pipeline.
