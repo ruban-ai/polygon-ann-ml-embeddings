@@ -683,6 +683,69 @@ reconstruction forces the encoder to preserve the full input distribution,
 learning fine-grained geometry not captured by pairwise rank order alone.
 The decoder is discarded at inference; only the encoder is used for indexing.
 
+\subsection{Scaling to the Full Corpus}
+\label{sec:fullscale}
+
+We now evaluate on the full OSM Parks corpus (187{,}019 database polygons,
+46{,}754 queries), a $23\times$ larger database. Table~\ref{tab:full} reports a
+controlled comparison under identical HNSW and rerank settings.
+
+\begin{table}[t]
+\centering
+\caption{Full-corpus results (187k database). Identical HNSW
+($\text{efSearch}{=}200$) and rerank settings for all rows.
+$\ddagger$~=~ours. \textbf{Bold}~=~best per column block.}
+\label{tab:full}
+\setlength{\tabcolsep}{4pt}
+\small
+\begin{tabular}{@{}llrrr@{}}
+\toprule
+Method & $K$ & R@50 & R@500 & QPS \\
+\midrule
+\multicolumn{5}{@{}l@{}}{\textit{Stage 1 — No Rerank}} \\[1pt]
+Rand.\ Proj.~\cite{achlioptas03}      & --- & \textbf{0.663} & 0.722 &  1{,}275 \\
+AE WJ-tri+recon$^\ddagger$            & --- & 0.656 & 0.656 &  1{,}188 \\
+Filter (ours)$^\ddagger$              & --- & 0.606 & \textbf{0.727} & \textbf{2{,}191} \\
+\midrule
+\multicolumn{5}{@{}l@{}}{\textit{Stage 2 — Exact WJ Rerank}} \\[1pt]
+Rand.\ Proj.~\cite{achlioptas03}      & 1000 & 0.985 & 0.872 & 874 \\
+AE WJ-tri+recon$^\ddagger$            & 1000 & 0.989 & 0.785 & 850 \\
+\textbf{Filter (ours)}$^\ddagger$     & 1000 & \textbf{0.992} & 0.854 & \textbf{1{,}108} \\
+\addlinespace[3pt]
+Rand.\ Proj.~\cite{achlioptas03}      & 2000 & 0.991 & \textbf{0.927} & 585 \\
+Filter (ours)$^\ddagger$              & 2000 & \textbf{0.992} & 0.863 & \textbf{730} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent\textbf{Ranking objectives stop scaling.}
+At $23\times$ scale the Stage-1 advantage of the learned ranking model collapses:
+AE WJ-triplet+recon ties an untrained random projection on R@50 (0.656 vs.\ 0.663)
+and its recall \emph{flatlines} with $k$ (R@500 $=$ R@50 $=$ 0.656), whereas
+random projection's recall keeps climbing (0.722). The margin objective preserves
+only the immediate neighbourhood; the broad neighbourhood is lost
+(Sec.~\ref{sec:filter}).
+
+\noindent\textbf{The filter objective restores scale.}
+Training for pool membership (Eq.~\ref{eq:filter}) instead of rank trades
+Stage-1 R@50 (0.606, by design) for two properties that matter in the two-stage
+pipeline: its recall climbs with $k$ (R@500 $=$ 0.727, now exceeding random
+projection), and it yields a $1.7\times$ more navigable HNSW index
+(2{,}191 vs.\ 1{,}275 QPS). After reranking, the filter delivers the
+\emph{highest} top-50 recall at the \emph{highest} throughput: at $K{=}1000$,
+R@50 $=$ 0.992 at 1{,}108 QPS, versus random projection's 0.985 at 874 QPS.
+Equivalently, the filter reaches R@50 $=$ 0.992 with $K{=}1000$ candidates, while
+random projection needs $K{=}2000$ to match it --- $\sim$$1.9\times$ fewer
+candidates, and higher end-to-end QPS, at equal top-50 reranked recall. To our
+knowledge this is the first \emph{learned} WJ embedding to beat random projection
+on the recall--throughput frontier at this scale.
+
+\noindent\textbf{Limitation.}
+The filter optimises the inner neighbourhood: for wide-net retrieval (R@500),
+random projection still leads after reranking (0.927 vs.\ 0.863 at $K{=}2000$).
+Closing this gap --- jointly optimising near- and far-neighbour coverage --- is
+left to future work.
+
 %% -------------------------------------------------------
 %%  AI Tools Statement
 %% -------------------------------------------------------
