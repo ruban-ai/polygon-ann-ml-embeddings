@@ -150,15 +150,12 @@ up to 1.7M polygons. However, indexing such large vectors becomes increasingly
 expensive as corpora grow; compressing them while preserving WJ structure
 enables faster search and lower memory overhead at scale.
 
-Classical Locality-Sensitive Hashing (LSH) methods such as Improved Consistent
-Weighted Sampling (ICWS)~\cite{ioffe10} and ProbMinHash~\cite{probminhash20} produce
-theoretically optimal WJ sketches but output integer codes that require brute-force
-comparison, yielding 139\,QPS on our evaluation corpus.
-PolyMinHash~\cite{polyminhash25} reduces candidates via LSH banding, yet remains
-non-learned and cannot adapt to data distribution.
-Learned hashing and metric learning methods~\cite{hashsurvey14,deephashsurvey22}
-train neural networks to compress vectors for fast HNSW search, but exclusively
-target Euclidean or Hamming spaces --- none produce WJ-compatible embeddings.
+Existing approaches do not fill this need (\S\ref{sec:related}): classical WJ
+sketches (ICWS~\cite{ioffe10}, ProbMinHash~\cite{probminhash20},
+PolyMinHash~\cite{polyminhash25}) output integer codes needing brute-force or
+LSH-band search, while learned hashing and metric
+learning~\cite{hashsurvey14,deephashsurvey22} target only Euclidean or Hamming
+spaces --- none produce WJ-compatible embeddings.
 
 We address this gap. Our contributions are:
 \begin{enumerate}
