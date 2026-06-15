@@ -71,9 +71,10 @@ corpus it attains R@10\,=\,0.711 / R@50\,=\,0.858 at 10{,}903\,QPS (78$\times$
 faster than brute-force ICWS) and R@10\,$>$\,0.996 after exact-WJ reranking.
 Scaling to the full 187k-polygon corpus, however, we find that ranking-based
 objectives no longer beat an untrained random projection. We close this gap by
-training the encoder as a candidate \emph{filter} --- a non-saturating contrastive
-objective over the broad neighbourhood --- which restores recall and yields a more
-navigable index. This is, to our knowledge, the first learned WJ embedding to
+training the encoder as a recall-oriented \emph{candidate generator} --- a
+non-saturating contrastive objective over the broad neighbourhood --- which
+restores recall and yields a more navigable index. This is, to our knowledge, the
+first learned WJ embedding to
 surpass random projection on the recall--throughput frontier at scale: equal
 top-50 reranked recall at $\sim$1.9$\times$ higher throughput.
 \end{abstract}
