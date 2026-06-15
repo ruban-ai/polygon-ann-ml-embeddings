@@ -771,17 +771,23 @@ Claude (Anthropic) was used for debugging and manuscript formatting.
 %% -------------------------------------------------------
 \section{Conclusion}
 
-We presented a WJ-native autoencoder compression framework for efficient polygon
-similarity search. The key design choices --- probability simplex output constraint,
+We presented a WJ-native compression framework for efficient polygon similarity
+search. At moderate scale, careful design --- probability simplex output constraint,
 WJ triplet training with false-negative filtering, and decoder reconstruction ---
-work together: our autoencoder achieves the highest Stage-1 recall of all
-ANN-compatible methods and 78$\times$ higher throughput than brute-force ICWS,
-with near-perfect recall after Stage-2 reranking.
-The central empirical insight is that reconstruction and WJ triplet loss are
-complementary only when false-negative filtering is active; without it, they
-produce conflicting gradients and collapse. Future work will extend evaluation to
-the full OSM Parks polygon corpus and explore 256- and 1024-dimensional
-embedding variants to characterise the recall--dimensionality tradeoff.
+yields the highest Stage-1 recall of all ANN-compatible methods and 78$\times$ higher
+throughput than brute-force ICWS, with near-perfect recall after Stage-2 reranking.
+Two empirical insights emerge. First, reconstruction and WJ triplet loss are
+complementary only when false-negative filtering is active; without it they produce
+conflicting gradients and collapse. Second, and more consequential at scale:
+ranking-based objectives stop beating an untrained random projection on the full
+187k-polygon corpus, because the two-stage filter does not require correct order.
+Training the encoder explicitly as a candidate filter --- a non-saturating
+contrastive objective over the broad neighbourhood --- restores recall and produces a
+more navigable index, giving the first learned WJ embedding to surpass random
+projection on the recall--throughput frontier ($\sim$1.9$\times$ higher throughput at
+equal top-50 reranked recall). Future work will close the remaining wide-net (R@500)
+gap and characterise the recall--dimensionality tradeoff across 256-, 512-, and
+1024-dimensional embeddings.
 
 %% -------------------------------------------------------
 %%  References
