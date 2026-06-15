@@ -60,32 +60,22 @@
 %%  Abstract
 %% -------------------------------------------------------
 \begin{abstract}
-Similarity search over polygon datasets is a critical operation in spatial data
-management, where Weighted Jaccard (WJ) captures area-based shape overlap.
-ShapeToVec encodes polygons as 18{,}219-dimensional probability simplex vectors
-enabling direct Hierarchical Navigable Small World (HNSW) retrieval, but the high
-dimensionality imposes significant memory and query-time overhead.
-We propose a learned \emph{autoencoder} compression framework that maps these vectors
-to compact 512-dimensional simplex embeddings, enabling WJ-compatible HNSW indexing
-with 36$\times$ smaller vectors.
-Our encoder is trained with a WJ-native triplet loss, in-batch hard negative mining,
-and false-negative filtering; a decoder adds a reconstruction objective that forces
-the encoder to preserve fine-grained geometry beyond pairwise rank order.
-Our autoencoder achieves R@10\,=\,0.711 and R@50\,=\,0.858 at 10{,}903 queries per
-second (QPS) ---
-78$\times$ higher throughput than brute-force ICWS (Improved Consistent Weighted
-Sampling).
-After Stage-2 exact-WJ reranking, R@10 exceeds 0.996 across all our variants.
-Systematic ablations reveal that false-negative filtering and reconstruction are
-complementary: without filtering, adding reconstruction causes conflicting gradients
-that collapse recall to 0.510.
-Scaling to the full 187k-polygon corpus, we find that ranking-based objectives no
-longer outperform an untrained random projection. We close this gap by training the
-encoder as a candidate \emph{filter} --- a non-saturating contrastive objective over
-the broad neighbourhood --- which restores recall and yields a more navigable index.
-This is, to our knowledge, the first learned WJ embedding to surpass random
-projection on the recall--throughput frontier at scale: equal top-50 reranked recall
-at $\sim$1.9$\times$ higher query throughput.
+Similarity search over polygon datasets is a critical spatial-data operation,
+with Weighted Jaccard (WJ) capturing area-based shape overlap. ShapeToVec encodes
+polygons as 18{,}219-dimensional simplex vectors for direct Hierarchical Navigable
+Small World (HNSW) retrieval, but their dimensionality imposes heavy memory and
+query-time cost. We learn a compact 512-dimensional WJ-compatible compression: a
+simplex-constrained encoder trained with a WJ-native triplet loss, false-negative
+filtering, and decoder reconstruction, giving $36\times$ smaller vectors. On a 10k
+corpus it attains R@10\,=\,0.711 / R@50\,=\,0.858 at 10{,}903\,QPS (78$\times$
+faster than brute-force ICWS) and R@10\,$>$\,0.996 after exact-WJ reranking.
+Scaling to the full 187k-polygon corpus, however, we find that ranking-based
+objectives no longer beat an untrained random projection. We close this gap by
+training the encoder as a candidate \emph{filter} --- a non-saturating contrastive
+objective over the broad neighbourhood --- which restores recall and yields a more
+navigable index. This is, to our knowledge, the first learned WJ embedding to
+surpass random projection on the recall--throughput frontier at scale: equal
+top-50 reranked recall at $\sim$1.9$\times$ higher throughput.
 \end{abstract}
 
 \keywords{polygon similarity search, weighted Jaccard, metric learning, approximate
