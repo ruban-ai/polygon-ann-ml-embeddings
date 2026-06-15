@@ -491,6 +491,36 @@ Critically, reconstruction only helps when false-negative filtering is active
 positive pairs at high WJ while corrupted triplet gradients simultaneously push
 false negatives (also at high WJ) below the margin, creating conflicting gradients.
 
+\subsection{Filter Training at Scale}
+\label{sec:filter}
+
+The triplet objective (Sec.~\ref{sec:triplet}) optimises \emph{rank order}: it
+pushes the single hardest in-batch negative below the positive by a margin and
+saturates once that margin is met. At small scale this is sufficient, but as the
+corpus grows the hardest in-batch negative is drawn from a vanishing fraction of
+the corpus, the margin is satisfied by coarse separation, and the embedding
+preserves only the immediate neighbourhood --- recall stops improving with $k$
+(Sec.~\ref{sec:fullscale}).
+
+In a two-stage system, however, Stage~1 does not need correct order: it only
+needs to place every true neighbour \emph{inside} the top-$K$ candidate pool,
+since Stage~2 reranks exactly. We therefore train the encoder as a \emph{filter}
+optimising pool membership rather than rank. We replace the saturating margin
+loss with a non-saturating in-batch InfoNCE over WJ similarity, and supervise the
+\emph{broad} neighbourhood (top-$P$ GT neighbours, $P{=}256$, rather than
+$P{=}30$):
+\begin{equation}
+  \mathcal{L}_{\text{filt}} = -\frac{1}{B}\sum_{i=1}^{B}
+    \log \frac{\exp\!\bigl(S_{ii}/\tau\bigr)}
+              {\sum_{j:\,(i,j)\notin\mathcal{G}} \exp\!\bigl(S_{ij}/\tau\bigr)},
+  \label{eq:filter}
+\end{equation}
+where $S_{ij}=WJ(f_\theta(\mathbf{a}_i),f_\theta(\mathbf{p}_j))$, $\tau{=}0.07$,
+and the FN filter $\mathcal{G}$ (Sec.~\ref{sec:triplet}) again masks a query's
+other true neighbours from the denominator. Unlike the margin loss, every step
+contributes gradient (no saturation), and the broad positive set pulls the entire
+top-$P$ neighbourhood together rather than only the nearest few.
+
 \subsection{Two-Stage Retrieval Pipeline}
 
 \textbf{Stage~1} builds an HNSW index ($M=20$, $\text{efConstruction}=200$,
