@@ -329,31 +329,19 @@ with margin $m = 0.3$, where $\mathbf{n}_i = f_\theta(\mathbf{p}_{j^*})$.
 \subsection{Reconstruction-Augmented Autoencoder}
 \label{sec:ae}
 
-The triplet loss teaches only coarse rank ordering; fine-grained WJ calibration
-requires an additional signal.
-We augment the encoder with a decoder $g_\phi: \Delta^d \to \mathbb{R}^D_{\geq 0}$
-(three-layer MLP with BN/ReLU), forming an autoencoder (AE), and add a
-reconstruction objective:
-\begin{equation}
-  \mathcal{L}_{\text{recon}} = \tfrac{1}{2}\bigl(
-    \operatorname{MSE}(g_\phi(f_\theta(\mathbf{a})), \mathbf{a}) +
-    \operatorname{MSE}(g_\phi(f_\theta(\mathbf{p})), \mathbf{p})\bigr),
-  \label{eq:recon}
-\end{equation}
-where $\operatorname{MSE}$ denotes mean squared error.
-The combined training objective is:
-\begin{equation}
-  \mathcal{L} = \mathcal{L}_{\text{trip}} + \lambda\,\mathcal{L}_{\text{recon}},
-  \quad \lambda = 0.1.
-  \label{eq:combined}
-\end{equation}
-The reconstruction objective forces the encoder to preserve the full input
-distribution, not just pairwise rank order, which empirically improves WJ
-discrimination (Section~\ref{sec:ablation}).
-Critically, reconstruction only helps when false-negative filtering is active
-(Section~\ref{sec:ablation}): without filtering, the reconstruction term anchors
-positive pairs at high WJ while corrupted triplet gradients simultaneously push
-false negatives (also at high WJ) below the margin, creating conflicting gradients.
+The triplet loss teaches only coarse rank order. We add a decoder
+$g_\phi: \Delta^d \to \mathbb{R}^D_{\geq 0}$ (three-layer MLP), forming an
+autoencoder, with reconstruction loss
+$\mathcal{L}_{\text{recon}} = \tfrac{1}{2}(
+  \operatorname{MSE}(g_\phi(f_\theta(\mathbf{a})), \mathbf{a}) +
+  \operatorname{MSE}(g_\phi(f_\theta(\mathbf{p})), \mathbf{p}))$,
+and train $\mathcal{L} = \mathcal{L}_{\text{trip}} +
+\lambda\,\mathcal{L}_{\text{recon}}$ ($\lambda{=}0.1$).
+Reconstruction forces the encoder to preserve the full input distribution, not
+just rank order, improving WJ discrimination --- but only with FN filtering
+active: otherwise it anchors positives at high WJ while corrupted triplet
+gradients push in-batch false negatives below the margin, a conflict that
+collapses recall (Sec.~\ref{sec:ablation}).
 
 \subsection{Filter Training at Scale}
 \label{sec:filter}
