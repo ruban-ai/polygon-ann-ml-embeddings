@@ -221,19 +221,11 @@ Figure~\ref{fig:pipeline} illustrates the full two-stage retrieval pipeline.
 \section{Related Work}
 
 \paragraph{Polygon representation and ShapeToVec.}
-Representing polygons for similarity search requires encoding geometric structure
-into a form amenable to efficient indexing.
-Uniform-grid approaches assign each polygon a fixed-resolution rasterisation, but
-they fail in the presence of extreme area variation: a fine grid sized for large
-polygons leaves small polygons with nearly all-zero cells, collapsing their
-geometric representation; a coarse grid discards fine detail for small shapes.
-ShapeToVec~\cite{shape2vec} addresses this with an adaptive quadtree decomposition
-that recursively subdivides cells according to polygon coverage, producing
-18{,}219-dimensional probability simplex vectors whose WJ captures area-weighted
-shape overlap across all scales.
-Indexed directly with HNSW~\cite{hnsw20}, ShapeToVec achieves $\geq$97\% R@50 on
-corpora up to 1.7M polygons; our work learns to compress these vectors to 512
-dimensions while preserving their WJ structure.
+ShapeToVec~\cite{shape2vec} encodes polygons with the adaptive quadtree
+rasterisation motivated in Sec.~\ref{sec:intro-gap}, indexing the resulting
+18{,}219-dimensional WJ simplex vectors directly with HNSW~\cite{hnsw20} to reach
+$\geq$97\% R@50 on corpora up to 1.7M polygons. Our work compresses these vectors
+$36\times$ while preserving their WJ structure.
 
 \paragraph{WJ sketching.}
 ICWS~\cite{ioffe10} generates 512-dimensional sketches where the expected number
