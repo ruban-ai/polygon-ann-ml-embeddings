@@ -447,38 +447,16 @@ recovering broad (R@500) recall instead requires a larger $K$ (Table~\ref{tab:fu
 \subsection{Ablation Study}
 \label{sec:ablation}
 
-\begin{table}[t]
-\centering
-\caption{Component ablation (Stage-1, no rerank). MLP rows use WJ regression
-as auxiliary loss ($\lambda$=1.0); AE rows use decoder reconstruction ($\lambda$=0.1).}
-\label{tab:ablation}
-\small
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{lllrr}
-\toprule
-Model & FN Filter & Aux.\ Loss & R@10 & R@50 \\
-\midrule
-MLP & \xmark & none          & 0.677 & 0.806 \\
-MLP & \cmark & none          & 0.656 & 0.773 \\
-MLP & \xmark & WJ regression & 0.510 & 0.736 \\
-MLP & \cmark & WJ regression & 0.669 & 0.808 \\
-\midrule
-AE  & ---    & recon.\ only  & 0.665 & 0.745 \\
-\textbf{AE}  & \cmark & \textbf{triplet+recon} & \textbf{0.711} & \textbf{0.858} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Table~\ref{tab:ablation} isolates each design choice. The FN filter alone
-slightly weakens the 8k signal (row 2): GT neighbours dominate the small batch,
-leaving few true hard negatives --- an effect that vanishes at scale. WJ
-regression \emph{without} filtering is catastrophic (R@10\,=\,0.510, row 3): the
-regression anchors positives at high WJ while corrupted triplet gradients push
-in-batch false negatives below the margin, a gradient conflict that filtering
-resolves (row 4). Reconstruction is the decisive component (final row): unlike a
-direct WJ target, it forces the encoder to preserve the full input distribution,
-lifting R@50 to 0.858 (+5.0\,pp over triplet-only). The decoder is discarded at
-inference.
+We ablate each design choice (Stage-1 R@50 on the 10k subset). The FN filter
+alone slightly weakens the 8k signal ($0.806\!\to\!0.773$): GT neighbours
+dominate the small batch, leaving few true hard negatives --- an effect that
+vanishes at scale. Adding WJ regression \emph{without} filtering is catastrophic
+(R@10\,=\,0.510): the regression anchors positives at high WJ while corrupted
+triplet gradients push in-batch false negatives below the margin; filtering
+removes the conflict and restores R@50 to 0.808. Reconstruction is the decisive
+component: unlike a direct WJ target, it forces the encoder to preserve the full
+input distribution, lifting R@50 from 0.806 (triplet-only) to \textbf{0.858}
+(+5.0\,pp). The decoder is discarded at inference.
 
 \subsection{Scaling to the Full Corpus}
 \label{sec:fullscale}
