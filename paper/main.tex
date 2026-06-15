@@ -581,9 +581,9 @@ Two empirical insights emerge. First, reconstruction and WJ triplet loss are
 complementary only when false-negative filtering is active; without it they produce
 conflicting gradients and collapse. Second, and more consequential at scale:
 ranking-based objectives stop beating an untrained random projection on the full
-187k-polygon corpus, because the two-stage filter does not require correct order.
-Training the encoder explicitly as a candidate filter --- a non-saturating
-contrastive objective over the broad neighbourhood --- restores recall and produces a
+187k-polygon corpus, because the first-stage candidate generator does not require
+correct order. Training it with a recall-oriented objective --- a non-saturating
+contrastive loss over the broad neighbourhood --- restores recall and produces a
 more navigable index, giving the first learned WJ embedding to surpass random
 projection on the recall--throughput frontier ($\sim$1.9$\times$ higher throughput at
 equal top-50 reranked recall). Future work will close the remaining wide-net (R@500)
