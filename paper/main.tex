@@ -170,13 +170,13 @@ We address this gap. Our contributions are:
     and random projection (Table~\ref{tab:results}); a decoder reconstruction term
     adds a further 5.0\,pp R@50 --- but only with filtering active, else
     conflicting gradients collapse recall to 0.510.
-  \item \textbf{Filter training scales where ranking does not}: on the full
-    187k-polygon corpus, ranking objectives degrade to the level of an untrained
-    random projection. Training the encoder as a candidate filter --- a
-    non-saturating contrastive objective over the broad neighbourhood --- restores
-    recall, yields a more navigable index, and beats random projection by
-    $\sim$1.9$\times$ in throughput at equal top-50 reranked recall
-    (Sec.~\ref{sec:fullscale}).
+  \item \textbf{Recall-oriented candidate generation scales where ranking does
+    not}: on the full 187k-polygon corpus, ranking objectives degrade to the level
+    of an untrained random projection. Training the first-stage candidate generator
+    with a recall-oriented objective --- a non-saturating contrastive loss over the
+    broad neighbourhood --- restores broad-neighbourhood recall, yields a more
+    navigable index, and beats random projection by $\sim$1.9$\times$ in throughput
+    at equal top-50 reranked recall (Sec.~\ref{sec:fullscale}).
 \end{enumerate}
 
 Figure~\ref{fig:pipeline} illustrates the full two-stage retrieval pipeline.
