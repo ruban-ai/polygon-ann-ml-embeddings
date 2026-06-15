@@ -534,34 +534,16 @@ AE  & ---    & recon.\ only  & 0.665 & 0.745 \\
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:ablation} isolates each design choice.
-
-\noindent\textbf{False-negative filter alone (row 2 vs.\ row 1).}
-On the small 8k corpus, masking GT neighbours reduces the pool of hard negatives
-significantly --- many polygons are GT neighbours of each other, so filtering
-leaves primarily easy negatives, weakening the training signal (R@10: 0.677$\to$0.656).
-At larger corpus scale, this effect diminishes as true hard negatives become more
-abundant.
-
-\noindent\textbf{WJ regression without FN filter (row 3).}
-Adding WJ regression without filtering causes catastrophic degradation
-(R@10\,=\,0.510): the regression term anchors anchor--positive pairs at
-high WJ (${\sim}$0.8), while corrupted triplet gradients simultaneously push
-false negatives (also at high WJ) below the margin, creating conflicting gradients
-that collapse the embedding.
-
-\noindent\textbf{WJ regression with FN filter (row 4).}
-Filtering removes the conflict: R@10 recovers from 0.510 (row 3) to 0.669,
-nearly matching the 0.677 baseline, but showing that WJ regression adds only
-marginal benefit over triplet alone.
-
-\noindent\textbf{AE reconstruction vs.\ WJ regression.}
-The reconstruction-augmented AE (final row) substantially outperforms all MLP
-variants: R@10\,=\,0.711 vs.\ 0.677 (+3.4\,pp), R@50\,=\,0.858 vs.\ 0.808
-(+5.0\,pp). Unlike regression, which provides a direct WJ target signal,
-reconstruction forces the encoder to preserve the full input distribution,
-learning fine-grained geometry not captured by pairwise rank order alone.
-The decoder is discarded at inference; only the encoder is used for indexing.
+Table~\ref{tab:ablation} isolates each design choice. The FN filter alone
+slightly weakens the 8k signal (row 2): GT neighbours dominate the small batch,
+leaving few true hard negatives --- an effect that vanishes at scale. WJ
+regression \emph{without} filtering is catastrophic (R@10\,=\,0.510, row 3): the
+regression anchors positives at high WJ while corrupted triplet gradients push
+in-batch false negatives below the margin, a gradient conflict that filtering
+resolves (row 4). Reconstruction is the decisive component (final row): unlike a
+direct WJ target, it forces the encoder to preserve the full input distribution,
+lifting R@50 to 0.858 (+5.0\,pp over triplet-only). The decoder is discarded at
+inference.
 
 \subsection{Scaling to the Full Corpus}
 \label{sec:fullscale}
