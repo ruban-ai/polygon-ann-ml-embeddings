@@ -421,15 +421,15 @@ simplex via ReLU\,+\,$\ell_1$-normalisation. Second, \emph{loss of global
 structure}: sequence- and graph-based encoders aggregate \emph{local} context
 (token windows, vertex hops), whereas WJ is a global statistic summed over all
 $D$ dimensions that cannot be decomposed into local sub-computations. A plain
-MLP trained \emph{natively} in WJ space avoids both --- it has no local
-decomposition, and (below) its first layer is a single global projection.
+MLP trained \emph{natively} in WJ space avoids both.
 
 \noindent\textbf{Global projection.}
-Concretely, the first layer is a single dense projection
+Accordingly, the first layer is a single dense projection
 $\mathbb{R}^{18{,}219}\!\to\!\mathbb{R}^{4{,}096}$ that mixes \emph{all} input
 dimensions in one matrix multiply, so every pair of quadtree cells can interact
 and the cross-dimension co-occurrence statistics WJ depends on are preserved.
-This is why $\sim$75M of the $\sim$80M parameters reside in this first layer.
+This global mixing is why $\sim$75M of the $\sim$80M parameters reside in this
+first layer.
 
 \noindent\textbf{BatchNorm before ReLU.}
 Quadtree rasterization yields extremely sparse vectors (mean $\sim$73\% zeros,
