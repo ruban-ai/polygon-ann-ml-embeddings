@@ -444,11 +444,9 @@ We compare four categories:
 (i)~\textbf{Non-learned}: PCA~\cite{jolliffe02}, NMF~\cite{nmf99}, and Random
 Projection~\cite{achlioptas03}, all reduced to 512 dimensions and projected to
 $\Delta^{512}$ via L1-normalisation;
-(ii)~\textbf{Hashing}: ICWS~\cite{ioffe10} (512-hash WJ sketch, brute-force$^\dagger$)
-and Deep Binary Hashing~\cite{deephashsurvey22} (512-bit learned Hamming codes) ---
-both are hash-based methods but differ mechanically: ICWS produces an unbiased WJ
-estimator via consistent sampling, while deep binary hashing trains a network with
-a pairwise classification objective;
+(ii)~\textbf{Hashing}: ICWS~\cite{ioffe10} (512-hash WJ sketch, an unbiased WJ
+estimator, brute-force$^\dagger$) and Deep Binary Hashing~\cite{deephashsurvey22}
+(512-bit learned Hamming codes);
 (iii)~\textbf{Learned, non-WJ}: Matryoshka MLP~\cite{matryoshka22} with WJ-space
 multi-scale triplet loss;
 (iv)~\textbf{Ours}: MLP cosine triplet (our first variant, cosine metric),
