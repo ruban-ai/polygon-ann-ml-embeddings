@@ -422,13 +422,12 @@ The decoder $g_\phi$ is discarded at inference time.
 
 \subsection{Dataset and Setup}
 
-We evaluate on park polygons sourced from OpenStreetMap~\cite{osm} (OSM), the same
-corpus used in ShapeToVec~\cite{shape2vec} (234{,}447 polygons total).
-Polygons are encoded via ShapeToVec into 18{,}219-dimensional probability simplex
-vectors. For the experiments in this paper we use a 10{,}000-polygon subset:
-8{,}000 database polygons and 2{,}000 queries, representative of the full
-distribution. Ground-truth top-500 WJ neighbours per query are precomputed exactly.
-Experiments on the full 234k corpus are ongoing.
+We evaluate on OSM Parks polygons~\cite{osm,shape2vec}, encoded by ShapeToVec into
+18{,}219-dimensional simplex vectors, at two scales: a 10{,}000-polygon subset
+(8{,}000 database, 2{,}000 queries) for the main results and ablations, and the
+full corpus (187{,}019 database, 46{,}754 queries) for the scaling study
+(Sec.~\ref{sec:fullscale}). Ground-truth top-500 WJ neighbours per query are
+precomputed exactly by brute force.
 We report Recall at $k$ (R@$k$) --- the fraction of true top-$k$ WJ neighbours
 retrieved --- at $k \in \{10, 50, 500\}$, and throughput in QPS.
 All models are implemented in PyTorch and trained with AdamW
