@@ -472,22 +472,12 @@ AE WJ-tri+recon ($K$=1000)$^\ddagger$   & 512  & 0.997 & 0.999 & 0.990 &      38
 {\scriptsize $b$~=~binary bits (Hamming space).}
 \end{table}
 
-Table~\ref{tab:results} shows the main results.
-Our AE WJ-triplet+recon achieves the highest Stage-1 recall among all ANN-compatible
-methods. Compared to our own MLP cosine triplet (contribution 2), switching to the
-WJ-native objective and adding reconstruction improves R@50 by 5.0\,pp; compared to
-all non-learned and hashing baselines the gain is larger (16.3\,pp over the best
-non-learned, 34.5\,pp over brute-force ICWS at Stage~1).
-Our framework achieves 78$\times$ higher QPS than brute-force ICWS.
-After Stage-2 reranking with $K$=500, R@10 reaches 0.997 at 75--1{,}139\,QPS
-depending on the variant.
-
-\smallskip\noindent\textbf{Why R@500 does not improve with reranking.}
-Reranking $K$ candidates reorders but cannot enlarge the retrieved set, so R@500
-at $K{=}500$ equals Stage-1 R@500 by construction; R@10/R@50 improve because the
-true nearest neighbours, reliably within the pool, are promoted to their correct
-positions. Raising $K$ to 1{,}000 lifts R@500 to 0.990 --- a coverage--speed
-tradeoff, not a model deficiency.
+Table~\ref{tab:results} shows the main results. AE WJ-triplet+recon achieves the
+highest Stage-1 recall of all ANN-compatible methods: $+5.0$\,pp R@50 over the
+triplet-only MLP and $+16.3$\,pp over the best non-learned baseline, at 78$\times$
+the QPS of brute-force ICWS. After Stage-2 reranking ($K{=}500$), R@10 reaches
+0.997 at 75--1{,}139\,QPS. Reranking reorders but cannot enlarge the pool, so
+R@500 at $K{=}500$ equals Stage-1 R@500; raising $K$ to 1{,}000 lifts it to 0.990.
 
 \subsection{Ablation Study}
 \label{sec:ablation}
