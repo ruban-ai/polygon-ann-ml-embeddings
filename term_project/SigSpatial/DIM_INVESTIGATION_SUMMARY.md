@@ -113,6 +113,30 @@ All probes: `/tmp/analysis_stage{1,2,3}.py`, run on a spare GPU with `CUDA_VISIB
 
 ---
 
+## 4b. ★ BREAKTHROUGH — it's the OUTPUT COMPRESSION; wide intermediate layers win
+
+Architecture is a funnel `18220 → 4096 → 1024 → OUT_DIM`. We tapped each layer (relu'd, L1-normalized → a WJ embedding) and measured recall. Probe: `/tmp/probe_layers.py` (full), `/tmp/analysis_10k.py` (10K).
+
+**Full set (187K), R@500 / Spearman@500:**
+| model | 4096 layer | 1024 layer | output | 
+|---|---|---|---|
+| triplet-512 | **0.818** / 0.935 | 0.777 / 0.919 | 0.654 / 0.820 |
+| InfoNCE-512 | 0.778 / 0.942 | 0.775 / 0.959 | 0.731 / 0.920 |
+(ref: random-4096 0.772, ceiling 0.998)
+
+→ Recall climbs monotonically as you go wider/earlier. The **narrow output (where the loss is applied) is what destroys recall**; the loss damages that layer's WJ ordering. **triplet+recon's 4096 layer (0.818) is the best embedding found.**
+
+**10K (8K corpus, easy → R@500 saturates ~0.98; read R@50):**
+| model | out | 4096 R@50 | output R@50 | output Spearman |
+|---|---|---|---|---|
+| triplet | 256 | 0.875 | 0.853 | **0.62** |
+| triplet | 1024 | 0.874 | 0.854 | **0.62** |
+| InfoNCE | 512 | 0.747 | 0.698 | 0.84 |
+
+→ **10K's "stagnant recall across output dims" is the SAME mechanism:** output dim 256 vs 1024 gives identical R@50 (0.853 vs 0.854); the output Spearman is damaged to 0.62; the easy task just *masks* it (R@500 saturates). On 10K triplet (0.85–0.88) beats InfoNCE (0.70–0.75) — **triplet+recon is not inferior; it's better.**
+
+**Implication:** the objective debate was a red herring at the output layer. Both objectives build good wide representations; the funnel's narrow output is the damage. Use a wide embedding. Trade-off: wider = slower/bigger HNSW (the recall↔throughput knob).
+
 ## 5. Root cause (final)
 
 Recall is governed by **how faithfully the embedding's WJ ordering matches the true 18,220-d WJ ordering** (Spearman → R@500, near-linear). The **hard-margin triplet objective optimizes only a local margin** (top-`max_pos` positive vs single hardest negative) — it never constrains the global WJ ranking, so the learned geometry is *less* metric-faithful than a random projection and **cannot use extra dimensions** to improve. It is an **objective–metric misalignment**, not a capacity/architecture/index problem.
