@@ -169,9 +169,6 @@ def main() -> None:
     print(f"Loading {limit:,} polygon areas...")
 
     areas = load_areas(args.wkt_path, limit)
-    if areas.size < limit:
-        sys.exit(f"Only got {areas.size:,} valid areas (expected {limit:,}).")
-
     corpus = areas[:query_start]
     queries = areas[query_start:limit]
 
