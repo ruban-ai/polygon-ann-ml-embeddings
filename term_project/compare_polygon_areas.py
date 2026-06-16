@@ -75,13 +75,32 @@ def area_m2(geom) -> float:
 
 
 def load_areas(wkt_path: str, limit: int, progress_every: int = 50_000) -> np.ndarray:
-    areas = []
-    for i, geom in iter_polygons(wkt_path, limit):
-        a = area_m2(geom)
-        if math.isfinite(a) and a > 0:
+    """Read polygons from WKT until `limit` valid positive areas are collected."""
+    areas: list[float] = []
+    rows_seen = 0
+    with open(wkt_path, encoding="utf-8") as f:
+        for line in f:
+            rows_seen += 1
+            parts = line.rstrip("\n").split("\t", 2)
+            if len(parts) < 2:
+                continue
+            try:
+                geom = shapely.wkt.loads(parts[1])
+                a = area_m2(geom)
+            except Exception:
+                continue
+            if not math.isfinite(a) or a <= 0:
+                continue
             areas.append(a)
-        if progress_every and (i + 1) % progress_every == 0:
-            print(f"  processed {i + 1:,} / {limit:,} polygons", flush=True)
+            if progress_every and len(areas) % progress_every == 0:
+                print(f"  loaded {len(areas):,} / {limit:,} areas", flush=True)
+            if len(areas) >= limit:
+                break
+    if len(areas) < limit:
+        sys.exit(
+            f"Only collected {len(areas):,} valid areas after {rows_seen:,} rows "
+            f"(needed {limit:,})."
+        )
     return np.array(areas, dtype=np.float64)
 
 
