@@ -1,0 +1,4 @@
+date      , dataset, method            , dim, stage , cand_k, R@10 , R@50  , R@100, R@500 , QPS  , source              , notes
+2026-06-15,full,MLP-WJ-triplet(nb15-log1p),512,base,,0.5684,0.6448,0.664,0.7104,369,eval_nb15_fair.py,recall reproduced (=notebook); QPS contention-depressed ~5x (buddhi ~166 cores) - rerun for comparable QPS
+2026-06-15,full,MLP-WJ-triplet(nb15-log1p),512,rerank,1000,0.9921,0.9919,0.9848,0.8487,392,eval_nb15_fair.py,recall reproduced (=notebook); QPS contention-depressed ~5x (buddhi ~166 cores) - rerun for comparable QPS
+2026-06-15,full,MLP-WJ-triplet(nb15-log1p),512,rerank,2000,0.9923,0.9928,0.9877,0.8752,122,eval_nb15_fair.py,recall reproduced (=notebook); QPS contention-depressed ~5x (buddhi ~166 cores) - rerun for comparable QPS

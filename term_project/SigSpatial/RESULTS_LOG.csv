@@ -1,0 +1,20 @@
+date      , dataset, method            , dim, stage , cand_k, R@10 , R@50  , R@100, R@500 , QPS  , source              , notes
+2026-06-15, 10k    , PCA               , 512, base  ,       , 0.432, 0.553 ,      , 0.789 , 16666, paper Table 1       , 
+2026-06-15, 10k    , NMF               , 512, base  ,       , 0.638, 0.727 ,      , 0.942 , 11764, paper Table 1       , 
+2026-06-15, 10k    , RandomProjection  , 512, base  ,       , 0.687, 0.759 ,      , 0.93  ,  9663, paper Table 1       , 
+2026-06-15, 10k    , ICWS(brute)       , 512, base  ,       , 0.84 , 0.897 ,      , 0.988 ,   139, paper Table 1       , 
+2026-06-15, 10k    , DeepBinaryHash    , 512, base  ,       , 0.432, 0.652 ,      , 0.939 ,   328, paper Table 1       , 
+2026-06-15, 10k    , Matryoshka-MLP    , 512, base  ,       , 0.455, 0.672 ,      , 0.932 , 18647, paper Table 1       , 
+2026-06-15, 10k    , MLP-cosine-triplet, 512, base  ,       , 0.666, 0.808 ,      , 0.954 , 30150, paper Table 1       , 
+2026-06-15, 10k    , AE-recon-only     , 512, base  ,       , 0.665, 0.745 ,      , 0.938 , 11142, paper Table 1       , 
+2026-06-15, 10k    , MLP-WJ-triplet    , 512, base  ,       , 0.677, 0.806 ,      , 0.964 , 10756, paper Table 1       , 
+2026-06-15, 10k    , AE-WJ-tri+recon   , 512, base  ,       , 0.711, 0.858 ,      , 0.977 , 10903, paper Table 1       , 
+2026-06-15, full   , InfoNCE(Recall-CG), 512, base  ,       ,      , 0.6056,      , 0.7273,  2191, fair_reeval_full.pkl, matched HNSW/rerank settings
+2026-06-15, full   , InfoNCE(Recall-CG), 512, rerank,   1000,      , 0.992 ,      , 0.8537,  1108, fair_reeval_full.pkl, e2e QPS; matched settings
+2026-06-15, full   , InfoNCE(Recall-CG), 512, rerank,   2000,      , 0.9924,      , 0.8628,   730, fair_reeval_full.pkl, e2e QPS; matched settings
+2026-06-15, full   , AE-WJ-tri+recon   , 512, base  ,       ,      , 0.6561,      , 0.6558,  1188, fair_reeval_full.pkl, matched HNSW/rerank settings
+2026-06-15, full   , AE-WJ-tri+recon   , 512, rerank,   1000,      , 0.9892,      , 0.785 ,   850, fair_reeval_full.pkl, e2e QPS; matched settings
+2026-06-15, full   , AE-WJ-tri+recon   , 512, rerank,   2000,      , 0.9913,      , 0.8377,   578, fair_reeval_full.pkl, e2e QPS; matched settings
+2026-06-15, full   , RandomProjection  , 512, base  ,       ,      , 0.6632,      , 0.7218,  1275, fair_reeval_full.pkl, matched HNSW/rerank settings
+2026-06-15, full   , RandomProjection  , 512, rerank,   1000,      , 0.9849,      , 0.8718,   874, fair_reeval_full.pkl, e2e QPS; matched settings
+2026-06-15, full   , RandomProjection  , 512, rerank,   2000,      , 0.9913,      , 0.9273,   585, fair_reeval_full.pkl, e2e QPS; matched settings
