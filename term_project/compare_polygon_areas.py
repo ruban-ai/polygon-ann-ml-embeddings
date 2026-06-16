@@ -53,24 +53,6 @@ def discover_split(gt_dir: str) -> tuple[int, int]:
     return min(starts), max(ends) + 1
 
 
-def iter_polygons(wkt_path: str, limit: int):
-    """Yield (index, shapely geometry) for the first `limit` valid rows."""
-    count = 0
-    with open(wkt_path, encoding="utf-8") as f:
-        for line in f:
-            parts = line.rstrip("\n").split("\t", 2)
-            if len(parts) < 2:
-                continue
-            try:
-                geom = shapely.wkt.loads(parts[1])
-            except Exception:
-                continue
-            yield count, geom
-            count += 1
-            if count >= limit:
-                return
-
-
 def polygon_parts(geom):
     if geom.is_empty:
         return
