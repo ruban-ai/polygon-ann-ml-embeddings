@@ -185,13 +185,15 @@ Note: our InfoNCE is **WJ-native** — the contrastive softmax logits ARE Weight
 
 ---
 
-## 8. Open items / next steps
+## 8. Open items / next steps (REPRIORITIZED after the layer-tap finding)
 
-- [ ] **Finish InfoNCE@2048**, log base+rerank; confirm base R@500 > InfoNCE-512 (0.727) → proves dim helps the metric-aligned objective.
-- [ ] Optional: InfoNCE@1024 / @4096 to draw the InfoNCE recall-vs-dim curve next to random projection (the paper's dimension figure).
-- [ ] Optional: per-query failure breakdown (which polygons fail — e.g., extreme-area / many-near-duplicate queries).
-- [ ] Decide paper framing: the mechanistic story (recall ∝ WJ-rank-preservation; triplet's objective misaligned; InfoNCE aligned; dimension helps only the aligned objective) is a strong, defensible narrative.
-- [ ] QPS: 2048-d slightly lower HNSW QPS than 512-d; quantify the recall↔QPS trade-off across dims for the frontier plot.
+- [ ] **Eval the triplet+recon 4096 layer through the FULL pipeline** (HNSW WJ + exact rerank) and log to NEW_RESULTS.csv — it's likely our best Stage-1 candidate generator (exact R@500 0.818). Measure its HNSW QPS (4096-d is slower).
+- [ ] **Train `18220→4096→4096` (no funnel)** — confirm the wide embedding is the win when the loss is applied at the wide layer (vs tapping a funnel trained for a narrow output).
+- [ ] **Build a Matryoshka WJ model** (loss on prefixes {512,1024,2048,4096} of one 4096-d embedding) → one model spanning the recall↔throughput frontier; the paper's dimension figure falls out of it.
+- [ ] Quantify recall↔QPS at each width {512,1024,2048,4096} for the frontier plot (wider = higher recall, lower QPS).
+- [ ] (Lower priority) InfoNCE@2048 currently running is BOTTLENECKED (`…→1024→2048`) AND mid-training; early read = tracks InfoNCE-512 (no gain), effRank 37. Confounded — consider killing in favor of the clean `→4096→4096` / Matryoshka runs.
+- [ ] Reframe the paper around: **recall is set by WJ-rank-preservation, which the narrow output bottleneck destroys; a wide embedding (either objective) recovers it; Matryoshka exposes the frontier.** (Not "InfoNCE beats triplet" — that was an output-layer artifact.)
+- [ ] Optional: per-query failure breakdown (extreme-area / near-duplicate queries).
 
 ## 9. One-paragraph narrative (for the paper / for a fresh agent)
 On this polygon corpus, exact 18,220-d Weighted-Jaccard recovers the ground truth almost perfectly (R@500=0.998), so any learned Stage-1 embedding's recall gap is pure compression loss. We find that recall is governed by how faithfully the embedding preserves the global WJ rank-ordering (Spearman(emb-WJ, raw-WJ) predicts R@500 near-linearly). A hard-margin triplet objective preserves this ordering poorly (Spearman ≈ 0.82) — worse than a *training-free* random projection (0.93) — and, crucially, does not improve with embedding dimension (R@500 = 0.654 at both 512-d and 2048-d). In contrast, random projection's recall rises monotonically with dimension (0.689→0.772 over 256→4096-d), proving the dimension itself is useful only for a *metric-preserving* embedding. The triplet's failure is therefore an objective–metric misalignment, not a capacity, architecture, or index limitation. A WJ-native InfoNCE objective (contrastive softmax over Weighted-Jaccard similarities across a broad neighborhood) restores metric fidelity (Spearman 0.92, R@500 0.73) and is expected to scale with dimension like random projection.
