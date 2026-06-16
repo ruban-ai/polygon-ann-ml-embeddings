@@ -1,0 +1,190 @@
+#!/usr/bin/env python3
+"""
+Compare polygon area distributions: corpus (80%) vs GT queries (20%).
+
+The encoding and warehouse directories hold vectors / neighbor lists, not
+geometry. This script recovers the train/query split from the GT filenames
+(e.g. similarityMap_187019-...) and reads polygons from the Parks WKT file.
+
+Usage:
+    python compare_polygon_areas.py
+    python compare_polygon_areas.py --out-dir ./my_output --bins 60
+"""
+
+from __future__ import annotations
+
+import argparse
+import glob
+import math
+import os
+import re
+import sys
+
+os.environ.setdefault("MPLCONFIGDIR", "/tmp/matplotlib")
+
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import numpy as np
+import shapely.wkt
+from pyproj import Geod
+from shapely.geometry import GeometryCollection, MultiPolygon, Polygon
+
+WKT_PATH = "/raid/ssEncodingData/polygonalData/osm_new/parks"
+ENCODING_DIR = "/raid/ssEncodingData/encoding/pk-real0.002"
+GT_DIR = "/raid/ssEncodingData/warehouse/pk-query-187019"
+OUT_DIR = os.path.join(os.path.dirname(__file__), "area_distribution")
+
+GT_RE = re.compile(r"similarityMap_(\d+)-(\d+)")
+GEOD = Geod(ellps="WGS84")
+
+
+def discover_split(gt_dir: str) -> tuple[int, int]:
+    """Return (query_start, total_polygon_count) from GT similarityMap filenames."""
+    starts, ends = [], []
+    for path in glob.glob(os.path.join(gt_dir, "similarityMap_*")):
+        m = GT_RE.search(os.path.basename(path))
+        if m:
+            starts.append(int(m.group(1)))
+            ends.append(int(m.group(2)))
+    if not starts:
+        sys.exit(f"No similarityMap_* files found in {gt_dir}")
+    return min(starts), max(ends) + 1
+
+
+def iter_polygons(wkt_path: str, limit: int):
+    """Yield (index, shapely geometry) for the first `limit` valid rows."""
+    count = 0
+    with open(wkt_path, encoding="utf-8") as f:
+        for line in f:
+            parts = line.rstrip("\n").split("\t", 2)
+            if len(parts) < 2:
+                continue
+            try:
+                geom = shapely.wkt.loads(parts[1])
+            except Exception:
+                continue
+            yield count, geom
+            count += 1
+            if count >= limit:
+                return
+
+
+def polygon_parts(geom):
+    if geom.is_empty:
+        return
+    if isinstance(geom, Polygon):
+        yield geom
+    elif isinstance(geom, (MultiPolygon, GeometryCollection)):
+        for g in geom.geoms:
+            yield from polygon_parts(g)
+
+
+def area_m2(geom) -> float:
+    total = 0.0
+    for poly in polygon_parts(geom):
+        try:
+            a, _ = GEOD.geometry_area_perimeter(poly)
+            total += abs(a)
+        except Exception:
+            pass
+    return total
+
+
+def load_areas(wkt_path: str, limit: int, progress_every: int = 50_000) -> np.ndarray:
+    areas = []
+    for i, geom in iter_polygons(wkt_path, limit):
+        a = area_m2(geom)
+        if math.isfinite(a) and a > 0:
+            areas.append(a)
+        if progress_every and (i + 1) % progress_every == 0:
+            print(f"  processed {i + 1:,} / {limit:,} polygons", flush=True)
+    return np.array(areas, dtype=np.float64)
+
+
+def print_stats(name: str, areas: np.ndarray) -> None:
+    p = np.percentile(areas, [5, 25, 50, 75, 95])
+    print(
+        f"  {name:12s}  n={areas.size:>7,}  "
+        f"median={p[2]:>12,.1f} m²  p95={p[4]:>14,.1f} m²  max={areas.max():>14,.1f} m²"
+    )
+
+
+def plot_histogram(corpus: np.ndarray, queries: np.ndarray, out_path: str, bins: int) -> None:
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+
+    lo = math.floor(np.log10(min(corpus.min(), queries.min())))
+    hi = math.ceil(np.log10(max(corpus.max(), queries.max())))
+    log_bins = np.logspace(lo, hi, bins)
+
+    ax = axes[0]
+    ax.hist(corpus, bins=log_bins, alpha=0.55, density=True, label=f"Corpus (n={corpus.size:,})")
+    ax.hist(queries, bins=log_bins, alpha=0.55, density=True, label=f"GT queries (n={queries.size:,})")
+    ax.set_xscale("log")
+    ax.set_xlabel("Area (m²)")
+    ax.set_ylabel("Density")
+    ax.set_title("Area distribution (log x-axis)")
+    ax.legend()
+    ax.grid(True, alpha=0.25)
+
+    ax = axes[1]
+    ax.hist(np.log10(corpus), bins=bins, alpha=0.55, density=True, label="Corpus")
+    ax.hist(np.log10(queries), bins=bins, alpha=0.55, density=True, label="GT queries")
+    ax.set_xlabel("log₁₀(area m²)")
+    ax.set_ylabel("Density")
+    ax.set_title("Log-area distribution")
+    ax.legend()
+    ax.grid(True, alpha=0.25)
+
+    fig.suptitle("Parks polygon area: corpus vs GT query split")
+    fig.tight_layout()
+    fig.savefig(out_path, dpi=150)
+    plt.close(fig)
+    print(f"  saved histogram → {out_path}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--wkt-path", default=WKT_PATH)
+    parser.add_argument("--encoding-dir", default=ENCODING_DIR, help="For reference only; geometry comes from WKT.")
+    parser.add_argument("--gt-dir", default=GT_DIR)
+    parser.add_argument("--out-dir", default=OUT_DIR)
+    parser.add_argument("--bins", type=int, default=80)
+    parser.add_argument("--max-polygons", type=int, default=None, help="Cap for quick tests.")
+    args = parser.parse_args()
+
+    query_start, total = discover_split(args.gt_dir)
+    limit = args.max_polygons if args.max_polygons else total
+    if limit < query_start + 1:
+        sys.exit(f"--max-polygons must be ≥ {query_start + 1} to include query polygons.")
+
+    os.makedirs(args.out_dir, exist_ok=True)
+
+    print(f"Encoding dir : {args.encoding_dir}")
+    print(f"GT dir       : {args.gt_dir}")
+    print(f"Split        : corpus [0, {query_start})  |  queries [{query_start}, {total})  ({query_start/total:.0%} / {1-query_start/total:.0%})")
+    print(f"WKT source   : {args.wkt_path}")
+    print(f"Loading {limit:,} polygon areas...")
+
+    areas = load_areas(args.wkt_path, limit)
+    if areas.size < limit:
+        sys.exit(f"Only got {areas.size:,} valid areas (expected {limit:,}).")
+
+    corpus = areas[:query_start]
+    queries = areas[query_start:limit]
+
+    print("\nSummary:")
+    print_stats("corpus", corpus)
+    print_stats("queries", queries)
+
+    hist_path = os.path.join(args.out_dir, "polygon_area_histogram.png")
+    plot_histogram(corpus, queries, hist_path, args.bins)
+
+    npz_path = os.path.join(args.out_dir, "polygon_areas.npz")
+    np.savez_compressed(npz_path, corpus_m2=corpus, query_m2=queries)
+    print(f"  saved areas      → {npz_path}")
+
+
+if __name__ == "__main__":
+    main()
