@@ -147,13 +147,16 @@ Note: our InfoNCE is **WJ-native** — the contrastive softmax logits ARE Weight
 
 ---
 
-## 6. How to make it better
+## 6. How to make it better (UPDATED with the layer-tap finding)
 
-1. **Use the metric-aligned objective (InfoNCE) — primary fix.** Spearman 0.92, R@500 0.73 at 512-d. Running at 2048 now (see §7); expected to improve with dim like random projection (unlike triplet).
-2. **Higher dim DOES help once the embedding is metric-preserving** — e.g., InfoNCE@2048/4096, or even a training-free higher-dim random projection (4096 → 0.772). Trade-off: higher dim = lower HNSW QPS.
-3. **Coarser input grid is an orthogonal lever** (real0.003=12k, real0.006=6k available; GT carries over) — untested for recall vs compute.
-4. Stage-2 exact rerank already lifts top-50 to ~0.99 regardless of Stage-1, so for the paper the Stage-1 job is *broad recall* (R@500), where InfoNCE + dimension is the path.
-5. **Caveat:** ceiling is 0.998 (raw WJ); any d-dim embedding pays a JL-style compression tax. To approach the ceiling at small d you need rerank (which we do).
+1. **★ Use a WIDE embedding, stop funneling to a narrow output.** Best result so far = the **triplet+recon 4096 layer (R@500 0.818)**. Either tap the 4096 layer of an existing model, or train `18220→4096→4096` (no 1024/512 bottleneck) so the loss is applied at the wide layer.
+2. **★ Matryoshka for the whole frontier from ONE model.** Train a single wide (e.g., 4096-d) WJ embedding with the loss summed over nested prefixes {512,1024,2048,4096}; at inference TRUNCATE to any dim. Gives a good embedding at every dim → pick recall vs speed per query without retraining. (Kusupati et al. 2022, "Matryoshka Representation Learning".)
+3. **Objective is secondary to width.** triplet+recon and InfoNCE both build good wide layers; triplet+recon's is currently best. Pick whichever; the lever is width.
+4. **Trade-off = recall ↔ throughput.** Wider embedding (4096) → higher recall but slower/bigger HNSW. This IS the paper's frontier; quantify QPS at each width.
+5. Coarser input grid is an orthogonal lever (real0.003=12k, real0.006=6k available; GT carries over) — untested.
+6. Stage-2 exact rerank lifts top-50 to ~0.99 regardless of Stage-1; ceiling is 0.998 (raw WJ). Any d-dim embedding pays a JL-style compression tax; rerank closes the top-k.
+
+**Probe scripts (all reusable, run `CUDA_VISIBLE_DEVICES=1`):** `/tmp/analysis_stage{1,2,3}.py`, `/tmp/probe_layers.py` (layer taps, full), `/tmp/analysis_10k.py` (10K), `/tmp/probe_infonce2048.py`.
 
 ---
 
