@@ -137,6 +137,42 @@ Architecture is a funnel `18220 → 4096 → 1024 → OUT_DIM`. We tapped each l
 
 **Implication:** the objective debate was a red herring at the output layer. Both objectives build good wide representations; the funnel's narrow output is the damage. Use a wide embedding. Trade-off: wider = slower/bigger HNSW (the recall↔throughput knob).
 
+## 4c. ★★ DEEPEST FINDING — the loss DAMAGES the layer it is applied to (deploy the representation, not the task-head)
+
+Probe: `/tmp/analysis_loss_damage.py` → `/tmp/loss_damage_analysis.log`. Full set; R@500 + Spearman(emb-WJ, raw-18220-WJ) at neighborhood depths 30/100/500.
+
+| embedding / layer | dim | loss here? | R@500 | sp@30 | sp@100 | sp@500 |
+|---|---|---|---|---|---|---|
+| random-proj (no training) | 1024 | — | 0.744 | 0.854 | 0.896 | 0.938 |
+| random-proj | 2048 | — | 0.757 | 0.873 | 0.911 | 0.942 |
+| random-proj | 4096 | — | 0.770 | 0.874 | 0.914 | 0.946 |
+| funnel-tri512: 4096 | 4096 | NO | 0.816 | 0.756 | 0.830 | 0.937 |
+| funnel-tri512: 1024 | 1024 | NO | 0.775 | 0.675 | 0.779 | 0.919 |
+| funnel-tri512: **512 OUTPUT** | 512 | **YES** | 0.652 | 0.143 | 0.405 | 0.817 |
+| matry-tri: first-4096 | 4096 | NO | 0.797 | 0.476 | 0.637 | 0.895 |
+| matry-tri: **out-4096** | 4096 | **YES** | 0.692 | 0.112 | 0.390 | 0.823 |
+| matry-inf: first-4096 | 4096 | NO | **0.832** | 0.832 | 0.887 | 0.949 |
+| matry-inf: **out-4096** | 4096 | **YES** | 0.752 | 0.710 | 0.796 | 0.921 |
+
+**Three facts:**
+1. **The loss layer is always the worst layer in its own model.** funnel declines toward the loss: 0.816 (4096) → 0.775 (1024) → 0.652 (512-OUTPUT). Both Matryoshkas drop ~0.08–0.10 from first→output. Same model, same depth-class → it's the **loss position**, not depth.
+2. **The trained OUTPUT is worse than an UNTRAINED random projection of the same dim:** matry-inf out-4096 = 0.752 < random-4096 0.770; matry-tri out-4096 = 0.692 ≪ 0.770. The loss makes the deployed readout *worse than no learning at all*.
+3. **The no-loss EARLY layer BEATS random projection:** matry-inf first-4096 = **0.832** > 0.770; funnel 4096 = 0.816 > 0.770. So learning helps — but only where the loss doesn't directly sit.
+
+**Where the damage lives:** worst in the TIGHT neighborhood — sp@30 collapses at the output (funnel 0.143, matry-tri 0.112) vs the wide layer (0.48–0.83). Even broad sp@500 degrades (0.82 vs 0.94). The hard-margin **triplet damages far more** than **InfoNCE** (out sp@30: 0.112 vs 0.710) — its margin reshuffles the local geometry hardest.
+
+**Mechanism:** triplet/InfoNCE are PROXY objectives rewarding *local separation* (positive vs hardest negative); recall needs *global WJ-rank preservation*. The layer the loss sits on becomes a **task-head specialized to the proxy** — it distorts the WJ geometry to win the margin/softmax. Earlier layers are the **representation** (rich, metric-preserving, better than random). For retrieval you want the representation, not the task-head. (Classic "the last layer is too task-specific" — and here the task is *misaligned* with retrieval, so the last layer is actively bad.)
+
+**Answer to "what was missing/not right":** we deployed the WRONG layer (the proxy-distorted output) and, with Matryoshka/plain, put the loss ON the embedding we deploy. Best embedding found = matry-inf **first-4096 = 0.832** (a layer with no loss on it).
+
+**Fixes (ranked):**
+- **(now, free) Deploy the early wide layer, not the output** → 0.832.
+- **(principled) WJ-distillation objective**: train the embedding so its WJ matrix matches the raw-18220 WJ ordering. Then the objective IS metric preservation → the OUTPUT stops being distorted → the deployable layer becomes the best layer, at any chosen dim. **User has `/tmp/best_compressor_*wjdistill*_10k.pt`, `*wj_native*`, `*listwise_wjdistill*` — TEST THESE NEXT** (does their OUTPUT avoid the damage?).
+- **Distillation + Matryoshka** → truncatable dims AND no damage → whole frontier from one deployable model.
+- Or add a metric-preservation regularizer to the contrastive loss.
+
+**Caveat (generalization):** these recalls are evaluated on the SAME queries used in training → possible memorization. Random projection (0.770) cannot memorize, so the learned early layer's +0.06 over random is the quantity to confirm on HELD-OUT queries → the running **train80/eval20** split runs (`run_matryoshka.py --split-file /tmp/query_split_80_20.pkl`, logs `..._train80.log`) will report this.
+
 ## 5. Root cause (final)
 
 Recall is governed by **how faithfully the embedding's WJ ordering matches the true 18,220-d WJ ordering** (Spearman → R@500, near-linear). The **hard-margin triplet objective optimizes only a local margin** (top-`max_pos` positive vs single hardest negative) — it never constrains the global WJ ranking, so the learned geometry is *less* metric-faithful than a random projection and **cannot use extra dimensions** to improve. It is an **objective–metric misalignment**, not a capacity/architecture/index problem.
