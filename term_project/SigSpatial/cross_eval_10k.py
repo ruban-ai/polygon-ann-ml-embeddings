@@ -106,7 +106,7 @@ def build_model(arch, in_dim, out_dim):
     raise ValueError(arch)
 
 
-def eval_ckpt(name, ckpt, arch, out_dim, prefix=None):
+def eval_ckpt(name, ckpt, arch, out_dim, prefix=None, base_only=False):
     _, gt, qs, cq, qq, cs = load_dataset("10k")
     qtn = load_qt_norm_10k_from_full()
     assert qtn.shape[0] == 10000 and qs == QUERY_START_10K == 8000
