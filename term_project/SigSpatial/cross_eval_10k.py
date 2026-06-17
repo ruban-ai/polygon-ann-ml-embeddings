@@ -131,7 +131,8 @@ def eval_ckpt(name, ckpt, arch, out_dim, prefix=None, base_only=False):
     )
 
     preload_rerank_corpus(cq, cs)
-    for ck in CAND_KS:
+    if not base_only:
+        for ck in CAND_KS:
         cand, ci = nmslib_neighbors(
             ce, qe, space="WeightedJaccard", k=ck, threads=THREADS, query_params={"efSearch": EF}
         )
