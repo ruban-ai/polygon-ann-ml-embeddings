@@ -240,7 +240,6 @@ def main() -> None:
     print_stats("corpus", corpus)
     print_stats("queries", queries)
 
-    hist_path = os.path.join(args.out_dir, "polygon_area_histogram.png")
     plot_histogram(corpus, queries, hist_path, args.bins)
 
     npz_path = os.path.join(args.out_dir, "polygon_areas.npz")
