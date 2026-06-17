@@ -26,6 +26,7 @@ def norm(x): return x/x.sum(1,keepdim=True).clamp(min=1e-10)
 def cross_wj(a,b): l1=torch.cdist(a,b,p=1); return (2.0-l1)/(2.0+l1)
 
 def triplet_loss(za,zb,gtm):
+    if gtm is not None: gtm=gtm.to(za.device)
     sim=cross_wj(za,zb); ap=sim.diagonal(); sc=sim.clone(); sc.fill_diagonal_(-1e9)
     if gtm is not None and gtm.any(): sc[gtm]=-1e9
     sa=sc.max(1).values; loss=F.relu(sa-ap+MARGIN); v=loss>0
