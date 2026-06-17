@@ -9,6 +9,7 @@ import numpy as np
 
 QUERY_START_10K = 8000
 QUERY_START_FULL = 187019
+QUERY_START_QUERIES_ONLY = 37403  # 80% of 46754 query polygons
 
 
 def load_dataset(name):
@@ -22,6 +23,16 @@ def load_dataset(name):
         with open("/tmp/gt_lookup_full.pkl", "rb") as f:
             gt = pickle.load(f)
         query_start = QUERY_START_FULL
+    elif name == "queries_only":
+        qt = np.load("/tmp/qt_queries_only.npy")
+        with open("/tmp/gt_lookup_queries_only.pkl", "rb") as f:
+            gt = pickle.load(f)
+        meta_path = Path("/tmp/queries_only_meta.pkl")
+        query_start = (
+            pickle.load(open(meta_path, "rb"))["query_start"]
+            if meta_path.exists()
+            else QUERY_START_QUERIES_ONLY
+        )
     else:
         raise ValueError(f"unknown dataset: {name}")
 
