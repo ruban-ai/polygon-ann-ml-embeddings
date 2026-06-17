@@ -21,7 +21,9 @@ BATCH=1024; LR=1e-3; WD=1e-4; MARGIN=0.3; TEMP=0.07; LAM_REC=0.1
 EF=200; RB=64; CAND_KS=[1000,2000]; SEED=42
 MAX_POS = 30 if A.loss=='triplet' else 256
 EPOCHS  = 75 if A.loss=='triplet' else 18
-CKPT=f"/tmp/best_matryoshka_{A.loss}_full.pt"; CSV="/raid/ruban/hpmlproj/term_project/SigSpatial/NEW_RESULTS.csv"
+SPLIT_TAG = "train80" if A.split_file else "full"
+CKPT=f"/tmp/best_matryoshka_{A.loss}_{SPLIT_TAG}.pt"
+CSV="/raid/ruban/hpmlproj/term_project/SigSpatial/NEW_RESULTS.csv"
 random.seed(SEED); np.random.seed(SEED); torch.manual_seed(SEED); torch.cuda.manual_seed_all(SEED)
 print(f"loss={A.loss} max_pos={MAX_POS} epochs={EPOCHS} prefixes={PREFIXES} batch={BATCH}",flush=True)
 
