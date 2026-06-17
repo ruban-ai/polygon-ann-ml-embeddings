@@ -173,7 +173,7 @@ def main():
     print("10K cross-eval: full-trained ckpts -> 8K corpus / 2K queries (18220-d slice)", flush=True)
     rows = []
     for name, ckpt, arch, out_dim, prefix in jobs:
-        m = eval_ckpt(name, ckpt, arch, out_dim, prefix=prefix)
+        m = eval_ckpt(name, ckpt, arch, out_dim, prefix=prefix, base_only=args.base_only)
         b = m["base"]
         rows.append((name, out_dim if arch != "matryoshka" else prefix, b[10], b[50], b[500], m["qps"]))
     print("\nSUMMARY (Stage-1 base)", flush=True)
