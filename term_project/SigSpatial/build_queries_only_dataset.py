@@ -26,16 +26,28 @@ FULL_QS = 187019
 N_QUERY_POLYS = 46754
 QUERY_FRAC = 0.8
 GT_TOP_K = 10_000
-BATCH = 64
+QUERY_BATCH = 8
+CORPUS_CHUNK = 2048
 DEV = torch.device("cuda:0")
 
 
 @torch.no_grad()
-def wj_scores(q, corpus):
-    """q: (B,D), corpus: (N,D) nonneg -> (B,N) WJ."""
-    mins = torch.minimum(q[:, None, :], corpus[None, :, :]).sum(2)
-    maxs = (q.sum(1, keepdim=True) + corpus.sum(1, keepdim=True)[None, :] - mins).clamp(min=1e-10)
-    return mins / maxs
+def wj_topk(q, corpus, topk):
+    """q: (B,D) -> topk indices in corpus (N,D) without O(N*D) materialization."""
+    best_sim = torch.full((q.shape[0], topk), -1.0, device=DEV)
+    best_idx = torch.zeros((q.shape[0], topk), dtype=torch.long, device=DEV)
+    for c0 in range(0, corpus.shape[0], CORPUS_CHUNK):
+        cc = corpus[c0:c0 + CORPUS_CHUNK]
+        mins = torch.minimum(q[:, None, :], cc[None, :, :]).sum(2)
+        maxs = (q.sum(1, keepdim=True) + cc.sum(1, keepdim=True)[None, :] - mins).clamp(min=1e-10)
+        sim = mins / maxs
+        idx_local = torch.arange(c0, c0 + cc.shape[0], device=DEV)
+        merged_sim = torch.cat([best_sim, sim], dim=1)
+        merged_idx = torch.cat([best_idx, idx_local.expand(q.shape[0], -1)], dim=1)
+        pick = torch.topk(merged_sim, min(topk, merged_sim.shape[1]), dim=1)
+        best_sim = pick.values
+        best_idx = torch.gather(merged_idx, 1, pick.indices)
+    return best_idx.cpu().numpy()
 
 
 def main():
