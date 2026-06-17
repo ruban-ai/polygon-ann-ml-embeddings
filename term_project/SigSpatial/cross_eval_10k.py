@@ -169,8 +169,15 @@ def main():
         jobs.append(("InfoNCE--WJ funnel@512", "/tmp/best_filter_recall_infonce_512_full.pt", "funnel", 512, None))
 
     print("10K cross-eval: full-trained ckpts -> 8K corpus / 2K queries (18220-d slice)", flush=True)
+    rows = []
     for name, ckpt, arch, out_dim, prefix in jobs:
-        eval_ckpt(name, ckpt, arch, out_dim, prefix=prefix)
+        m = eval_ckpt(name, ckpt, arch, out_dim, prefix=prefix)
+        b = m["base"]
+        rows.append((name, out_dim if arch != "matryoshka" else prefix, b[10], b[50], b[500], m["qps"]))
+    print("\nSUMMARY (Stage-1 base)", flush=True)
+    print(f"{'method':<32}{'dim':>6}{'R@10':>8}{'R@50':>8}{'R@500':>8}{'QPS':>8}", flush=True)
+    for name, dim, r10, r50, r500, qps in rows:
+        print(f"{name:<32}{dim:>6}{r10:>8.4f}{r50:>8.4f}{r500:>8.4f}{qps:>8.0f}", flush=True)
 
 
 if __name__ == "__main__":
