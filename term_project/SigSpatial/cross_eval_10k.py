@@ -130,22 +130,22 @@ def eval_ckpt(name, ckpt, arch, out_dim, prefix=None, base_only=False):
         flush=True,
     )
 
-    preload_rerank_corpus(cq, cs)
     if not base_only:
+        preload_rerank_corpus(cq, cs)
         for ck in CAND_KS:
-        cand, ci = nmslib_neighbors(
-            ce, qe, space="WeightedJaccard", k=ck, threads=THREADS, query_params={"efSearch": EF}
-        )
-        t1 = time.time()
-        rr = rerank_wj_gpu(qq, cand, cq, cs, top_k=ck, batch_size=RB)
-        e2e = len(qq) / max(ci["query_s"] + (time.time() - t1), 1e-9)
-        mm = eval_recall(gt, rr, qs, ck)
-        print(
-            f"  rr@{ck} R@10={mm[10]:.4f} R@50={mm[50]:.4f} R@100={mm[100]:.4f} "
-            f"R@500={mm[500]:.4f} e2eQPS={e2e:.0f}",
-            flush=True,
-        )
-    release_rerank_corpus()
+            cand, ci = nmslib_neighbors(
+                ce, qe, space="WeightedJaccard", k=ck, threads=THREADS, query_params={"efSearch": EF}
+            )
+            t1 = time.time()
+            rr = rerank_wj_gpu(qq, cand, cq, cs, top_k=ck, batch_size=RB)
+            e2e = len(qq) / max(ci["query_s"] + (time.time() - t1), 1e-9)
+            mm = eval_recall(gt, rr, qs, ck)
+            print(
+                f"  rr@{ck} R@10={mm[10]:.4f} R@50={mm[50]:.4f} R@100={mm[100]:.4f} "
+                f"R@500={mm[500]:.4f} e2eQPS={e2e:.0f}",
+                flush=True,
+            )
+        release_rerank_corpus()
     return {"base": base, "qps": info["qps"]}
 
 
