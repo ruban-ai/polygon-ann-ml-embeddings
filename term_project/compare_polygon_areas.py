@@ -133,13 +133,6 @@ def shared_log_bins(corpus: np.ndarray, queries: np.ndarray, bins: int) -> np.nd
     return np.linspace(log_lo, log_hi, bins + 1)
 
 
-def frac_per_bin(values: np.ndarray, log_edges: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    """Return (bin centers in m², fraction in each bin)."""
-    counts, _ = np.histogram(np.log10(values), bins=log_edges)
-    centers = 10 ** ((log_edges[:-1] + log_edges[1:]) / 2)
-    return centers, counts / values.size
-
-
 def plot_histogram(corpus: np.ndarray, queries: np.ndarray, out_path: str, bins: int) -> None:
     log_edges = shared_log_bins(corpus, queries, bins)
     log_centers = (log_edges[:-1] + log_edges[1:]) / 2
