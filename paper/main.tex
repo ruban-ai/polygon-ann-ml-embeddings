@@ -371,8 +371,9 @@ top-$P$ neighbourhood together rather than only the nearest few.
 \subsection{Two-Stage Retrieval Pipeline}
 
 \textbf{Stage~1} builds an HNSW index ($M=20$, $\text{efConstruction}=200$,
-$\text{efSearch}=200$, \texttt{WeightedJaccard} space) over all $d=512$ embeddings
-using nmslib~\cite{hnsw20} and retrieves the top-$K$ candidates per query.
+$\text{efSearch}=200$, \texttt{WeightedJaccard} space~\cite{shape2vec}) over all
+$d=512$ embeddings using nmslib~\cite{hnsw20} and retrieves the top-$K$ candidates
+per query.
 \textbf{Stage~2} reranks candidates by exact WJ on the original $D$-dimensional
 encodings using Numba-compiled sparse WJ, recovering near-perfect recall from
 the candidate pool. $K$ controls the recall--speed tradeoff (Table~\ref{tab:results}).
