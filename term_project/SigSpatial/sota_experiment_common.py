@@ -168,6 +168,37 @@ def eval_recall(gt_lookup, nbrs, query_start_id, max_k):
     return metrics
 
 
+def eval_recall_by_qids(gt_lookup, nbrs, query_ids, max_k):
+    """Like eval_recall but nbrs[i] corresponds to query_ids[i] (held-out eval split)."""
+    metrics = {}
+    for k in (10, 50, 100, 500):
+        if k > max_k:
+            continue
+        total_recall = total_precision = total_f1 = 0.0
+        recall_count = precision_count = f1_count = 0
+        for i, qid in enumerate(query_ids):
+            ids = nbrs[i][0] if isinstance(nbrs[i], tuple) else nbrs[i]
+            correct_set = set(gt_lookup.get(qid, [])[:k])
+            retrieved_set = set(list(ids)[:k])
+            if correct_set:
+                total_recall += compute_recall(correct_set, retrieved_set)
+                recall_count += 1
+            if retrieved_set:
+                total_precision += compute_precision(correct_set, retrieved_set)
+                precision_count += 1
+            if correct_set and retrieved_set:
+                p = compute_precision(correct_set, retrieved_set)
+                r = compute_recall(correct_set, retrieved_set)
+                total_f1 += compute_f1(p, r)
+                f1_count += 1
+        n = len(query_ids)
+        metrics[k] = total_recall / recall_count if recall_count else 0.0
+        metrics[f"full_recall@{k}"] = total_recall / n if n else 0.0
+        metrics[f"precision@{k}"] = total_precision / precision_count if precision_count else 0.0
+        metrics[f"f1@{k}"] = total_f1 / f1_count if f1_count else 0.0
+    return metrics
+
+
 def nmslib_neighbors(corpus_embs, query_embs, space="WeightedJaccard", k=500, threads=32,
                     index_params=None, query_params=None):
     """
