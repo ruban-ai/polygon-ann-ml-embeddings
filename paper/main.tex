@@ -1,26 +1,37 @@
+%%
+%% ACM conference paper source generated from the official sigconf template.
+%% Content integrated from the supplied manuscript.
+%%
+
 \documentclass[sigconf]{acmart}
+\usepackage[utf8]{inputenc}
+\usepackage{newunicodechar}
+\newunicodechar{∼}{\textasciitilde}
 
-%% Remove ACM reference format for draft
-\settopmatter{printacmref=false}
-\renewcommand\footnotetextcopyrightpermission[1]{}
-\pagestyle{plain}
+\AtBeginDocument{%
+  \providecommand\BibTeX{{%
+    Bib\TeX}}}
 
-\usepackage{booktabs}
+%% Rights management information. Replace DOI/ISBN with values from ACM rights confirmation before final submission.
+\setcopyright{acmlicensed}
+\copyrightyear{2026}
+\acmYear{2026}
+\acmDOI{XXXXXXX.XXXXXXX}
+
+\acmConference[SIGSPATIAL '26]{34th ACM SIGSPATIAL}{November 2026}{Atlanta, GA}
+\acmISBN{978-1-4503-XXXX-X/2026/11}
+
+%% Math support needed by the manuscript equations.
 \usepackage{amsmath}
-\usepackage{amssymb}
+% \usepackage{amssymb}
+\usepackage{booktabs}
 \usepackage{graphicx}
-\usepackage{microtype}
-\usepackage{xcolor}
 \usepackage{pifont}
 \newcommand{\cmark}{\ding{51}}
 \newcommand{\xmark}{\ding{55}}
 
-%% ======================================================
-%%  Paper metadata  — fill in before submission
-%% ======================================================
-\acmConference[SIGSPATIAL '26]{34th ACM SIGSPATIAL}{November 2026}{Atlanta, GA}
-\acmYear{2026}
-\copyrightyear{2026}
+\newcommand{\rs}[1]{\textcolor{green}{[RS: #1]}}
+\newcommand{\ba}[1]{\textcolor{orange}{[BA: #1]}}
 
 \begin{document}
 
@@ -31,7 +42,7 @@
 %   (A) WJ-Native Autoencoder Compression for Efficient Polygon Similarity Search  [ACTIVE]
 %   (B) Learning WJ-Preserving Autoencoder Embeddings for Efficient Polygon Retrieval
 %   (C) Compact Autoencoder Compression for Efficient Weighted-Jaccard Polygon Search
-\title{Weighted-Jaccard-Native Autoencoder Compression for Polygon Similarity Search under Extreme Area Variation}
+\title{Weighted-Jaccard-Native Embedding Compression for Polygon Similarity Search under Extreme Area Variation}
 
 \author{Ruban Sampath}
 \affiliation{%
@@ -60,27 +71,11 @@
 %%  Abstract
 %% -------------------------------------------------------
 \begin{abstract}
-Similarity search over polygon datasets is a critical spatial-data operation,
-with Weighted Jaccard (WJ) capturing area-based shape overlap. ShapeToVec encodes
-polygons as 18{,}219-dimensional simplex vectors for direct Hierarchical Navigable
-Small World (HNSW) retrieval, but their dimensionality imposes heavy memory and
-query-time cost. We learn a compact 512-dimensional WJ-compatible compression: a
-simplex-constrained encoder trained with a WJ-native triplet loss, false-negative
-filtering, and decoder reconstruction, giving $36\times$ smaller vectors. On a 10k
-corpus it attains R@10\,=\,0.711 / R@50\,=\,0.858 at 10{,}903\,QPS (78$\times$
-faster than brute-force ICWS) and R@10\,$>$\,0.996 after exact-WJ reranking.
-Scaling to the full 187k-polygon corpus, however, we find that ranking-based
-objectives no longer beat an untrained random projection. We close this gap by
-training the encoder as a recall-oriented \emph{candidate generator} --- a
-non-saturating contrastive objective over the broad neighbourhood --- which
-restores recall and yields a more navigable index. This is, to our knowledge, the
-first learned WJ embedding to
-surpass random projection on the recall--throughput frontier at scale: equal
-top-50 reranked recall at $\sim$1.9$\times$ higher throughput.
+Similarity search over polygonal datasets is a critical spatial-data operation, with Weighted Jaccard (WJ) capturing area-based shape overlap. The current state-of-the-art ShapeToVec encodes a polygon leveraging a quad-tree-based non-uniform grid, accounting for extreme area variations, employing a Hierarchical Navigable Small World (HNSW) index for fast retrieval. However, their dimensionality imposes a heavy memory cost and query throughput penalty. We propose an efficient learned compact 512-dimensional WJ-compatible compression employing a simplex-constrained encoder trained with a WJ-native triplet loss, false-negative filtering, and decoder reconstruction, giving 36× smaller vectors.
+On a 10k subset of the Parks dataset, our method reaches Recall@50 = 0.858 at 10,903 QPS (78× faster than brute-force Improved Consistent Weighted Sampling (ICWS)) and Recall@10 > 0.996 following exact-WJ reranking. However, when scaling to the full Parks dataset, we observe that ranking no longer beats an untrained random projection. We close this gap by training the encoder as a recall-oriented candidate generator, a non-saturating contrastive objective over the broad neighbourhood, which restores recall and yields a more navigable index. This is, to our knowledge, the first learned WJ embedding to surpass random projection on the recall and query throughput frontiers at scale, with equal top-50 reranked recall at 1.9× higher throughput.
+
 \end{abstract}
 
-\keywords{polygon similarity search, weighted Jaccard, metric learning, approximate
-nearest neighbor, probability simplex, autoencoder}
 
 %%
 %% ACM CCS concepts
@@ -114,6 +109,9 @@ nearest neighbor, probability simplex, autoencoder}
 \ccsdesc[500]{Information systems~Nearest-neighbor search}
 \ccsdesc[300]{Computing methodologies~Neural networks}
 \ccsdesc[300]{Information systems~Geographic information systems}
+
+\keywords{polygon similarity search, weighted Jaccard, metric learning, approximate
+nearest neighbor, probability simplex, autoencoder}
 
 \received{June 2026}
 
@@ -474,24 +472,24 @@ controlled comparison under identical HNSW and rerank settings.
 ($\text{efSearch}{=}200$) and rerank settings for all rows.
 $\ddagger$~=~ours. \textbf{Bold}~=~best per column block.}
 \label{tab:full}
-\setlength{\tabcolsep}{4pt}
+\setlength{\tabcolsep}{3.5pt}
 \small
-\begin{tabular}{@{}llrrr@{}}
+\begin{tabular}{@{}llrrrr@{}}
 \toprule
-Method & $K$ & R@50 & R@500 & QPS \\
+Method & $K$ & R@10 & R@50 & R@500 & QPS \\
 \midrule
-\multicolumn{5}{@{}l@{}}{\textit{Stage 1 — No Rerank}} \\[1pt]
-Rand.\ Proj.~\cite{achlioptas03}      & --- & \textbf{0.663} & 0.722 &  1{,}275 \\
-AE WJ-tri+recon$^\ddagger$            & --- & 0.656 & 0.656 &  1{,}188 \\
-Recall-CG (ours)$^\ddagger$              & --- & 0.606 & \textbf{0.727} & \textbf{2{,}191} \\
+\multicolumn{6}{@{}l@{}}{\textit{Stage 1 — No Rerank}} \\[1pt]
+Rand.\ Proj.~\cite{achlioptas03}      & --- & \textbf{0.628} & \textbf{0.663} & 0.722 &  1{,}275 \\
+AE WJ-tri+recon$^\ddagger$            & --- & 0.566 & 0.656 & 0.656 &  1{,}188 \\
+InfoNCE--WJ (ours)$^\ddagger$          & --- & 0.505 & 0.606 & \textbf{0.727} & \textbf{2{,}191} \\
 \midrule
-\multicolumn{5}{@{}l@{}}{\textit{Stage 2 — Exact WJ Rerank}} \\[1pt]
-Rand.\ Proj.~\cite{achlioptas03}      & 1000 & 0.985 & 0.872 & 874 \\
-AE WJ-tri+recon$^\ddagger$            & 1000 & 0.989 & 0.785 & 850 \\
-\textbf{Recall-CG (ours)}$^\ddagger$  & 1000 & \textbf{0.992} & 0.854 & \textbf{1{,}108} \\
+\multicolumn{6}{@{}l@{}}{\textit{Stage 2 — Exact WJ Rerank}} \\[1pt]
+Rand.\ Proj.~\cite{achlioptas03}      & 1000 & 0.989 & 0.985 & \textbf{0.872} & 874 \\
+AE WJ-tri+recon$^\ddagger$            & 1000 & \textbf{0.992} & 0.989 & 0.785 & 850 \\
+\textbf{InfoNCE--WJ}$^\ddagger$ & 1000 & 0.992 & \textbf{0.992} & 0.854 & \textbf{1{,}108} \\
 \addlinespace[3pt]
-Rand.\ Proj.~\cite{achlioptas03}      & 2000 & 0.991 & \textbf{0.927} & 585 \\
-Recall-CG (ours)$^\ddagger$              & 2000 & \textbf{0.992} & 0.863 & \textbf{730} \\
+Rand.\ Proj.~\cite{achlioptas03}      & 2000 & 0.991 & 0.991 & \textbf{0.927} & 585 \\
+InfoNCE--WJ $^\ddagger$         & 2000 & \textbf{0.992} & \textbf{0.992} & 0.863 & \textbf{730} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -513,7 +511,7 @@ projection), and it yields a $1.7\times$ more navigable HNSW index
 \emph{highest} top-50 recall at the \emph{highest} throughput: at $K{=}1000$,
 R@50 $=$ 0.992 at 1{,}108 QPS, versus random projection's 0.985 at 874 QPS.
 Equivalently, Recall-CG reaches R@50 $=$ 0.992 with $K{=}1000$ candidates, while
-random projection needs $K{=}2000$ to match it --- $\sim$$1.9\times$ fewer
+random projection needs $K{=}2000$ to match it --- $\sim$$1.9$\times$ fewer
 candidates, and higher end-to-end QPS, at equal top-50 reranked recall. To our
 knowledge this is the first \emph{learned} WJ embedding to beat random projection
 on the recall--throughput frontier at this scale.
@@ -558,5 +556,28 @@ gap and characterise the recall--dimensionality tradeoff across 256-, 512-, and
 %% -------------------------------------------------------
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{refs}
+
+\begin{table}[t]
+\centering
+\caption{Component ablation (Stage-1, no rerank). MLP rows use WJ regression
+as auxiliary loss ($\lambda$=1.0); AE rows use decoder reconstruction ($\lambda$=0.1). [TO BE UPDATED]}
+\label{tab:ablation}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lllrr}
+\toprule
+Model & FN Filter & Aux.\ Loss & R@10 & R@50 \\
+\midrule
+MLP & \xmark & none          & 0.677 & 0.806 \\
+MLP & \cmark & none          & 0.656 & 0.773 \\
+MLP & \xmark & WJ regression & 0.510 & 0.736 \\
+MLP & \cmark & WJ regression & 0.669 & 0.808 \\
+\midrule
+AE  & ---    & recon.\ only  & 0.665 & 0.745 \\
+\textbf{AE}  & \cmark & \textbf{triplet+recon} & \textbf{0.711} & \textbf{0.858} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 
 \end{document}
