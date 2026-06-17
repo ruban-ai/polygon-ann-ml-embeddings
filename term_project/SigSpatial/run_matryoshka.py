@@ -83,7 +83,7 @@ def main():
     model=MatAE(qtn.shape[1]).to(DEV)
     if torch.cuda.device_count()>1:
         model=nn.DataParallel(model); print(f"DataParallel {torch.cuda.device_count()} GPUs",flush=True)
-    loader=DataLoader(DS(gt,qs),batch_size=BATCH,shuffle=True,num_workers=12,drop_last=True,persistent_workers=True)
+    loader=DataLoader(DS(gt,qs,train_qids),batch_size=BATCH,shuffle=True,num_workers=12,drop_last=True,persistent_workers=True)
     opt=torch.optim.AdamW(model.parameters(),lr=LR,weight_decay=WD)
     sch=torch.optim.lr_scheduler.CosineAnnealingLR(opt,T_max=max(EPOCHS,1)); best=float('inf'); t0=time.time()
     for ep in range(1,EPOCHS+1):
