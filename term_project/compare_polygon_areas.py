@@ -278,6 +278,7 @@ def main() -> None:
     print("\nSummary:")
     print_stats("corpus", corpus)
     print_stats("queries", queries)
+    decade_table(corpus, queries)
 
     plot_histogram(corpus, queries, hist_path, args.bins)
 
