@@ -115,26 +115,71 @@ def print_stats(name: str, areas: np.ndarray) -> None:
 def plot_histogram(corpus: np.ndarray, queries: np.ndarray, out_path: str, bins: int) -> None:
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 
-    lo = math.floor(np.log10(min(corpus.min(), queries.min())))
-    hi = math.ceil(np.log10(max(corpus.max(), queries.max())))
-    log_bins = np.logspace(lo, hi, bins)
+    combined = np.concatenate([corpus, queries])
+    x_lo = np.percentile(combined, 1)
+    x_hi = np.percentile(combined, 99)
+    log_lo = math.floor(np.log10(x_lo))
+    log_hi = math.ceil(np.log10(x_hi))
+    zoom_bins = np.logspace(log_lo, log_hi, bins)
 
     ax = axes[0]
-    ax.hist(corpus, bins=log_bins, alpha=0.55, density=True, label=f"Corpus (n={corpus.size:,})")
-    ax.hist(queries, bins=log_bins, alpha=0.55, density=True, label=f"GT queries (n={queries.size:,})")
+    corpus_hist, _ = np.histogram(corpus, bins=zoom_bins, density=True)
+    query_hist, _ = np.histogram(queries, bins=zoom_bins, density=True)
+    y_hi = max(corpus_hist.max(), query_hist.max()) * 1.08
+
+    ax.hist(
+        corpus,
+        bins=zoom_bins,
+        alpha=0.55,
+        density=True,
+        label=f"Corpus (n={corpus.size:,})",
+        color="C0",
+    )
+    ax.hist(
+        queries,
+        bins=zoom_bins,
+        alpha=0.55,
+        density=True,
+        label=f"GT queries (n={queries.size:,})",
+        color="C1",
+    )
     ax.set_xscale("log")
+    ax.set_xlim(x_lo, x_hi)
+    ax.set_ylim(0, y_hi)
     ax.set_xlabel("Area (m²)")
     ax.set_ylabel("Density")
-    ax.set_title("Area distribution (log x-axis)")
+    ax.set_title(f"Area distribution (p1–p99: {x_lo:,.0f} – {x_hi:,.0f} m²)")
     ax.legend()
     ax.grid(True, alpha=0.25)
 
+    log_corpus = np.log10(corpus)
+    log_queries = np.log10(queries)
+    log_combined = np.concatenate([log_corpus, log_queries])
+    log_x_lo, log_x_hi = np.percentile(log_combined, [1, 99])
+    log_bin_edges = np.linspace(log_x_lo, log_x_hi, bins + 1)
+
     ax = axes[1]
-    ax.hist(np.log10(corpus), bins=bins, alpha=0.55, density=True, label="Corpus")
-    ax.hist(np.log10(queries), bins=bins, alpha=0.55, density=True, label="GT queries")
+    ax.hist(
+        log_corpus,
+        bins=log_bin_edges,
+        alpha=0.45,
+        density=True,
+        label="Corpus",
+        color="C0",
+    )
+    ax.hist(
+        log_queries,
+        bins=log_bin_edges,
+        histtype="step",
+        linewidth=2.0,
+        density=True,
+        label="GT queries (outline)",
+        color="C1",
+    )
+    ax.set_xlim(log_x_lo, log_x_hi)
     ax.set_xlabel("log₁₀(area m²)")
     ax.set_ylabel("Density")
-    ax.set_title("Log-area distribution")
+    ax.set_title("Log-area distribution (corpus filled, GT outline)")
     ax.legend()
     ax.grid(True, alpha=0.25)
 
