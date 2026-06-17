@@ -69,11 +69,10 @@ def main():
     corpus_t = torch.from_numpy(np.ascontiguousarray(corpus)).to(DEV)
     gt = {}
     print(f"Computing exact WJ GT (top {GT_TOP_K} per query)...", flush=True)
-    for i in tqdm(range(0, len(queries), BATCH), ncols=100):
-        qb = torch.from_numpy(np.ascontiguousarray(queries[i:i + BATCH])).to(DEV)
-        sim = wj_scores(qb, corpus_t)
+    for i in tqdm(range(0, len(queries), QUERY_BATCH), ncols=100):
+        qb = torch.from_numpy(np.ascontiguousarray(queries[i:i + QUERY_BATCH])).to(DEV)
         topk = min(GT_TOP_K, corpus_t.shape[0])
-        idx = torch.topk(sim, topk, dim=1).indices.cpu().numpy()
+        idx = wj_topk(qb, corpus_t, topk)
         for j, row in enumerate(idx):
             qid = query_start + i + j
             gt[qid] = row.tolist()
