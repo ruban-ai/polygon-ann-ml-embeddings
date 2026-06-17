@@ -1,0 +1,38 @@
+% Full-corpus (187k) Stage-1 base HNSW results — our methods only.
+% efSearch=200, 120 threads (512 funnel rows: matched fair eval).
+% Sources: NEW_RESULTS.csv + paper Table~\ref{tab:full} / RESULTS_LOG.csv.
+\begin{table*}[t]
+\centering
+\caption{Stage-1 recall and throughput for our methods across embedding
+dimensions (full OSM Parks corpus, 187k database / 47k queries).
+All rows use nmslib HNSW in \texttt{WeightedJaccard} space~\cite{shape2vec}
+($\text{efSearch}{=}200$). Funnel = $18{,}219 \!\to\! 4{,}096 \!\to\! 1{,}024
+\!\to\! d$; Plain/Matryoshka wide trunk = $18{,}219 \!\to\! 4{,}096 \!\to\! d$
+(or $4{,}096$ for Matryoshka).}
+\label{tab:dim_sweep}
+\setlength{\tabcolsep}{4pt}
+\small
+\begin{tabular}{@{}llrrrr@{}}
+\toprule
+Method & Dim & R@10 & R@50 & R@500 & QPS \\
+\midrule
+\multicolumn{6}{@{}l@{}}{\textit{Triplet + reconstruction}} \\[2pt]
+AE WJ-tri+recon (funnel)$^\ddagger$     &  512 & 0.566 & 0.656 & 0.656 &  1{,}188 \\
+AE WJ-tri+recon (funnel)$^\ddagger$     & 2048 & 0.577 & 0.666 & 0.667 &  1{,}107 \\
+Plain triplet$^\ddagger$               & 2048 & 0.598 & 0.685 & 0.692 &  1{,}263 \\
+Matryoshka triplet$^\ddagger$          & 1024 & 0.592 & 0.679 & 0.673 &  1{,}676 \\
+Matryoshka triplet$^\ddagger$          & 2048 & 0.599 & 0.687 & 0.690 &  1{,}344 \\
+Matryoshka triplet$^\ddagger$          & 4096 & 0.603 & 0.691 & 0.699 &  1{,}145 \\
+\addlinespace[4pt]
+\multicolumn{6}{@{}l@{}}{\textit{InfoNCE (recall-oriented / Recall-CG)}} \\[2pt]
+InfoNCE--WJ (funnel)$^\ddagger$         &  512 & 0.505 & 0.606 & 0.727 &  2{,}191 \\
+InfoNCE--WJ (funnel)$^\ddagger$         & 2048 & 0.512 & 0.605 & 0.711 &  2{,}327 \\
+Plain InfoNCE$^\ddagger$                & 2048 & 0.564 & 0.655 & 0.756 &  1{,}866 \\
+Matryoshka InfoNCE$^\ddagger$           & 1024 & 0.559 & 0.649 & 0.746 &  2{,}602 \\
+Matryoshka InfoNCE$^\ddagger$           & 2048 & 0.564 & 0.654 & 0.749 &  1{,}165 \\
+Matryoshka InfoNCE$^\ddagger$           & 4096 & 0.568 & 0.657 & 0.751 &  1{,}038 \\
+\bottomrule
+\end{tabular}
+{\scriptsize $^\ddagger$~ours. Matryoshka rows truncate a single 4096-d checkpoint;
+no 512-d Matryoshka prefix was trained.}
+\end{table*}
