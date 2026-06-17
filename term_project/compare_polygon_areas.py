@@ -226,8 +226,6 @@ def main() -> None:
     if limit < query_start + 1:
         sys.exit(f"--max-polygons must be ≥ {query_start + 1} to include query polygons.")
 
-    os.makedirs(args.out_dir, exist_ok=True)
-
     print(f"Encoding dir : {args.encoding_dir}")
     print(f"GT dir       : {args.gt_dir}")
     print(f"Split        : corpus [0, {query_start})  |  queries [{query_start}, {total})  ({query_start/total:.0%} / {1-query_start/total:.0%})")
