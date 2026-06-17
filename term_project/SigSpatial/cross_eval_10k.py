@@ -155,15 +155,18 @@ def main():
 
     jobs = []
     if args.which in ("all", "mat_tri"):
-        jobs.append(("Matryoshka-triplet@2048", "/tmp/best_matryoshka_triplet_full.pt", "matryoshka", 2048, 2048))
+        for d in (1024, 2048, 4096):
+            jobs.append((f"Matryoshka-triplet@{d}", "/tmp/best_matryoshka_triplet_full.pt", "matryoshka", d, d))
     if args.which in ("all", "mat_inf"):
-        jobs.append(("Matryoshka-InfoNCE@2048", "/tmp/best_matryoshka_infonce_full.pt", "matryoshka", 2048, 2048))
+        for d in (1024, 2048, 4096):
+            jobs.append((f"Matryoshka-InfoNCE@{d}", "/tmp/best_matryoshka_infonce_full.pt", "matryoshka", d, d))
     if args.which in ("all", "plain_tri"):
         jobs.append(("Plain-triplet@2048", "/tmp/best_plain_triplet_2048_full.pt", "plain", 2048, None))
     if args.which in ("all", "plain_inf"):
         jobs.append(("Plain-InfoNCE@2048", "/tmp/best_plain_infonce_2048_full.pt", "plain", 2048, None))
     if args.which in ("all", "funnel512"):
-        jobs.append(("Funnel-triplet+recon@512", "/tmp/best_sota_triplet_autoencoder_wj_512_full.pt", "funnel", 512, None))
+        jobs.append(("AE WJ-tri+recon funnel@512", "/tmp/best_sota_triplet_autoencoder_wj_512_full.pt", "funnel", 512, None))
+        jobs.append(("InfoNCE--WJ funnel@512", "/tmp/best_filter_recall_infonce_512_full.pt", "funnel", 512, None))
 
     print("10K cross-eval: full-trained ckpts -> 8K corpus / 2K queries (18220-d slice)", flush=True)
     for name, ckpt, arch, out_dim, prefix in jobs:
