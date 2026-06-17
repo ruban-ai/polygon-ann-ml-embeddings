@@ -39,7 +39,7 @@ def wj_topk(q, corpus, topk):
     for c0 in range(0, corpus.shape[0], CORPUS_CHUNK):
         cc = corpus[c0:c0 + CORPUS_CHUNK]
         mins = torch.minimum(q[:, None, :], cc[None, :, :]).sum(2)
-        maxs = (q.sum(1, keepdim=True) + cc.sum(1, keepdim=True)[None, :] - mins).clamp(min=1e-10)
+        maxs = (q.sum(1, keepdim=True) + cc.sum(1).unsqueeze(0) - mins).clamp(min=1e-10)
         sim = mins / maxs
         idx_local = torch.arange(c0, c0 + cc.shape[0], device=DEV)
         merged_sim = torch.cat([best_sim, sim], dim=1)
