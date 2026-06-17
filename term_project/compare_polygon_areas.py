@@ -112,89 +112,116 @@ def print_stats(name: str, areas: np.ndarray) -> None:
     )
 
 
-def plot_histogram(corpus: np.ndarray, queries: np.ndarray, out_path: str, bins: int) -> None:
-    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+def decade_table(corpus: np.ndarray, queries: np.ndarray) -> None:
+    """Print % of polygons in each log10 area decade."""
+    print("\nFraction per log10 decade (% of each split):")
+    print(f"  {'decade':>14s}  {'corpus':>8s}  {'queries':>8s}  {'gap':>8s}")
+    for d in range(-1, 12):
+        lo, hi = d, d + 1
+        c_pct = 100 * ((np.log10(corpus) >= lo) & (np.log10(corpus) < hi)).sum() / corpus.size
+        q_pct = 100 * ((np.log10(queries) >= lo) & (np.log10(queries) < hi)).sum() / queries.size
+        if c_pct < 0.005 and q_pct < 0.005:
+            continue
+        print(f"  10^{d:<2d}–10^{d+1:<2d} m²  {c_pct:7.2f}%  {q_pct:7.2f}%  {q_pct - c_pct:+7.2f}pp")
 
+
+def shared_log_bins(corpus: np.ndarray, queries: np.ndarray, bins: int) -> np.ndarray:
+    """Log10-uniform bin edges shared by both panels (p1–p99)."""
     combined = np.concatenate([corpus, queries])
-    x_lo = np.percentile(combined, 1)
-    x_hi = np.percentile(combined, 99)
-    log_lo = math.floor(np.log10(x_lo))
-    log_hi = math.ceil(np.log10(x_hi))
-    area_bins = min(bins, 35)
-    zoom_bins = np.logspace(log_lo, log_hi, area_bins)
+    log_lo = np.percentile(np.log10(combined), 1)
+    log_hi = np.percentile(np.log10(combined), 99)
+    return np.linspace(log_lo, log_hi, bins + 1)
 
+
+def frac_per_bin(values: np.ndarray, log_edges: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Return (bin centers in m², fraction in each bin)."""
+    counts, _ = np.histogram(np.log10(values), bins=log_edges)
+    centers = 10 ** ((log_edges[:-1] + log_edges[1:]) / 2)
+    return centers, counts / values.size
+
+
+def plot_histogram(corpus: np.ndarray, queries: np.ndarray, out_path: str, bins: int) -> None:
+    log_edges = shared_log_bins(corpus, queries, bins)
+    log_centers = (log_edges[:-1] + log_edges[1:]) / 2
+    area_centers = 10**log_centers
+    log_step = log_edges[1] - log_edges[0]
+
+    c_frac, _ = np.histogram(np.log10(corpus), bins=log_edges)
+    q_frac, _ = np.histogram(np.log10(queries), bins=log_edges)
+    c_pct = 100 * c_frac / corpus.size
+    q_pct = 100 * q_frac / queries.size
+
+    # density per unit log10(area) — same quantity both panels show
+    c_dens = c_frac / (corpus.size * log_step)
+    q_dens = q_frac / (queries.size * log_step)
+
+    fig, axes = plt.subplots(1, 3, figsize=(18, 5.5))
+
+    # --- Panel 1: area (m²) log-x, log-y, % per bin (grouped bars) ---
     ax = axes[0]
-    corpus_hist, _ = np.histogram(corpus, bins=zoom_bins, density=True)
-    query_hist, _ = np.histogram(queries, bins=zoom_bins, density=True)
-    y_hi = max(corpus_hist.max(), query_hist.max()) * 1.08
+    half = log_step * 0.18
+    c_x = 10 ** (log_centers - half)
+    q_x = 10 ** (log_centers + half)
+    bar_w = area_centers * (10**half - 10**(-half))
+    y_floor = 0.01  # floor for log-y (%)
 
-    bin_centers = np.sqrt(zoom_bins[:-1] * zoom_bins[1:])
-    log_step = (log_hi - log_lo) / area_bins
-    half_gap = log_step * 0.18
-    bar_log_w = log_step * 0.18
-    corpus_x = 10 ** (np.log10(bin_centers) - half_gap)
-    query_x = 10 ** (np.log10(bin_centers) + half_gap)
-    bar_width = bin_centers * (10**bar_log_w - 10**(-bar_log_w))
-
-    ax.bar(
-        corpus_x,
-        corpus_hist,
-        width=bar_width,
-        align="center",
-        alpha=0.8,
-        color="C0",
-        label=f"Corpus (n={corpus.size:,})",
-    )
-    ax.bar(
-        query_x,
-        query_hist,
-        width=bar_width,
-        align="center",
-        alpha=0.8,
-        color="C1",
-        label=f"GT queries (n={queries.size:,})",
-    )
+    ax.bar(c_x, np.maximum(c_pct, y_floor), width=bar_w, color="C0", alpha=0.85, label="Corpus")
+    ax.bar(q_x, np.maximum(q_pct, y_floor), width=bar_w, color="C1", alpha=0.85, label="GT queries")
     ax.set_xscale("log")
-    ax.set_xlim(x_lo, x_hi)
-    ax.set_ylim(0, y_hi)
+    ax.set_yscale("log")
+    ax.set_xlim(10**log_edges[0], 10**log_edges[-1])
     ax.set_xlabel("Area (m²)")
-    ax.set_ylabel("Density")
-    ax.set_title("Area distribution (p1–p99, corpus vs GT per bin)")
-    ax.legend()
-    ax.grid(True, alpha=0.25)
+    ax.set_ylabel("% of polygons in bin (log scale)")
+    ax.set_title("Panel A: % per bin\n(same log10 bins as Panel B)")
+    ax.legend(fontsize=8)
+    ax.grid(True, which="both", alpha=0.25)
 
-    log_corpus = np.log10(corpus)
-    log_queries = np.log10(queries)
-    log_combined = np.concatenate([log_corpus, log_queries])
-    log_x_lo, log_x_hi = np.percentile(log_combined, [1, 99])
-    log_bin_edges = np.linspace(log_x_lo, log_x_hi, bins + 1)
-
+    # --- Panel 2: log10(area), density per log10 unit (aligned with A) ---
     ax = axes[1]
-    ax.hist(
-        log_corpus,
-        bins=log_bin_edges,
+    ax.bar(
+        log_centers - half,
+        c_dens,
+        width=log_step * 0.36,
         alpha=0.45,
-        density=True,
-        label="Corpus",
         color="C0",
+        label="Corpus",
     )
-    ax.hist(
-        log_queries,
-        bins=log_bin_edges,
-        histtype="step",
+    ax.step(
+        log_edges,
+        np.concatenate([q_dens, [q_dens[-1]]]),
+        where="post",
         linewidth=2.0,
-        density=True,
-        label="GT queries (outline)",
         color="C1",
+        label="GT queries (outline)",
     )
-    ax.set_xlim(log_x_lo, log_x_hi)
+    ax.set_xlim(log_edges[0], log_edges[-1])
     ax.set_xlabel("log₁₀(area m²)")
-    ax.set_ylabel("Density")
-    ax.set_title("Log-area distribution (corpus filled, GT outline)")
-    ax.legend()
+    ax.set_ylabel("Density (per unit log₁₀ area)")
+    ax.set_title("Panel B: density in log10 space\n(corpus bars + GT outline)")
+    ax.legend(fontsize=8)
     ax.grid(True, alpha=0.25)
 
-    fig.suptitle("Parks polygon area: corpus vs GT query split")
+    # --- Panel 3: ECDF — clearest "many small, few large" view ---
+    ax = axes[2]
+    for arr, label, color in [
+        (corpus, f"Corpus (n={corpus.size:,})", "C0"),
+        (queries, f"GT queries (n={queries.size:,})", "C1"),
+    ]:
+        sorted_a = np.sort(arr)
+        y = np.arange(1, sorted_a.size + 1) / sorted_a.size
+        ax.plot(sorted_a, y, color=color, linewidth=1.5, label=label)
+    ax.set_xscale("log")
+    ax.set_xlabel("Area (m²)")
+    ax.set_ylabel("Fraction of polygons ≤ this area")
+    ax.set_title("Panel C: cumulative distribution\n(how many are smaller than X)")
+    ax.legend(fontsize=8)
+    ax.grid(True, alpha=0.25)
+
+    fig.suptitle(
+        "Parks polygon areas: corpus vs GT queries\n"
+        "A & B use identical log10 bins — A shows %/bin, B shows density/log10 unit",
+        fontsize=11,
+    )
     fig.tight_layout()
     fig.savefig(out_path, dpi=150)
     plt.close(fig)
