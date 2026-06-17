@@ -198,7 +198,28 @@ def main() -> None:
     parser.add_argument("--out-dir", default=OUT_DIR)
     parser.add_argument("--bins", type=int, default=80)
     parser.add_argument("--max-polygons", type=int, default=None, help="Cap for quick tests.")
+    parser.add_argument(
+        "--from-npz",
+        default=None,
+        help="Skip WKT load; plot from saved .npz (e.g. area_distribution/polygon_areas.npz).",
+    )
     args = parser.parse_args()
+
+    os.makedirs(args.out_dir, exist_ok=True)
+    hist_path = os.path.join(args.out_dir, "polygon_area_histogram.png")
+
+    if args.from_npz:
+        data = np.load(args.from_npz)
+        corpus = data["corpus_m2"]
+        query_start = corpus.size
+        queries = data["query_m2"]
+        print(f"Loaded from {args.from_npz}")
+        print(f"  corpus n={corpus.size:,}, queries n={queries.size:,}")
+        print("\nSummary:")
+        print_stats("corpus", corpus)
+        print_stats("queries", queries)
+        plot_histogram(corpus, queries, hist_path, args.bins)
+        return
 
     query_start, total = discover_split(args.gt_dir)
     limit = args.max_polygons if args.max_polygons else total
