@@ -19,9 +19,7 @@ AREA_CACHE = "/tmp/polygon_areas_233773.npz"
 WKT_PATH = "/raid/ssEncodingData/polygonalData/osm_new/parks"
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from compare_polygon_areas import area_m2, load_areas, print_stats  # noqa: E402
-
-import shapely.wkt  # noqa: E402
+from compare_polygon_areas import load_areas, print_stats  # noqa: E402
 
 
 def load_query_areas(wkt_path: str, total: int, cache_path: str) -> np.ndarray:
