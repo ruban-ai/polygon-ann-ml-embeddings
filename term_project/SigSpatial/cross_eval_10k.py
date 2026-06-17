@@ -151,6 +151,7 @@ def eval_ckpt(name, ckpt, arch, out_dim, prefix=None):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--which", choices=["all", "mat_tri", "mat_inf", "plain_tri", "plain_inf", "funnel512"], default="all")
+    ap.add_argument("--base-only", action="store_true")
     args = ap.parse_args()
 
     jobs = []
