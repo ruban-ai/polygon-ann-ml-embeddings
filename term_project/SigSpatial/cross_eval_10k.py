@@ -145,7 +145,7 @@ def eval_ckpt(name, ckpt, arch, out_dim, prefix=None):
             flush=True,
         )
     release_rerank_corpus()
-    return base
+    return {"base": base, "qps": info["qps"]}
 
 
 def main():
