@@ -204,8 +204,9 @@ Figure~\ref{fig:pipeline} illustrates the full two-stage retrieval pipeline.
 \paragraph{Polygon representation and ShapeToVec.}
 ShapeToVec~\cite{shape2vec} encodes polygons with an adaptive quadtree
 rasterisation that handles extreme area variation (Sec.~\ref{sec:intro}),
-indexing the resulting 18{,}219-dimensional WJ simplex vectors directly with
-HNSW~\cite{hnsw20} to reach $\geq$97\% R@50 on corpora up to 1.7M polygons. Our
+indexing the resulting 18{,}219-dimensional WJ simplex vectors with
+HNSW~\cite{hnsw20} in nmslib's \texttt{WeightedJaccard} space~\cite{shape2vec}
+to reach $\geq$97\% R@50 on corpora up to 1.7M polygons. Our
 work compresses these vectors $36\times$ while preserving their WJ structure.
 
 \paragraph{WJ sketching.}
