@@ -494,6 +494,34 @@ InfoNCE--WJ $^\ddagger$         & 2000 & \textbf{0.992} & \textbf{0.992} & 0.863
 \end{tabular}
 \end{table}
 
+\begin{table}[t]
+\centering
+\caption{Full-corpus Stage-1 recall vs.\ embedding dimension (187K database,
+HNSW $\text{efSearch}{=}200$). Rand.\ Proj.\ uses seed 42; learned models as labeled.
+$\ddagger$~=~ours. \textbf{Bold}~=~best per column.}
+\label{tab:dim-sweep}
+\setlength{\tabcolsep}{3pt}
+\footnotesize
+\begin{tabular}{@{}llrrrr@{}}
+\toprule
+Method & Dim & R@10 & R@50 & R@500 & QPS \\
+\midrule
+\multicolumn{6}{@{}l@{}}{\textit{Triplet + recon}} \\[1pt]
+AE WJ-tri+recon$^\ddagger$ &  512 & 0.566 & 0.656 & 0.656 & 1{,}188 \\
+AE WJ-tri+recon$^\ddagger$ & 1024 & 0.592 & 0.679 & 0.673 & 1{,}676 \\
+AE WJ-tri+recon$^\ddagger$ & 2048 & 0.599 & 0.687 & 0.690 & 1{,}344 \\
+AE WJ-tri+recon$^\ddagger$ & 4096 & \textbf{0.603} & \textbf{0.691} & 0.699 & 1{,}145 \\
+\midrule
+\multicolumn{6}{@{}l@{}}{\textit{InfoNCE--WJ}} \\[1pt]
+InfoNCE--WJ$^\ddagger$     &  512 & 0.505 & 0.606 & 0.727 & 2{,}191 \\
+InfoNCE--WJ$^\ddagger$     & 2048 & 0.512 & 0.605 & 0.711 & 2{,}327 \\
+InfoNCE--WJ$^\ddagger$     & 1024 & 0.559 & 0.649 & 0.746 & \textbf{2{,}602} \\
+InfoNCE--WJ$^\ddagger$     & 2048 & 0.564 & 0.655 & \textbf{0.756} & 1{,}866 \\
+InfoNCE--WJ$^\ddagger$     & 4096 & 0.568 & 0.657 & 0.751 & 1{,}038 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \noindent\textbf{Ranking objectives stop scaling.}
 At $23\times$ scale the Stage-1 advantage of the learned ranking model collapses:
 AE WJ-triplet+recon ties an untrained random projection on R@50 (0.656 vs.\ 0.663)
