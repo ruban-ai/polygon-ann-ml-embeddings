@@ -293,8 +293,8 @@ $\min$/$\max$ meaningful, and $\ell_1$-normalisation places every embedding on
 the probability simplex $\Delta^{512}$ so the $\min$/$\max$ ratio is computed at
 a comparable scale. Together this (i)~makes
 $WJ(f_\theta(\mathbf{x}), f_\theta(\mathbf{y}))$ well-defined for any input pair,
-and (ii)~enables direct use of nmslib's \texttt{WeightedJaccard} HNSW space
-without post-processing.
+and (ii)~enables direct use of nmslib's \texttt{WeightedJaccard} HNSW
+space~\cite{shape2vec} without post-processing.
 
 \subsection{WJ Triplet Loss with False-Negative Filtering}
 \label{sec:triplet}
