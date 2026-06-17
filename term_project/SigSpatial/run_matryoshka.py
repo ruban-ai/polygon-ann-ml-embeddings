@@ -3,15 +3,18 @@
 (each re-normalized to the L1 simplex). At eval, TRUNCATE to each dim -> HNSW(WJ) recall+QPS+
 rerank, logged to NEW_RESULTS.csv. --loss triplet (max_pos=30) | infonce (max_pos=256).
 No funnel: 18220 -> 4096 -> 4096 (so the wide embedding isn't bottlenecked)."""
-import sys, os, time, csv, datetime, random, argparse
+import sys, os, time, csv, datetime, random, argparse, pickle
 import numpy as np, torch, torch.nn as nn, torch.nn.functional as F
 from torch.utils.data import DataLoader, Dataset
 from tqdm.auto import tqdm
 sys.path.insert(0,'/raid/ruban/hpmlproj/term_project/SigSpatial')
-from sota_experiment_common import (build_fn_mask, build_gt_cache, build_gt_gpu, eval_recall,
+from sota_experiment_common import (build_fn_mask, build_gt_cache, build_gt_gpu, eval_recall, eval_recall_by_qids,
     load_dataset_normalized, nmslib_neighbors, preload_rerank_corpus, release_rerank_corpus, rerank_wj_gpu)
 
-ap=argparse.ArgumentParser(); ap.add_argument('--loss',choices=['triplet','infonce'],required=True); A=ap.parse_args()
+ap=argparse.ArgumentParser()
+ap.add_argument('--loss',choices=['triplet','infonce'],required=True)
+ap.add_argument('--split-file',default=None,help='e.g. /tmp/query_split_80_20.pkl (train80/eval20 of 47K queries)')
+A=ap.parse_args()
 DEV=torch.device('cuda:0'); THREADS=120; torch.set_num_threads(THREADS)
 PREFIXES=[1024,2048,4096]; EMB=4096
 BATCH=1024; LR=1e-3; WD=1e-4; MARGIN=0.3; TEMP=0.07; LAM_REC=0.1
