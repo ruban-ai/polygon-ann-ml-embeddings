@@ -158,7 +158,7 @@ def plot_histogram(corpus: np.ndarray, queries: np.ndarray, out_path: str, bins:
     ax.set_ylim(0, y_hi)
     ax.set_xlabel("Area (m²)")
     ax.set_ylabel("Density")
-    ax.set_title(f"Area distribution (p1–p99: {x_lo:,.0f} – {x_hi:,.0f} m²)")
+    ax.set_title(f"Area distribution (p1–p99, grouped bars)")
     ax.legend()
     ax.grid(True, alpha=0.25)
 
