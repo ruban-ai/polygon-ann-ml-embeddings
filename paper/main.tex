@@ -31,7 +31,7 @@
 %   (A) WJ-Native Autoencoder Compression for Efficient Polygon Similarity Search  [ACTIVE]
 %   (B) Learning WJ-Preserving Autoencoder Embeddings for Efficient Polygon Retrieval
 %   (C) Compact Autoencoder Compression for Efficient Weighted-Jaccard Polygon Search
-\title{WJ-Native Autoencoder Compression for Efficient Polygon Similarity Search}
+\title{Weighted-Jaccard-Native Autoencoder Compression for Polygon Similarity Search under Extreme Area Variation}
 
 \author{Ruban Sampath}
 \affiliation{%
@@ -145,7 +145,8 @@ information into near-empty vectors. ShapeToVec~\cite{shape2vec} resolves this
 with an adaptive \emph{quadtree} grid that recursively subdivides space where
 polygon detail is concentrated, encoding each polygon as an 18{,}219-dimensional
 probability-simplex vector whose WJ preserves area-weighted shape overlap across
-all scales. Indexed directly with HNSW, ShapeToVec attains 97\% R@50 on corpora
+all scales. Indexed directly with HNSW in nmslib's
+\texttt{WeightedJaccard} space~\cite{shape2vec}, ShapeToVec attains 97\% R@50 on corpora
 up to 1.7M polygons. However, indexing such large vectors becomes increasingly
 expensive as corpora grow; compressing them while preserving WJ structure
 enables faster search and lower memory overhead at scale.
