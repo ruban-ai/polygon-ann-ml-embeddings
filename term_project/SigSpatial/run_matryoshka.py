@@ -62,13 +62,21 @@ class MatAE(nn.Module):
 def module(m): return m.module if hasattr(m,'module') else m
 
 class DS(Dataset):
-    def __init__(s,gt,qsv):
-        s.p=[(q,n) for q,nb in gt.items() for n in nb[:MAX_POS] if q>=qsv and n<qsv]; random.shuffle(s.p)
+    def __init__(s,gt,qsv,train_qids=None):
+        allow=None if train_qids is None else set(train_qids)
+        s.p=[(q,n) for q,nb in gt.items() for n in nb[:MAX_POS]
+             if q>=qsv and n<qsv and (allow is None or q in allow)]
+        random.shuffle(s.p)
         print(f"pairs={len(s.p):,} steps/epoch~{len(s.p)//BATCH}",flush=True)
     def __len__(s): return len(s.p)
     def __getitem__(s,i): return s.p[i]
 
 def main():
+    train_qids=eval_qids=None
+    if A.split_file:
+        with open(A.split_file,'rb') as f: split=pickle.load(f)
+        train_qids,eval_qids=split['train_qids'],split['eval_qids']
+        print(f"split {A.split_file}: train={len(train_qids):,} eval={len(eval_qids):,}",flush=True)
     qt,gt,qs,cq,qq,cs,qtn=load_dataset_normalized('full')
     vecs=torch.from_numpy(np.ascontiguousarray(qtn,dtype=np.float32)).to(DEV)
     gtg=build_gt_gpu(build_gt_cache(gt,len(qtn),qs,'full'),DEV)
