@@ -35,7 +35,7 @@ def triplet_loss(za,zb,gtm):
 def infonce_loss(za,zb,gtm):
     logits=cross_wj(za,zb)/TEMP
     if gtm is not None:
-        m=gtm.clone(); m.fill_diagonal_(False); logits=logits.masked_fill(m,-1e9)
+        m=gtm.to(logits.device).clone(); m.fill_diagonal_(False); logits=logits.masked_fill(m,-1e9)
     lab=torch.arange(za.shape[0],device=za.device); loss=F.cross_entropy(logits,lab)
     return loss, float((logits.argmax(1)==lab).float().mean())
 LOSS_FN = triplet_loss if A.loss=='triplet' else infonce_loss
