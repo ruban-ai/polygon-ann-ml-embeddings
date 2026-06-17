@@ -169,7 +169,6 @@ def main():
     if args.which in ("all", "funnel512"):
         jobs.append(("AE WJ-tri+recon funnel@512", "/tmp/best_sota_triplet_autoencoder_wj_512_full.pt", "funnel", 512, None))
         jobs.append(("InfoNCE--WJ funnel@512", "/tmp/best_filter_recall_infonce_512_full.pt", "funnel", 512, None))
-
     print("10K cross-eval: full-trained ckpts -> 8K corpus / 2K queries (18220-d slice)", flush=True)
     rows = []
     for name, ckpt, arch, out_dim, prefix in jobs:
