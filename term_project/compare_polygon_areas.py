@@ -127,21 +127,31 @@ def plot_histogram(corpus: np.ndarray, queries: np.ndarray, out_path: str, bins:
     query_hist, _ = np.histogram(queries, bins=zoom_bins, density=True)
     y_hi = max(corpus_hist.max(), query_hist.max()) * 1.08
 
-    ax.hist(
-        corpus,
-        bins=zoom_bins,
-        alpha=0.55,
-        density=True,
-        label=f"Corpus (n={corpus.size:,})",
+    bin_centers = np.sqrt(zoom_bins[:-1] * zoom_bins[1:])
+    log_step = (log_hi - log_lo) / bins
+    half_gap = log_step * 0.22
+    bar_log_w = log_step * 0.22
+    corpus_x = 10 ** (np.log10(bin_centers) - half_gap)
+    query_x = 10 ** (np.log10(bin_centers) + half_gap)
+    bar_width = bin_centers * (10**bar_log_w - 10**(-bar_log_w))
+
+    ax.bar(
+        corpus_x,
+        corpus_hist,
+        width=bar_width,
+        align="center",
+        alpha=0.85,
         color="C0",
+        label=f"Corpus (n={corpus.size:,})",
     )
-    ax.hist(
-        queries,
-        bins=zoom_bins,
-        alpha=0.55,
-        density=True,
-        label=f"GT queries (n={queries.size:,})",
+    ax.bar(
+        query_x,
+        query_hist,
+        width=bar_width,
+        align="center",
+        alpha=0.85,
         color="C1",
+        label=f"GT queries (n={queries.size:,})",
     )
     ax.set_xscale("log")
     ax.set_xlim(x_lo, x_hi)
