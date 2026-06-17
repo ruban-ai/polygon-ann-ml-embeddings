@@ -162,7 +162,7 @@ We address this gap. Our contributions are:
 \begin{enumerate}
   \item \textbf{WJ-native embedding}: ReLU\,+\,$\ell_1$ outputs keep embeddings on
     the probability simplex, so WJ is computed directly in nmslib's
-    \texttt{WeightedJaccard} HNSW space with no post-processing.
+    \texttt{WeightedJaccard} HNSW space~\cite{shape2vec} with no post-processing.
   \item \textbf{WJ-native metric learning}: a three-layer MLP trained with a WJ
     triplet loss and false-negative filtering substantially outperforms PCA, NMF,
     and random projection (Table~\ref{tab:results}); a decoder reconstruction term
