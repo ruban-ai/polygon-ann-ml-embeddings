@@ -69,10 +69,18 @@ class MatAE(nn.Module):
 def module(m): return m.module if hasattr(m,'module') else m
 
 class DS(Dataset):
-    def __init__(s,gt,qsv,train_qids=None):
+    def __init__(s,gt,qsv,train_qids=None,in_corpus=False):
         allow=None if train_qids is None else set(train_qids)
-        s.p=[(q,n) for q,nb in gt.items() for n in nb[:MAX_POS]
-             if q>=qsv and n<qsv and (allow is None or q in allow)]
+        s.p=[]
+        for q,nb in gt.items():
+            if allow is not None and q not in allow:
+                continue
+            for n in nb[:MAX_POS]:
+                if in_corpus:
+                    if n < qsv and n != q:
+                        s.p.append((q,n))
+                elif q >= qsv and n < qsv:
+                    s.p.append((q,n))
         random.shuffle(s.p)
         print(f"pairs={len(s.p):,} steps/epoch~{len(s.p)//BATCH}",flush=True)
     def __len__(s): return len(s.p)
