@@ -138,14 +138,15 @@ def main():
     with torch.no_grad():
         Z=torch.cat([enc.embed(torch.tensor(qtn[i:i+512],dtype=torch.float32,device=DEV)) for i in range(0,len(qtn),512)])  # (N,4096) GPU
     today=datetime.date.today().isoformat(); rows_all=[]
+    eval_gt_use=eval_gt if eval_gt is not None else gt
     eval_idx=np.array(eval_qids if eval_qids is not None else list(range(qs,len(qtn))),dtype=np.int64)
     qq_eval=qq[eval_idx-qs] if eval_qids is not None else qq
     for m in PREFIXES:
         emb=norm(Z[:,:m]).cpu().numpy().astype(np.float32); ce=emb[:qs]; qe=emb[eval_idx]
         max_k=max(max(CAND_KS),500)
         nbrs,info=nmslib_neighbors(ce,qe,space="WeightedJaccard",k=max_k,threads=THREADS,query_params={"efSearch":EF})
-        base=eval_recall_by_qids(gt,nbrs,list(eval_idx),max_k) if eval_qids else eval_recall(gt,nbrs,qs,max_k)
-        tag="eval20" if eval_qids else "all_queries"
+        base=eval_recall_by_qids(eval_gt_use,nbrs,list(eval_idx),max_k) if eval_qids else eval_recall(eval_gt_use,nbrs,qs,max_k)
+        tag="eval2k" if A.dataset=="10k-train8k" else ("eval20" if eval_qids else "all_queries")
         print(f"[d={m} base {tag}] R@50={base[50]:.4f} R@500={base[500]:.4f} HNSW_QPS={info['qps']:.0f}",flush=True)
         rows_all.append([m,"base","",base[10],base[50],base[100],base[500],round(info['qps'])])
         preload_rerank_corpus(cq,cs)
