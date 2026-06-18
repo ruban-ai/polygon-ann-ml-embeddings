@@ -88,17 +88,34 @@ class DS(Dataset):
 
 def main():
     train_qids=eval_qids=None
-    if A.split_file:
-        with open(A.split_file,'rb') as f: split=pickle.load(f)
-        train_qids,eval_qids=split['train_qids'],split['eval_qids']
-        print(f"split {A.split_file}: train={len(train_qids):,} eval={len(eval_qids):,}",flush=True)
-    qt,gt,qs,cq,qq,cs,qtn=load_dataset_normalized('full')
+    eval_gt=None
+    in_corpus=False
+    gt_train_start=0
+    if A.dataset == "10k-train8k":
+        if A.split_file:
+            raise SystemExit("use --dataset 10k-train8k without --split-file")
+        qt,gt,eval_gt,qs,cq,qq,cs,qtn=load_10k_train8k_normalized()
+        train_qids=list(range(qs))
+        eval_qids=list(range(qs,len(qtn)))
+        in_corpus=True
+        gt_train_start=0
+        gt_cache_name="10k-train8k"
+        print(f"train queries 0–{qs-1} eval queries {qs}–{len(qtn)-1}",flush=True)
+    else:
+        if A.split_file:
+            with open(A.split_file,'rb') as f: split=pickle.load(f)
+            train_qids,eval_qids=split['train_qids'],split['eval_qids']
+            print(f"split {A.split_file}: train={len(train_qids):,} eval={len(eval_qids):,}",flush=True)
+        qt,gt,qs,cq,qq,cs,qtn=load_dataset_normalized('full')
+        gt_cache_name='full'
+        gt_train_start=qs
     vecs=torch.from_numpy(np.ascontiguousarray(qtn,dtype=np.float32)).to(DEV)
-    gtg=build_gt_gpu(build_gt_cache(gt,len(qtn),qs,'full'),DEV)
+    n_train_items=qs if in_corpus else len(qtn)
+    gtg=build_gt_gpu(build_gt_cache(gt,n_train_items,gt_train_start,gt_cache_name),DEV)
     model=MatAE(qtn.shape[1]).to(DEV)
     if torch.cuda.device_count()>1:
         model=nn.DataParallel(model); print(f"DataParallel {torch.cuda.device_count()} GPUs",flush=True)
-    loader=DataLoader(DS(gt,qs,train_qids),batch_size=BATCH,shuffle=True,num_workers=12,drop_last=True,persistent_workers=True)
+    loader=DataLoader(DS(gt,qs,train_qids,in_corpus=in_corpus),batch_size=BATCH,shuffle=True,num_workers=12,drop_last=True,persistent_workers=True)
     opt=torch.optim.AdamW(model.parameters(),lr=LR,weight_decay=WD)
     sch=torch.optim.lr_scheduler.CosineAnnealingLR(opt,T_max=max(EPOCHS,1)); best=float('inf'); t0=time.time()
     for ep in range(1,EPOCHS+1):
