@@ -11,7 +11,14 @@ Our learned Stage-1 embeddings (triplet+reconstruction, and InfoNCE) underperfor
 - On the full set they were **even slightly below a training-free random projection** at Stage-1.
 - **Adding embedding dimensions did not help** (512 → 2048 gave essentially no gain).
 
-This was puzzling — more capacity and a learned model should beat a random projection.
+This was puzzling — more capacity and a learned model should beat a random projection. We also ran the held-out protocol directly on the 47K — **train on 80% of the queries, evaluate the held-out 20%** — and the contrastive methods *still* did not improve with dimension:
+
+| 47K held-out — base R@500 | 1024-d | 2048-d | 4096-d |
+|---|---|---|---|
+| triplet + recon | 0.651 | 0.666 | 0.673 |
+| InfoNCE | 0.724 | 0.727 | 0.729 |
+
+Recall is essentially flat from 1024→4096 — more dimensions buy almost nothing.
 
 ## 2. Root cause: the training objective does not match the metric we grade on
 We grade on **recall**, which needs the embedding to **preserve the true WJ ranking** of neighbors. But triplet/InfoNCE optimize a **separation proxy** — "push each positive above the negatives." Those are *not* the same goal: you can separate positives from negatives while badly **distorting** the global WJ geometry. We verified this with controlled experiments:
