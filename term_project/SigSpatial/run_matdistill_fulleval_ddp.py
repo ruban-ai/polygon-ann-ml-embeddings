@@ -66,15 +66,23 @@ def main():
     Cn_g=torch.from_numpy(QTN[:qs]).to(DEV)
     if main: print(f"DDP world={world} | corpus={qs} queries={len(qq)} dim={IN}",flush=True)
 
-    # corpus self-kNN (rank 0 computes + caches; all load)
-    if main:
-        if os.path.exists(KNN_CACHE):
-            knn=np.load(KNN_CACHE); print(f"loaded corpus kNN {knn.shape}",flush=True)
-        else:
-            t0=time.time(); knn=corpus_knn(Cn_g); np.save(KNN_CACHE,knn)
-            print(f"corpus kNN {knn.shape} computed {(time.time()-t0)/60:.1f}min",flush=True)
-    dist.barrier()
+    # corpus self-kNN — DISTRIBUTED: each rank does a contiguous shard, rank 0 assembles
+    if not os.path.exists(KNN_CACHE):
+        t0=time.time(); per=(qs+world-1)//world; s0=lr*per; s1=min(s0+per,qs)
+        out=np.empty((max(s1-s0,0),MAX_POS),dtype=np.int64)
+        for i in range(s0,s1,2048):
+            j=min(i+2048,s1); a=Cn_g[i:j]; d=torch.cdist(a,Cn_g,p=1)
+            r=torch.arange(a.shape[0],device=DEV); d[r,torch.arange(i,j,device=DEV)]=1e9
+            out[i-s0:j-s0]=torch.topk(d,MAX_POS,dim=1,largest=False).indices.cpu().numpy()
+        np.save(f'/tmp/corpus_knn_shard_{lr}.npy',out)
+        if main: print(f"computing corpus kNN shards...",flush=True)
+        dist.barrier()
+        if main:
+            knn=np.concatenate([np.load(f'/tmp/corpus_knn_shard_{r}.npy') for r in range(world)],axis=0)
+            np.save(KNN_CACHE,knn); print(f"corpus kNN {knn.shape} done {(time.time()-t0)/60:.1f}min",flush=True)
+        dist.barrier()
     knn=np.load(KNN_CACHE)
+    if main: print(f"corpus kNN {knn.shape}",flush=True)
 
     model=DDP(Net(IN).to(DEV),device_ids=[lr])
     opt=torch.optim.AdamW(model.parameters(),lr=LR,weight_decay=WD)
