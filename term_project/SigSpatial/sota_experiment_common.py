@@ -61,6 +61,37 @@ def load_dataset_normalized(name):
     return qt, gt, query_start, corpus_qt, query_qt, corpus_sums, qt_norm
 
 
+def load_10k_train8k_normalized():
+    """10K benchmark: train on queries 0–7999 (gt_lookup_train_8k), eval on 8000–9999 (gt_lookup_10k).
+    Uses first 10K rows of 18220-d qtree_vectors_full (same polygons as cross_eval_10k)."""
+    cache_path = "/tmp/qt_norm_10k_18220.npy"
+    if Path(cache_path).exists():
+        t0 = time.time()
+        qt_norm = np.load(cache_path)
+        print(f"qt_norm loaded from cache {qt_norm.shape} in {time.time()-t0:.1f}s")
+        qt = np.array(np.load("/tmp/qtree_vectors_full.npy", mmap_mode="r")[:10000], dtype=np.float32)
+    else:
+        print("Computing qt_norm_10k_18220 (first run — caching to /tmp)...", flush=True)
+        t0 = time.time()
+        qt = np.array(np.load("/tmp/qtree_vectors_full.npy", mmap_mode="r")[:10000], dtype=np.float32)
+        qt_norm = l1_simplex(qt)
+        np.save(cache_path, qt_norm)
+        print(f"qt_norm computed+cached {qt_norm.shape} in {time.time()-t0:.1f}s")
+    with open("/tmp/gt_lookup_train_8k.pkl", "rb") as f:
+        train_gt = pickle.load(f)
+    with open("/tmp/gt_lookup_10k.pkl", "rb") as f:
+        eval_gt = pickle.load(f)
+    qs = QUERY_START_10K
+    corpus_qt = qt[:qs]
+    query_qt = qt[qs:]
+    corpus_sums = corpus_qt.sum(axis=1).astype(np.float32)
+    print(
+        f"dataset=10k-train8k | qt={qt.shape} | corpus={corpus_qt.shape} | queries={query_qt.shape} "
+        f"| train_gt={len(train_gt)} eval_gt={len(eval_gt)}"
+    )
+    return qt, train_gt, eval_gt, qs, corpus_qt, query_qt, corpus_sums, qt_norm
+
+
 def l1_simplex(x, eps=1e-10):
     x = np.maximum(x, 0).astype(np.float32, copy=False)
     return x / np.maximum(x.sum(axis=1, keepdims=True), eps)
