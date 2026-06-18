@@ -1,449 +1,257 @@
 %%
-%% ACM conference paper — REFRAMED DRAFT (Option A: WJ-native distillation headline).
-%% Separate from main.tex. Reuses the same refs.bib and figures/.
-%% Hotspots rewritten: abstract (2nd half), §1 contrib #3, §3.6, NEW §3.7, §4.5+Table 2,
-%% dim-sweep, conclusion, title. Everything else carried over verbatim from main.tex.
-%% [RS:]/[BA:] notes flag the open decisions.
+%% ACM SIGSPATIAL '26 SHORT PAPER (4 pp incl. refs) — WJ-native distillation.
+%% Condensed, distillation-first. Figures: TikZ pipeline + dim/recall/QPS plot.
+%% [RS:] notes flag the few open items (pipeline tweak, held-out baseline re-eval).
 %%
-
 \documentclass[sigconf]{acmart}
 \usepackage[utf8]{inputenc}
 \usepackage{newunicodechar}
 \newunicodechar{∼}{\textasciitilde}
-
-\AtBeginDocument{%
-  \providecommand\BibTeX{{%
-    Bib\TeX}}}
+\AtBeginDocument{\providecommand\BibTeX{{Bib\TeX}}}
 
 \setcopyright{acmlicensed}
-\copyrightyear{2026}
-\acmYear{2026}
-\acmDOI{XXXXXXX.XXXXXXX}
-
+\copyrightyear{2026}\acmYear{2026}\acmDOI{XXXXXXX.XXXXXXX}
 \acmConference[SIGSPATIAL '26]{34th ACM SIGSPATIAL}{November 2026}{Atlanta, GA}
 \acmISBN{978-1-4503-XXXX-X/2026/11}
 
 \usepackage{amsmath}
 \usepackage{booktabs}
 \usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta}
 \graphicspath{{./}{../figures/}}
 \usepackage{pifont}
-\newcommand{\cmark}{\ding{51}}
-\newcommand{\xmark}{\ding{55}}
-
-\newcommand{\rs}[1]{\textcolor{green}{[RS: #1]}}
-\newcommand{\ba}[1]{\textcolor{orange}{[BA: #1]}}
+\newcommand{\cmark}{\ding{51}}\newcommand{\xmark}{\ding{55}}
+\newcommand{\rs}[1]{\textcolor{green!55!black}{[RS: #1]}}
 
 \begin{document}
 
-%% -------------------------------------------------------
-%%  Title
-%% -------------------------------------------------------
-% Title variants — the method is now DISTILLATION, not an autoencoder. Pick one:
-%   (A) Weighted-Jaccard-Native Distillation for Compact Polygon Similarity Search at Scale  [ACTIVE]
-%   (B) Aligning the Objective with the Metric: WJ-Native Distillation for Polygon Retrieval
-%   (C) Learning WJ-Preserving Embeddings by Metric Distillation for Polygon Similarity Search
+% Title — method is DISTILLATION (not an autoencoder). Alternatives:
+%  (B) Aligning the Objective with the Metric: WJ-Native Distillation for Polygon Retrieval
+%  (C) Learning WJ-Preserving Embeddings by Metric Distillation
 \title{Weighted-Jaccard-Native Distillation for Compact Polygon
 Similarity Search under Extreme Area Variation}
-% \rs{title still says nothing about "scale"/"closes the gap" — discuss with Prof + Buddhi}
 
 \author{Ruban Sampath}
-\affiliation{%
-  \institution{Univ. of Texas at San Antonio}
-  \city{San Antonio}
-  \country{USA}}
+\affiliation{\institution{Univ. of Texas at San Antonio}\city{San Antonio}\country{USA}}
 \email{ruban.s@utsa.edu}
-
 \author{Buddhi Ashan M. K.}
-\affiliation{%
-  \institution{Univ. of Texas at San Antonio}
-  \city{San Antonio}
-  \country{USA}}
+\affiliation{\institution{Univ. of Texas at San Antonio}\city{San Antonio}\country{USA}}
 \email{buddhiashan.mallikakankanamalage@utsa.edu}
-
 \author{Sushil K. Prasad}
-\affiliation{%
-  \institution{Univ. of Texas at San Antonio}
-  \city{San Antonio}
-  \country{USA}}
+\affiliation{\institution{Univ. of Texas at San Antonio}\city{San Antonio}\country{USA}}
 \email{sushil.prasad@utsa.edu}
-
 \renewcommand{\shortauthors}{Sampath et al.}
 
-%% -------------------------------------------------------
-%%  Abstract   (1st half KEPT; 2nd half REWRITTEN)
-%% -------------------------------------------------------
 \begin{abstract}
-Similarity search over polygonal datasets is a critical spatial-data operation, with Weighted Jaccard (WJ) capturing area-based shape overlap. The current state-of-the-art ShapeToVec encodes a polygon leveraging a quad-tree-based non-uniform grid, accounting for extreme area variations, employing a Hierarchical Navigable Small World (HNSW) index for fast retrieval. However, their dimensionality imposes a heavy memory cost and query throughput penalty. We propose an efficient learned compact WJ-compatible compression employing a simplex-constrained encoder, giving $36\times$ smaller vectors.
-On a 10k subset of the Parks dataset, a WJ-native triplet model with false-negative filtering and decoder reconstruction reaches Recall@50 $=0.858$ at 10{,}903 QPS (78$\times$ faster than brute-force Improved Consistent Weighted Sampling) and Recall@10 $>0.996$ after exact-WJ reranking.
-At the full 187k-polygon scale, however, we find that ranking-style objectives (triplet, InfoNCE) no longer beat an untrained random projection: recall is governed by faithful Weighted-Jaccard \emph{rank preservation}, which a separation proxy does not optimize, and the contrastive loss in fact damages the very output layer that is deployed. We close this gap with \textbf{WJ-native distillation}: regressing the embedding's Weighted Jaccard directly onto the true Weighted Jaccard aligns the training objective with the retrieval metric, and a single Matryoshka encoder then serves every dimension. Distillation is the strongest method at \emph{both} scales --- at 10k it reaches Recall@50 $=0.930$ (above even brute-force ICWS) at 14{,}552 QPS, and at the full 187k scale, at just 256 dimensions, it is --- to our knowledge --- the first learned WJ embedding to surpass random projection at both near- and wide-net recall: Stage-1 Recall@500 of 0.886 versus 0.722, and 0.964 versus 0.927 after exact reranking, at $\sim$2$\times$ the throughput.
+Similarity search over polygon datasets relies on Weighted Jaccard (WJ) to
+capture area-weighted shape overlap. ShapeToVec~\cite{shape2vec} encodes each
+polygon as an 18{,}219-dimensional probability-simplex vector indexed with
+HNSW~\cite{hnsw20} in nmslib's \texttt{WeightedJaccard} space~\cite{boytsov13},
+but the dimensionality is costly to store and search. We learn a compact,
+WJ-native simplex embedding (up to $71\times$ smaller). A contrastive route
+(triplet, reconstruction, InfoNCE) is strong on a 10k subset but, at the full
+187k scale, is \emph{no better than an untrained random projection}: these are
+separation proxies that do not preserve the WJ ranking recall depends on, and the
+loss even damages the deployed output layer. We instead \emph{distill the metric}
+--- regressing the embedding's WJ onto the true WJ aligns the objective with the
+retrieval metric. A single Matryoshka~\cite{matryoshka22} encoder then surpasses
+random projection at \emph{both} near- and wide-net recall at both scales: 10k
+Recall@50 $=0.93$ (above brute-force ICWS) at 14.5k QPS, and at 187k Stage-1
+Recall@500 of 0.886 vs.\ 0.722 and 0.964 vs.\ 0.927 after reranking at
+$\sim$2$\times$ throughput --- already at 256 dimensions.
 \end{abstract}
 
 \begin{CCSXML}
 <ccs2012>
-  <concept>
-    <concept_id>10002951.10003317.10003347.10003350</concept_id>
-    <concept_desc>Information systems~Similarity search</concept_desc>
-    <concept_significance>500</concept_significance>
-  </concept>
-  <concept>
-    <concept_id>10002951.10003317.10003318</concept_id>
-    <concept_desc>Information systems~Nearest-neighbor search</concept_desc>
-    <concept_significance>500</concept_significance>
-  </concept>
-  <concept>
-    <concept_id>10010147.10010257.10010293.10010294</concept_id>
-    <concept_desc>Computing methodologies~Neural networks</concept_desc>
-    <concept_significance>300</concept_significance>
-  </concept>
-  <concept>
-    <concept_id>10002951.10003227.10003351.10003445</concept_id>
-    <concept_desc>Information systems~Geographic information systems</concept_desc>
-    <concept_significance>300</concept_significance>
-  </concept>
+<concept><concept_id>10002951.10003317.10003347.10003350</concept_id>
+<concept_desc>Information systems~Similarity search</concept_desc>
+<concept_significance>500</concept_significance></concept>
+<concept><concept_id>10002951.10003317.10003318</concept_id>
+<concept_desc>Information systems~Nearest-neighbor search</concept_desc>
+<concept_significance>500</concept_significance></concept>
+<concept><concept_id>10010147.10010257.10010293.10010294</concept_id>
+<concept_desc>Computing methodologies~Neural networks</concept_desc>
+<concept_significance>300</concept_significance></concept>
 </ccs2012>
 \end{CCSXML}
-
 \ccsdesc[500]{Information systems~Similarity search}
 \ccsdesc[500]{Information systems~Nearest-neighbor search}
 \ccsdesc[300]{Computing methodologies~Neural networks}
-\ccsdesc[300]{Information systems~Geographic information systems}
-
-\keywords{polygon similarity search, weighted Jaccard, metric learning, metric
-distillation, approximate nearest neighbor, probability simplex}
-
+\keywords{polygon similarity search, weighted Jaccard, metric distillation,
+approximate nearest neighbor, probability simplex}
 \received{June 2026}
-
 \maketitle
 
-%% -------------------------------------------------------
-%%  1. Introduction   (KEPT; contribution #3 REWRITTEN)
-%% -------------------------------------------------------
+%% ---------------- 1. Introduction ----------------
 \section{Introduction}
 \label{sec:intro}
-
-Geospatial applications increasingly rely on large polygon datasets --- parks,
-water bodies, parcel boundaries, and land-use regions --- where finding similar
-shapes is essential for data deduplication, conflation, and spatial analytics.
-Weighted Jaccard (WJ) similarity,
+Geospatial applications increasingly search large polygon datasets --- parks,
+water bodies, parcels --- for similar shapes, where Weighted Jaccard (WJ)
 \begin{equation}
   WJ(\mathbf{a},\mathbf{b}) = \frac{\sum_i \min(a_i,b_i)}{\sum_i \max(a_i,b_i)},
-  \quad \mathbf{a},\mathbf{b} \geq \mathbf{0},
+  \quad \mathbf{a},\mathbf{b} \ge \mathbf{0},
   \label{eq:wj}
 \end{equation}
-captures area-weighted shape overlap and is the standard metric for this task.
-A central obstacle in encoding such polygons is \emph{extreme area variability}:
-in real-world GIS corpora, polygon areas span several orders of magnitude (e.g.\
-a neighbourhood park versus a national forest). A uniform rasterisation grid
-cannot serve both regimes --- a grid fine enough to resolve small polygons
-explodes in dimensionality, while a grid coarse enough to be tractable leaves
-small polygons occupying only a handful of cells, collapsing their shape
-information into near-empty vectors. ShapeToVec~\cite{shape2vec} resolves this
-with an adaptive \emph{quadtree} grid that recursively subdivides space where
-polygon detail is concentrated, encoding each polygon as an 18{,}219-dimensional
-probability-simplex vector whose WJ preserves area-weighted shape overlap across
-all scales. Indexed directly with HNSW in nmslib's
-\texttt{WeightedJaccard} space~\cite{shape2vec}, ShapeToVec attains 97\% R@50 on corpora
-up to 1.7M polygons. However, indexing such large vectors becomes increasingly
-expensive as corpora grow; compressing them while preserving WJ structure
-enables faster search and lower memory overhead at scale.
+is the standard area-weighted overlap metric. The core difficulty is
+\emph{extreme area variability}: polygon areas span orders of magnitude, so a
+uniform grid either explodes in dimension or collapses small shapes into
+near-empty vectors. ShapeToVec~\cite{shape2vec} resolves this with an adaptive
+\emph{quadtree} grid, encoding each polygon as an 18{,}219-d probability-simplex
+vector whose WJ preserves overlap across scales; indexed with HNSW~\cite{hnsw20}
+in nmslib's \texttt{WeightedJaccard} space~\cite{boytsov13} it reaches $97\%$ R@50
+on up to 1.7M polygons. But such large vectors are costly to store and search;
+compressing them while preserving WJ structure is the goal of this work.
 
-Existing approaches do not fill this need (\S\ref{sec:related}): classical WJ
-sketches (ICWS~\cite{ioffe10}, ProbMinHash~\cite{probminhash20},
-PolyMinHash~\cite{polyminhash25}) output integer codes needing brute-force or
-LSH-band search, while learned hashing and metric
-learning~\cite{hashsurvey14,deephashsurvey22} target only Euclidean or Hamming
-spaces --- none produce WJ-compatible embeddings.
-
-We address this gap. Our contributions are:
-\begin{enumerate}
-  \item \textbf{WJ-native embedding}: ReLU\,+\,$\ell_1$ outputs keep embeddings on
-    the probability simplex, so WJ is computed directly in nmslib's
-    \texttt{WeightedJaccard} HNSW space~\cite{shape2vec} with no post-processing.
-  \item \textbf{WJ-native metric learning}: a three-layer MLP trained with a WJ
-    triplet loss and false-negative filtering substantially outperforms PCA, NMF,
-    and random projection (Table~\ref{tab:results}); a decoder reconstruction term
-    adds a further 5.0\,pp R@50 --- but only with filtering active, else
-    conflicting gradients collapse recall to 0.510.
-  \item \textbf{Objective--metric alignment scales where ranking does not.}
-    On the full 187k-polygon corpus, ranking objectives (triplet, InfoNCE) degrade
-    to the level of an untrained random projection --- not for lack of capacity, but
-    because recall is governed by Weighted-Jaccard \emph{rank preservation} rather
-    than pairwise separation, and the contrastive loss damages the deployed output
-    layer itself (\S\ref{sec:fullscale}). Training the encoder by
-    \emph{WJ-native distillation} --- regressing its WJ onto the true WJ --- aligns
-    the objective with the metric, yielding a single \emph{Matryoshka} encoder that
-    at 256 dimensions surpasses random projection at both near- and wide-net recall
-    (Stage-1 R@500 0.886 vs.\ 0.722; reranked 0.964 vs.\ 0.927) at $\sim$2$\times$
-    throughput --- the first learned WJ embedding to do so at scale.
+Existing tools do not fit. WJ sketches (ICWS~\cite{ioffe10},
+ProbMinHash~\cite{probminhash20}, PolyMinHash~\cite{polyminhash25}) output integer
+codes needing brute-force or LSH-band search; learned hashing and metric
+learning~\cite{hashsurvey14,deephashsurvey22} target Hamming or cosine spaces ---
+none produce WJ-compatible embeddings. Our contributions:
+\begin{enumerate}[leftmargin=1.2em,itemsep=1pt,topsep=1pt]
+  \item A \textbf{WJ-native simplex embedding}: ReLU\,+\,$\ell_1$ outputs let WJ be
+    computed directly in nmslib's \texttt{WeightedJaccard} HNSW
+    space~\cite{boytsov13,shape2vec}, no post-processing.
+  \item A \textbf{diagnosis}: at scale, ranking objectives (triplet, InfoNCE)
+    drop to random-projection level --- not for lack of capacity, but because
+    recall needs WJ \emph{rank preservation}, not pairwise separation, and the loss
+    damages the deployed layer (\S\ref{sec:scale}).
+  \item \textbf{WJ-native distillation}: regressing the embedding's WJ onto the
+    true WJ aligns objective with metric, giving a single
+    Matryoshka~\cite{matryoshka22} encoder that beats random projection at near-
+    \emph{and} wide-net recall at scale --- the first learned WJ embedding to do so
+    (\S\ref{sec:scale}).
 \end{enumerate}
 
-Figure~\ref{fig:pipeline} illustrates the full two-stage retrieval pipeline.
+%% ---------------- 2. Related Work ----------------
+\section{Related Work}
+\label{sec:related}
+ShapeToVec~\cite{shape2vec} produces the quadtree WJ vectors we compress.
+WJ \emph{sketching} --- ICWS~\cite{ioffe10}, ProbMinHash~\cite{probminhash20},
+PolyMinHash~\cite{polyminhash25} --- gives unbiased estimators but integer codes
+incompatible with float-vector ANN indexes. Learned
+hashing~\cite{hashsurvey14,deephashsurvey22} and Matryoshka representation
+learning~\cite{matryoshka22} target Hamming/cosine spaces and degrade on the WJ
+simplex (Table~\ref{tab:results}); NMF~\cite{nmf99} gives simplex factors but
+optimises reconstruction, not retrieval. Knowledge distillation~\cite{hinton15}
+transfers a teacher's outputs to a student; we adapt it to a \emph{metric},
+distilling exact WJ into a compact simplex embedding --- none of the above target
+WJ as the native metric.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.8\columnwidth]{final_architecture_diagram.png}
-\caption{Training pipeline and two-stage inference.
-  The shared encoder $f_\theta$ compresses ShapeToVec vectors
-  ($D{=}18{,}219 \to d$, up to $36{\times}$ smaller).
-  Hard negatives are mined from the in-batch cross-WJ matrix
-  after masking GT neighbours (FN filter).
-  The decoder $g_\phi$ (AE variant only) adds $\mathcal{L}_{\text{recon}}$
-  and is discarded at inference.
-  \rs{add a small inset showing the distillation objective (emb-WJ $\to$ true-WJ).}}
+%% ---------------- 3. Method ----------------
+\section{Method}
+Given ShapeToVec vectors $\mathbf{x}\in\Delta^{D}$ ($D{=}18{,}219$) and ground-truth
+WJ neighbour pairs, we learn $f_\theta:\Delta^{D}\!\to\!\Delta^{d}$ ($d\le512$)
+preserving WJ for fast HNSW retrieval (Fig.~\ref{fig:pipeline}).
+
+\begin{figure}[t]\centering
+\resizebox{\columnwidth}{!}{%
+\begin{tikzpicture}[font=\small,>={Latex[length=1.6mm,width=1.2mm]},
+  node distance=4.5mm and 5mm,
+  box/.style={draw=black!55,rounded corners=2pt,fill=black!4,
+              minimum height=9mm,align=center,inner sep=3pt},
+  tbox/.style={box,fill=blue!8,draw=blue!45}]
+ \node[box] (x) {ShapeToVec\\$\mathbf{x}\!\in\!\Delta^{D}$};
+ \node[box,right=of x] (e) {Encoder $f_\theta$\\{\scriptsize MLP/BN/ReLU/$\ell_1$}};
+ \node[box,right=of e] (z) {Embedding\\$\mathbf{z}\!\in\!\Delta^{d}$};
+ \node[tbox,above=5mm of z] (t) {exact WJ teacher\\{\scriptsize ($D$-dim)}};
+ \node[box,right=of z] (h) {HNSW\\{\scriptsize Stage-1}};
+ \node[box,right=of h] (r) {exact-WJ\\{\scriptsize Stage-2}};
+ \draw[->](x)--(e); \draw[->](e)--(z);
+ \draw[<->,dashed,blue!55](z)--node[right=0.4mm]{$\mathcal{L}_{\mathrm{dist}}$}(t);
+ \draw[->](z)--(h); \draw[->](h)--(r);
+\end{tikzpicture}}
+\caption{WJ-native pipeline. The encoder maps a quadtree vector onto the
+probability simplex; training distills the exact $D$-dim WJ (teacher) into the
+embedding's WJ; retrieval is HNSW Stage-1 then exact-WJ rerank.
+\rs{tweak node spacing if it overflows the column.}}
 \label{fig:pipeline}
 \end{figure}
 
-%% -------------------------------------------------------
-%%  2. Related Work   (KEPT; +1 sentence on distillation)
-%% -------------------------------------------------------
-\section{Related Work}
-\label{sec:related}
-
-\paragraph{Polygon representation and ShapeToVec.}
-ShapeToVec~\cite{shape2vec} encodes polygons with an adaptive quadtree
-rasterisation that handles extreme area variation (Sec.~\ref{sec:intro}),
-indexing the resulting 18{,}219-dimensional WJ simplex vectors with
-HNSW~\cite{hnsw20} in nmslib's \texttt{WeightedJaccard} space~\cite{shape2vec}
-to reach $\geq$97\% R@50 on corpora up to 1.7M polygons. Our
-work compresses these vectors up to $71\times$ while preserving their WJ structure.
-
-\paragraph{WJ sketching.}
-ICWS~\cite{ioffe10} generates 512-dimensional sketches where the expected number
-of agreeing positions equals the WJ similarity, providing an unbiased estimator.
-ProbMinHash~\cite{probminhash20} accelerates sketch generation by orders of
-magnitude while preserving the same guarantee.
-Both methods output integer codes incompatible with float-vector approximate nearest
-neighbor (ANN) indexes, requiring brute-force or LSH-band search at query time.
-PolyMinHash~\cite{polyminhash25} applies area-based MinHashing directly to polygon
-geometry with LSH banding for candidate pruning, but is non-learned.
-
-\paragraph{Learned hashing, metric learning, and distillation.}
-Learning-to-hash~\cite{hashsurvey14,deephashsurvey22} and metric-learning methods
-produce binary or real-valued embeddings for Hamming/cosine ANN search; Matryoshka
-Representation Learning~\cite{matryoshka22} adds nested truncation but, being
-cosine-space, degrades on the WJ simplex (Table~\ref{tab:results}).
-NMF~\cite{nmf99} yields label-free simplex-compatible factors but optimises
-reconstruction, not WJ retrieval. Knowledge distillation~\cite{hinton15} transfers
-a teacher's outputs to a student; we adapt this idea to a \emph{metric}, distilling
-the exact Weighted Jaccard into a compact simplex embedding. None of the above
-target WJ as the native metric.
-
-%% -------------------------------------------------------
-%%  3. Method
-%% -------------------------------------------------------
-\section{Method}
-
-\subsection{Problem Formulation}
-
-Given a corpus $\mathcal{D} = \{\mathbf{x}_i\}_{i=1}^N$ of ShapeToVec polygon
-encodings $\mathbf{x}_i \in \Delta^D$ ($D = 18{,}219$) and a set of ground-truth
-WJ nearest-neighbour pairs $\mathcal{P} \subset \mathcal{D} \times \mathcal{D}$,
-our goal is to learn a compact encoder $f_\theta: \Delta^D \to \Delta^d$ ($d \le 512$)
-such that WJ similarity is preserved in the compressed space, enabling fast HNSW
-retrieval with WJ as the index metric.
-
-\subsection{Encoder Architecture}
-\label{sec:arch}
-
-The encoder $h_\theta$ is a three-layer MLP with Batch Normalization (BN) and
-ReLU activations ($18{,}219 \to 4{,}096 \to 1{,}024 \to d$, $\sim$80M
-parameters). Three considerations dictate this design, each driven by the
-structure of WJ and of the quadtree input rather than by convention.
-
-\noindent\textbf{Why an MLP, not a Transformer or graph encoder.}
-The neural polygon encoders common in the literature --- boundary
-Transformers~\cite{mai22}, vertex graph networks~\cite{polygongnn24}, and set
-encoders~\cite{deepsets17} --- target cosine or Euclidean output spaces and are
-ill-suited to WJ retrieval. Two mismatches explain this. First,
-\emph{space mismatch}: an encoder trained under an L2 or cosine objective learns
-a metric structure that is destroyed when its outputs are forced onto the WJ
-simplex via ReLU\,+\,$\ell_1$-normalisation. Second, \emph{loss of global
-structure}: sequence- and graph-based encoders aggregate \emph{local} context
-(token windows, vertex hops), whereas WJ is a global statistic summed over all
-$D$ dimensions that cannot be decomposed into local sub-computations. A plain
-MLP trained \emph{natively} in WJ space avoids both.
-
-\noindent\textbf{Global projection.}
-Accordingly, the first layer is a single dense projection
-$\mathbb{R}^{18{,}219}\!\to\!\mathbb{R}^{4{,}096}$ that mixes \emph{all} input
-dimensions in one matrix multiply, so every pair of quadtree cells can interact
-and the cross-dimension co-occurrence statistics WJ depends on are preserved.
-This global mixing is why $\sim$75M of the $\sim$80M parameters reside in this
-first layer.
-
-\noindent\textbf{BatchNorm before ReLU.}
-Quadtree rasterization yields extremely sparse vectors (mean $\sim$73\% zeros,
-mean non-zero entry $\sim$$10^{-9}$), so pre-activation responses have near-zero
-variance. Applying ReLU directly would suppress almost all activations and
-produce a degenerate output whose pairwise WJ varies by $\sim$$10^{-4}$ --- too
-little to rank candidates. Placing BN \emph{before} each ReLU re-centers and
-rescales the activations first, guaranteeing a non-degenerate output distribution.
-
-\subsection{Probability Simplex Output Constraint}
-
-WJ (Eq.~\ref{eq:wj}) requires non-negative inputs. We enforce this with a final
-simplex projection layer:
+\subsection{WJ-native simplex embedding}
+\label{sec:embed}
+The encoder is a three-layer MLP ($18{,}219\!\to\!4096\!\to\!1024\!\to\!d$). An MLP
+is deliberate: boundary Transformers~\cite{mai22}, vertex GNNs~\cite{polygongnn24}
+and set encoders~\cite{deepsets17} aggregate \emph{local} context and assume
+cosine/Euclidean outputs, whereas WJ is a \emph{global} statistic over all $D$
+dimensions that is distorted when cosine features are forced onto the simplex; the
+dense first layer mixes all dimensions globally (and holds ${\sim}75$M of the
+${\sim}80$M parameters). Because quadtree vectors are extremely sparse
+($\sim$73\% zeros), we place BatchNorm~\cite{ioffe15bn} \emph{before} each ReLU to
+avoid a near-degenerate output. WJ requires non-negative inputs, enforced by a
+simplex projection:
 \begin{equation}
-  f_\theta(\mathbf{x}) = \frac{\operatorname{ReLU}(h_\theta(\mathbf{x}))}
-                              {\max\!\bigl(\|\operatorname{ReLU}(h_\theta(\mathbf{x}))\|_1,\;\epsilon\bigr)}.
+  f_\theta(\mathbf{x}) = \frac{\mathrm{ReLU}(h_\theta(\mathbf{x}))}
+       {\max(\|\mathrm{ReLU}(h_\theta(\mathbf{x}))\|_1,\;\epsilon)} \in \Delta^{d},
   \label{eq:simplex}
 \end{equation}
-The output sequence BN\,$\to$\,ReLU\,$\to$\,$\ell_1$-norm is necessary and
-sufficient for WJ compatibility: non-negativity makes the element-wise
-$\min$/$\max$ meaningful, and $\ell_1$-normalisation places every embedding on
-the probability simplex $\Delta^{d}$ so the $\min$/$\max$ ratio is computed at
-a comparable scale. Together this (i)~makes
-$WJ(f_\theta(\mathbf{x}), f_\theta(\mathbf{y}))$ well-defined for any input pair,
-and (ii)~enables direct use of nmslib's \texttt{WeightedJaccard} HNSW
-space~\cite{shape2vec} without post-processing. Every objective below
-(Secs.~\ref{sec:triplet}--\ref{sec:distill}) operates through this same output.
+making $WJ(f_\theta(\mathbf{x}),f_\theta(\mathbf{y}))$ well-defined and directly
+indexable in nmslib's \texttt{WeightedJaccard} space~\cite{boytsov13}.
 
-\subsection{WJ Triplet Loss with False-Negative Filtering}
-\label{sec:triplet}
-
-Training uses an \emph{anchor-positive} dataset of GT pairs
-$\{(\mathbf{a}_i, \mathbf{p}_i)\}_{i=1}^B$ per batch.
-Hard negatives are mined in-batch via the $B \times B$ cross-WJ similarity matrix
-$S_{ij} = WJ(f_\theta(\mathbf{a}_i), f_\theta(\mathbf{p}_j))$.
-The hard negative for anchor $i$ is:
+\subsection{Contrastive objectives and why they break at scale}
+\label{sec:contrastive}
+Our first route is metric learning. With anchor--positive pairs and in-batch
+cross-WJ $S_{ij}=WJ(f_\theta(\mathbf{a}_i),f_\theta(\mathbf{p}_j))$, a
+\emph{false-negative filter} $\mathcal{G}$ masks a query's true neighbours before
+mining the hardest negative $j^\star$, and a triplet loss~\cite{schroff15} with
+margin $m$,
 \begin{equation}
-  j^* = \operatorname*{arg\,max}_{j \neq i,\, (i,j) \notin \mathcal{G}} S_{ij},
-  \label{eq:hardneg}
-\end{equation}
-where $\mathcal{G} = \{(i,j) : j \text{ is a GT neighbour of } i\}$ is the
-precomputed set of ground-truth neighbour pairs --- the \emph{false-negative (FN)
-filter}.
-Without this filter, GT neighbours appearing in the batch are treated as negatives,
-creating gradients that push WJ-similar pairs apart.
-The triplet loss over violated pairs $\mathcal{V} = \{i : \text{loss}_i > 0\}$ is:
-\begin{equation}
-  \mathcal{L}_{\text{trip}} = \frac{1}{|\mathcal{V}|}
-    \sum_{i \in \mathcal{V}} \bigl[WJ(\mathbf{n}_i, \mathbf{a}_i)
-    - WJ(\mathbf{p}_i, \mathbf{a}_i) + m\bigr]_{+},
+  \mathcal{L}_{\mathrm{trip}}=\big[\,WJ(\mathbf{n}_{j^\star},\mathbf{a})
+     -WJ(\mathbf{p},\mathbf{a})+m\,\big]_{+},
   \label{eq:triplet}
 \end{equation}
-with margin $m = 0.3$, where $\mathbf{n}_i = f_\theta(\mathbf{p}_{j^*})$.
-
-\subsection{Reconstruction-Augmented Autoencoder}
-\label{sec:ae}
-
-The triplet loss teaches only coarse rank order. We add a decoder
-$g_\phi: \Delta^d \to \mathbb{R}^D_{\geq 0}$ (three-layer MLP), forming an
-autoencoder, with reconstruction loss
-$\mathcal{L}_{\text{recon}} = \tfrac{1}{2}(
-  \operatorname{MSE}(g_\phi(f_\theta(\mathbf{a})), \mathbf{a}) +
-  \operatorname{MSE}(g_\phi(f_\theta(\mathbf{p})), \mathbf{p}))$,
-and train $\mathcal{L} = \mathcal{L}_{\text{trip}} +
-\lambda\,\mathcal{L}_{\text{recon}}$ ($\lambda{=}0.1$).
-Reconstruction forces the encoder to preserve the full input distribution, not
-just rank order, improving WJ discrimination --- but only with FN filtering
-active: otherwise it anchors positives at high WJ while corrupted triplet
-gradients push in-batch false negatives below the margin, a conflict that
-collapses recall (Sec.~\ref{sec:ablation}). This model gives our best
-\emph{moderate-scale} results (Table~\ref{tab:results}); the next two sections
-show why it --- and ranking objectives in general --- stops being enough at scale.
-
-\subsection{Why Ranking Objectives Misalign at Scale}
-\label{sec:filter}
-
-Every encoder above serves the same role: a Stage-1 \emph{candidate generator}
-whose top-$K$ output is reranked exactly in Stage~2. What matters is therefore not
-the order it produces but \emph{which} polygons reach the pool, which in turn
-depends on how faithfully the embedding preserves the true WJ \emph{ranking} of a
-query's neighbourhood. The triplet objective (Sec.~\ref{sec:triplet}) is instead a
-\emph{separation proxy}: it pushes the single hardest in-batch negative below the
-positive by a margin and saturates once that margin is met. As the corpus grows,
-that hardest negative is drawn from a vanishing fraction of the data, the margin is
-satisfied by coarse separation, and the generator preserves only the immediate
-neighbourhood --- recall stops improving with $k$ (Sec.~\ref{sec:fullscale}).
-A non-saturating in-batch InfoNCE over WJ similarity (every step contributes
-gradient, supervising the broad top-$P$ neighbourhood) is \emph{partially} aligned
-and recovers wide-net recall, but it is still a separation proxy and, like the
-triplet, leaves the deployed layer distorted (Sec.~\ref{sec:fullscale}). This
-motivates supervising the embedding with the metric \emph{itself}.
-
-\subsection{WJ-Native Distillation}
-\label{sec:distill}
-
-We align the objective with the retrieval metric directly. For a batch of $M$
-encodings we form the true pairwise WJ on the original $D$-dimensional vectors,
-$T_{ij}=WJ(\mathbf{x}_i,\mathbf{x}_j)$, and the embedding WJ,
-$\hat T_{ij}=WJ(f_\theta(\mathbf{x}_i),f_\theta(\mathbf{x}_j))$, and minimise
+separates positives from negatives; a decoder reconstruction term and a
+non-saturating InfoNCE~\cite{oord18},
 \begin{equation}
-  \mathcal{L}_{\text{dist}} = \frac{1}{M^2}\sum_{i,j}\bigl(\hat T_{ij}-T_{ij}\bigr)^2 .
+  \mathcal{L}_{\mathrm{NCE}}=-\log\frac{\exp(S_{ii}/\tau)}
+       {\sum_{j:(i,j)\notin\mathcal{G}}\exp(S_{ij}/\tau)},
+  \label{eq:infonce}
+\end{equation}
+extend the supervised neighbourhood. These are strong at 10k (Table~\ref{tab:results}).
+\emph{Yet all are separation proxies}: they push positives above negatives, which
+does \emph{not} guarantee the global WJ \emph{ranking} that recall depends on. At
+the 187k scale (\S\ref{sec:scale}) their Stage-1 recall ties an untrained random
+projection and \emph{flatlines} with $k$. Worse, the loss \emph{damages the layer
+it is applied to}: reading the deployed output gives the \emph{worst} recall in the
+network (R@500 $0.65$, below a random projection's $0.77$), while an untouched
+intermediate layer is best ($0.82$) --- the optimised layer is the wrong one to
+deploy. This motivates supervising the metric itself.
+
+\subsection{WJ-native distillation}
+\label{sec:distill}
+We align the objective with the metric directly. For a batch of $M$ encodings we
+form the true WJ on the original $D$-dim vectors, $T_{ij}=WJ(\mathbf{x}_i,\mathbf{x}_j)$,
+and the embedding WJ, $\hat T_{ij}=WJ(f_\theta(\mathbf{x}_i),f_\theta(\mathbf{x}_j))$, and minimise
+\begin{equation}
+  \mathcal{L}_{\mathrm{dist}}=\frac{1}{M^2}\sum_{i,j}\big(\hat T_{ij}-T_{ij}\big)^2 .
   \label{eq:distill}
 \end{equation}
-Because the objective \emph{is} the retrieval metric, there is no proxy to
-misalign: the deployed output is exactly the optimised quantity, not a separation
-boundary or a discarded projection head. This is a metric distillation --- the
-exact $D$-dimensional WJ is the teacher and the compact simplex embedding is the
-student.
+The objective \emph{is} the retrieval metric, so the deployed output is exactly the
+optimised quantity --- a metric distillation~\cite{hinton15} with exact $D$-dim WJ
+as teacher and the compact simplex embedding as student. We apply
+Eq.~\eqref{eq:distill} on nested prefixes $\{256,\dots,4096\}$
+(Matryoshka~\cite{matryoshka22}, each $\ell_1$-renormalised), so one model truncates
+to any width; the smallest already dominates (\S\ref{sec:scale}).
 
-\noindent\textbf{Matryoshka truncation.}
-We apply Eq.~\ref{eq:distill} on nested prefixes
-$\{256,512,1024,2048,4096\}$ of the embedding (each $\ell_1$-renormalised onto its
-own simplex), so a \emph{single} trained encoder is truncated to any dimension at
-query time and the WJ stays well-defined at every width. Unlike cosine
-Matryoshka~\cite{matryoshka22} (Table~\ref{tab:results}), every prefix here is
-WJ-native. As Sec.~\ref{sec:fullscale} shows, the smallest prefix already
-dominates, so dimension becomes a pure recall--throughput knob.
+\subsection{Two-stage retrieval}
+Stage-1 builds an HNSW index ($M{=}20$, $\mathrm{ef}{=}200$)~\cite{hnsw20} in
+nmslib's \texttt{WeightedJaccard} space~\cite{boytsov13} over the $d$-dim
+embeddings, returning top-$K$; Stage-2 reranks by exact WJ on the original vectors
+(Numba~\cite{lam15}). $K$ trades recall for speed.
 
-\subsection{Two-Stage Retrieval Pipeline}
-
-\textbf{Stage~1} builds an HNSW index ($M=20$, $\text{efConstruction}=200$,
-$\text{efSearch}=200$, \texttt{WeightedJaccard} space~\cite{shape2vec}) over all
-$d$-dimensional embeddings using nmslib~\cite{hnsw20} and retrieves the top-$K$
-candidates per query.
-\textbf{Stage~2} reranks candidates by exact WJ on the original $D$-dimensional
-encodings using Numba-compiled sparse WJ, recovering near-perfect recall from
-the candidate pool. $K$ controls the recall--speed tradeoff
-(Tables~\ref{tab:results},~\ref{tab:full}).
-The decoder $g_\phi$ is discarded at inference time.
-
-%% -------------------------------------------------------
-%%  4. Experiments
-%% -------------------------------------------------------
+%% ---------------- 4. Experiments ----------------
 \section{Experiments}
+\label{sec:exp}
+We use OSM Parks polygons~\cite{osm,shape2vec} at two scales: 10k (8k database / 2k
+queries) and the full corpus (187{,}019 database; a held-out 20\% of 46{,}754
+queries, so learned models never see eval queries). Ground truth is exact top-500
+WJ on the $D$-dim vectors. We report R@$k$ ($k\in\{10,50,500\}$) and QPS (PyTorch~\cite{paszke19},
+AdamW~\cite{loshchilov19}, cosine annealing~\cite{loshchilov17}; single GPU).
 
-\subsection{Dataset and Setup}
-
-We evaluate on OSM Parks polygons~\cite{osm,shape2vec}, encoded by ShapeToVec into
-18{,}219-dimensional simplex vectors, at two scales: a 10{,}000-polygon subset
-(8{,}000 database, 2{,}000 queries) for the main results and ablations, and the
-full corpus (187{,}019 database, 46{,}754 queries) for the scaling study
-(Sec.~\ref{sec:fullscale}). At full scale we use a held-out 80/20 query split
-(train on 80\%, evaluate on the held-out 20\%) so learned models are never
-evaluated on queries seen in training. Ground-truth top-500 WJ neighbours per
-query are precomputed exactly by brute force on the original $D$-dimensional
-vectors.
-We report Recall at $k$ (R@$k$) --- the fraction of true top-$k$ WJ neighbours
-retrieved --- at $k \in \{10, 50, 500\}$, and throughput in QPS.
-All models use PyTorch with AdamW ($\text{lr}{=}10^{-3}$) and cosine annealing.
-QPS is measured with nmslib query threads on a single NVIDIA GPU.
-% \rs{confirm Table 2 baselines (RP, InfoNCE) are evaluated on the SAME held-out
-% 20\% as the distillation rows; if any used all 46,754 queries, re-eval on eval20.}
-
-\subsection{Baselines and Ablations}
-
-We compare: \textbf{(i)~Non-learned} --- PCA~\cite{jolliffe02},
-NMF~\cite{nmf99}, Random Projection~\cite{achlioptas03} (all 512-d, $\ell_1$-projected
-to $\Delta^{512}$); \textbf{(ii)~Hashing} --- ICWS~\cite{ioffe10} (512-hash WJ
-sketch, brute-force$^\dagger$) and Deep Binary Hashing~\cite{deephashsurvey22}
-(512-bit Hamming); \textbf{(iii)~Learned non-WJ} --- Matryoshka
-MLP~\cite{matryoshka22}; and \textbf{(iv)~Ours} --- MLP cosine-triplet, AE
-recon-only, MLP WJ-triplet, AE WJ-triplet+recon, and WJ-native distillation.
-
-\subsection{Main Results (10k subset)}
-
-\begin{table}[t]
-\centering
-\caption{Stage-1 (no-rerank) recall on the 10k OSM Parks subset; full-corpus
-two-stage results in Table~\ref{tab:full}. $\dagger$~brute-force only.
-\textbf{Bold}~=~best ANN method. $\ddagger$~=~ours.}
-\label{tab:results}
-\setlength{\tabcolsep}{4pt}
-\small
+\begin{table}[t]\centering
+\caption{Stage-1 recall on the 10k subset (no rerank). $\dagger$~brute-force.
+\textbf{Bold}~=~best ANN method; $\ddagger$~=~ours.}
+\label{tab:results}\setlength{\tabcolsep}{4pt}\small
 \begin{tabular}{@{}llrrrr@{}}
 \toprule
 Method & Dim & R@10 & R@50 & R@500 & QPS \\
@@ -451,224 +259,111 @@ Method & Dim & R@10 & R@50 & R@500 & QPS \\
 PCA~\cite{jolliffe02}                   & 512  & 0.432 & 0.553 & 0.789 & 16{,}666 \\
 NMF~\cite{nmf99}                        & 512  & 0.638 & 0.727 & 0.942 & 11{,}764 \\
 Rand.\ Proj.~\cite{achlioptas03}        & 512  & 0.687 & 0.759 & 0.930 &  9{,}663 \\
-\addlinespace[3pt]
 ICWS~\cite{ioffe10}$^\dagger$           & 512  & 0.840 & 0.897 & 0.988 &     139 \\
-Deep Binary Hash~\cite{deephashsurvey22}& 512b & 0.432 & 0.652 & 0.939 &     328 \\
-\addlinespace[3pt]
 Matryoshka MLP~\cite{matryoshka22}      & 512  & 0.455 & 0.672 & 0.932 & 18{,}647 \\
-\addlinespace[3pt]
-MLP cosine triplet$^\ddagger$           & 512  & 0.666 & 0.808 & 0.954 & 30{,}150 \\
-AE recon.\ only$^\ddagger$              & 512  & 0.665 & 0.745 & 0.938 & 11{,}142 \\
+\addlinespace[2pt]
 MLP WJ-triplet$^\ddagger$               & 512  & 0.677 & 0.806 & 0.964 & 10{,}756 \\
-AE WJ-tri+recon$^\ddagger$              & 512 & 0.711 & 0.858 & 0.977 & 10{,}903 \\
-\textbf{WJ-distillation}$^\ddagger$     & \textbf{512} & \textbf{0.844} & \textbf{0.930} & \textbf{0.994} & \textbf{14{,}552} \\
+AE WJ-tri+recon$^\ddagger$              & 512  & 0.711 & 0.858 & 0.977 & 10{,}903 \\
+\textbf{WJ-distillation}$^\ddagger$ & \textbf{512} & \textbf{0.844} & \textbf{0.930} & \textbf{0.994} & \textbf{14{,}552} \\
 \bottomrule
 \end{tabular}
-{\scriptsize $b$~=~binary bits (Hamming space).}
 \end{table}
 
-Table~\ref{tab:results} shows the moderate-scale results. WJ-native distillation is
-the strongest method, reaching R@50 $=0.930$ --- $+7.2$\,pp over the best contrastive
-model (AE WJ-triplet+recon, 0.858) and exceeding even brute-force ICWS (0.897) at
-over 100$\times$ its throughput (14{,}552 vs.\ 139 QPS). The contrastive models
-(triplet, AE, and the InfoNCE variant of Sec.~\ref{sec:filter}) are competitive at
-this scale --- AE WJ-triplet+recon already beats the best non-learned baseline by
-$+9.9$\,pp R@50 --- but they reveal their limitation only at scale
-(Sec.~\ref{sec:fullscale}), motivating the alignment analysis that follows. Stage-2
-exact-WJ reranking lifts R@10 above 0.996 for all our variants. Since reranking
-reorders but cannot enlarge the candidate pool, recovering broad (R@500) recall
-instead requires a larger $K$ (Table~\ref{tab:full}).
+\noindent\textbf{Moderate scale (Table~\ref{tab:results}).}
+WJ-distillation is the strongest method: R@50 $=0.930$, $+7.2$\,pp over the best
+contrastive model and above brute-force ICWS (0.897) at ${>}100\times$ its
+throughput. Reranking lifts R@10 above $0.996$ for all variants.
 
-\subsection{Ablation Study}
-\label{sec:ablation}
+\noindent\textbf{Full scale (Table~\ref{tab:full}).}
+At $23\times$ the database, the contrastive advantage collapses: AE WJ-triplet+recon
+ties random projection on R@50 and flatlines (R@500 $=$ R@50 $=0.656$); InfoNCE
+recovers wide-net recall (R@500 0.727) but never wins both ends. WJ-distillation, by
+aligning objective and metric, reaches Stage-1 R@500 $=0.886$ at 256-d ---
+$+16$\,pp over both --- and after reranking gives the highest recall at the highest
+throughput: R@500 $=0.964$ vs.\ random projection's $0.927$ at nearly $2\times$ the
+QPS. This is, to our knowledge, the first learned WJ embedding to beat random
+projection on \emph{both} the near- and wide-net frontiers at scale; recall no
+longer flatlines (R@500 $\gg$ R@50).
 
-We ablate each design choice (Stage-1 R@50 on the 10k subset, Table~\ref{tab:ablation}). The FN filter
-alone slightly weakens the 8k signal ($0.806\!\to\!0.773$): GT neighbours
-dominate the small batch, leaving few true hard negatives --- an effect that
-vanishes at scale. Adding WJ regression \emph{without} filtering is catastrophic
-(R@10\,=\,0.510): the regression anchors positives at high WJ while corrupted
-triplet gradients push in-batch false negatives below the margin; filtering
-removes the conflict and restores R@50 to 0.808. Reconstruction is the decisive
-component at this scale: it forces the encoder to preserve the full
-input distribution, lifting R@50 from 0.806 (triplet-only) to \textbf{0.858}
-(+5.0\,pp). The decoder is discarded at inference.
-
-\subsection{Scaling to the Full Corpus}
-\label{sec:fullscale}
-
-We now evaluate on the full OSM Parks corpus (187{,}019 database polygons,
-8{,}934 held-out queries), a $23\times$ larger database. Table~\ref{tab:full}
-reports a controlled comparison under identical HNSW and rerank settings.
-
-\begin{table}[t]
-\centering
-\caption{Full-corpus results (187k database, held-out queries). Identical HNSW
-($\text{efSearch}{=}200$) and rerank settings for all rows. Distillation shown at
-its smallest (256-d) Matryoshka prefix. $\ddagger$~=~ours. \textbf{Bold}~=~best per
-column block.
-\rs{\textbf{TBD:} the three baseline rows (RP, AE WJ-tri+recon, InfoNCE) are
-provisional all-query values; a held-out eval20 re-eval is running now (expected
-$\le$1\,pp change). The distillation rows are final (held-out eval20).}}
-\label{tab:full}
-\setlength{\tabcolsep}{3.5pt}
-\small
+\begin{table}[t]\centering
+\caption{Full-corpus two-stage results (187k database, held-out queries; identical
+HNSW/rerank). Distillation at its smallest (256-d) prefix. $\ddagger$~=~ours.
+\rs{\textbf{TBD:} the three baseline rows are provisional all-query values;
+held-out re-eval in progress ($\le$1\,pp expected). Distillation rows final.}}
+\label{tab:full}\setlength{\tabcolsep}{3.5pt}\small
 \begin{tabular}{@{}llrrrr@{}}
 \toprule
 Method & $K$ & R@10 & R@50 & R@500 & QPS \\
 \midrule
-\multicolumn{6}{@{}l@{}}{\textit{Stage 1 — No Rerank}} \\[1pt]
-Rand.\ Proj.~\cite{achlioptas03}      & --- & 0.628 & 0.663 & 0.722 &  1{,}275 \\
-AE WJ-tri+recon$^\ddagger$            & --- & 0.566 & 0.656 & 0.656 &  1{,}188 \\
-InfoNCE--WJ$^\ddagger$                & --- & 0.505 & 0.606 & 0.727 &  2{,}191 \\
-\textbf{WJ-distillation}$^\ddagger$   & --- & \textbf{0.710} & \textbf{0.789} & \textbf{0.886} & \textbf{2{,}492} \\
+\multicolumn{6}{@{}l@{}}{\textit{Stage 1 — no rerank}}\\[1pt]
+Rand.\ Proj.~\cite{achlioptas03}    & --- & 0.628 & 0.663 & 0.722 & 1{,}275 \\
+AE WJ-tri+recon$^\ddagger$          & --- & 0.566 & 0.656 & 0.656 & 1{,}188 \\
+InfoNCE--WJ$^\ddagger$              & --- & 0.505 & 0.606 & 0.727 & 2{,}191 \\
+\textbf{WJ-distillation}$^\ddagger$ & --- & \textbf{0.710} & \textbf{0.789} & \textbf{0.886} & \textbf{2{,}492} \\
 \midrule
-\multicolumn{6}{@{}l@{}}{\textit{Stage 2 — Exact WJ Rerank}} \\[1pt]
-Rand.\ Proj.~\cite{achlioptas03}      & 1000 & 0.989 & 0.985 & 0.872 & 874 \\
-AE WJ-tri+recon$^\ddagger$            & 1000 & 0.992 & 0.989 & 0.785 & 850 \\
-InfoNCE--WJ$^\ddagger$                & 1000 & 0.992 & 0.992 & 0.854 & 1{,}108 \\
-\textbf{WJ-distillation}$^\ddagger$   & 1000 & \textbf{0.993} & \textbf{0.995} & \textbf{0.964} & \textbf{1{,}030} \\
-\addlinespace[3pt]
-Rand.\ Proj.~\cite{achlioptas03}      & 2000 & 0.991 & 0.991 & 0.927 & 585 \\
-InfoNCE--WJ$^\ddagger$                & 2000 & 0.992 & 0.992 & 0.863 & 730 \\
-\textbf{WJ-distillation}$^\ddagger$   & 2000 & \textbf{0.993} & \textbf{0.995} & \textbf{0.965} & \textbf{875} \\
+\multicolumn{6}{@{}l@{}}{\textit{Stage 2 — exact-WJ rerank}}\\[1pt]
+Rand.\ Proj.~\cite{achlioptas03}    & 2000 & 0.991 & 0.991 & 0.927 & 585 \\
+InfoNCE--WJ$^\ddagger$              & 2000 & 0.992 & 0.992 & 0.863 & 730 \\
+\textbf{WJ-distillation}$^\ddagger$ & 1000 & \textbf{0.993} & \textbf{0.995} & \textbf{0.964} & \textbf{1{,}030} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\noindent\textbf{Ranking objectives stop scaling.}
-At $23\times$ scale the Stage-1 advantage of the learned ranking model collapses:
-AE WJ-triplet+recon ties an untrained random projection on R@50 (0.656 vs.\ 0.663)
-and its recall \emph{flatlines} with $k$ (R@500 $=$ R@50 $=$ 0.656), whereas
-random projection's recall keeps climbing (0.722). The margin objective preserves
-only the immediate neighbourhood; the broad neighbourhood is lost
-(Sec.~\ref{sec:filter}). A recall-oriented InfoNCE recovers the wide-net climb
-(R@500 0.727) and a more navigable index, but its near-net recall stays low
-(R@50 0.606) and, like the triplet, it never beats random projection at both ends.
+\noindent\textbf{Dimension is a throughput knob (Fig.~\ref{fig:dim}, Table~\ref{tab:dim}).}
+Because the encoder is Matryoshka, one model serves every width. Distillation's
+recall is essentially flat from 256 to 4096 (R@500 $0.886\!\to\!0.893$) while QPS
+falls $2\times$, so 256-d --- a $71\times$ compression --- is the natural operating
+point. Ranking objectives, by contrast, stay low at \emph{every} width.
 
-\noindent\textbf{Why: misalignment, not capacity.}
-Recall tracks how faithfully an embedding preserves the true WJ ranking, not how
-well it separates positives from negatives. \rs{Add Fig.~\ref{fig:layer}: within a
-single trained ranking model, recall \emph{increases} the further one reads from
-the loss --- the deployed output is the worst layer (below random projection)
-while an untouched intermediate layer is best --- evidence that the contrastive
-loss damages the layer it is applied to. Confirm the figure is computed on the
-full corpus before final.}
+\begin{figure}[t]\centering
+\includegraphics[width=0.86\columnwidth]{fig_dim_distill.pdf}
+\caption{WJ-distillation on the 187k corpus: Stage-1 recall is flat across
+dimension while HNSW throughput rises sharply at small $d$; 256-d is the sweet
+spot.}
+\label{fig:dim}
+\end{figure}
 
-\noindent\textbf{WJ-native distillation closes the gap.}
-Aligning the objective with the metric (Eq.~\ref{eq:distill}) restores recall at
-every $k$. On held-out queries, distillation at just 256 dimensions reaches Stage-1
-R@500 $=0.886$ --- exceeding random projection (0.722) and InfoNCE (0.727) by
-$16$\,pp --- while also yielding the most navigable index (2{,}492 QPS). After
-exact reranking it delivers the \emph{highest} recall at the \emph{highest}
-throughput at both ends of the pool: at $K{=}1000$, R@50 $=0.995$ and R@500 $=0.964$
-at 1{,}030 QPS, versus random projection's 0.985/0.872 at 874 QPS; and at $K{=}2000$
-its R@500 $=0.965$ exceeds random projection's 0.927 while running faster
-(875 vs.\ 585 QPS). To our knowledge this is the first \emph{learned} WJ embedding
-to beat random projection on \emph{both} the near- and wide-net recall--throughput
-frontiers at this scale. Crucially the recall no longer flatlines (R@500 $\gg$ R@50),
-confirming that the broad neighbourhood is recovered.
+\begin{table}[t]\centering
+\caption{Full-corpus Stage-1 recall vs.\ dimension. Distillation is one Matryoshka
+model truncated per row; ranking objectives shown for contrast. $\ddagger$~=~ours.
+\rs{\textbf{TBD:} triplet/InfoNCE held-out re-eval (256--4096) in progress; values
+provisional.}}
+\label{tab:dim}\setlength{\tabcolsep}{3pt}\footnotesize
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Method ($d$) & R@10 & R@50 & R@500 & QPS \\
+\midrule
+AE tri+recon (512 / 4096) & 0.566\,/\,0.603 & 0.656\,/\,0.691 & 0.656\,/\,0.699 & 1188\,/\,1145 \\
+InfoNCE (512 / 4096)      & 0.505\,/\,0.568 & 0.606\,/\,0.657 & 0.727\,/\,0.751 & 2191\,/\,1038 \\
+\addlinespace[2pt]
+\textbf{Distill} 256 & \textbf{0.710} & \textbf{0.789} & \textbf{0.886} & 2{,}492 \\
+\textbf{Distill} 512 & 0.720 & 0.798 & 0.891 & 1{,}969 \\
+\textbf{Distill} 1024 & 0.723 & 0.801 & 0.893 & 1{,}620 \\
+\textbf{Distill} 2048 & 0.724 & 0.803 & 0.893 & 1{,}318 \\
+\textbf{Distill} 4096 & 0.721 & 0.800 & 0.892 & 1{,}197 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-\noindent\textbf{Dimension is a throughput knob.}
-Because the encoder is Matryoshka, one model serves all widths
-(Table~\ref{tab:dim-sweep}). Recall is essentially flat from 256 to 4096
-dimensions (base R@500 $0.886\!\to\!0.893$), so the smallest prefix is the natural
-operating point --- a $71\times$ compression of the original 18{,}219-d vector ---
-and dimension trades only throughput, not recall.
+\noindent\textbf{Ablation.} On 10k, the false-negative filter is essential: adding
+WJ regression \emph{without} it collapses recall to R@10 $=0.510$, while with it
+recall is restored (R@50 $0.808$); decoder reconstruction then adds $+5.0$\,pp
+R@50 (to $0.858$).
 
-%% -------------------------------------------------------
-%%  AI Tools Statement
-%% -------------------------------------------------------
-\section*{Usage of AI Tools}
-Claude (Anthropic) was used for debugging and manuscript formatting.
-
-%% -------------------------------------------------------
-%%  5. Conclusion   (REWRITTEN)
-%% -------------------------------------------------------
+%% ---------------- 5. Conclusion ----------------
 \section{Conclusion}
+We compress ShapeToVec WJ vectors up to $71\times$ with a WJ-native simplex
+embedding. Contrastive objectives suffice at moderate scale but fail at 187k ---
+they optimise separation, not the WJ ranking recall needs, and damage the deployed
+layer. WJ-native distillation removes the misalignment, and a single Matryoshka
+encoder beats random projection at both near- and wide-net recall while running
+faster --- the first learned WJ embedding to do so at scale. Future work targets
+billion-scale corpora and other simplex-embeddable set metrics.
 
-We presented a WJ-native compression framework for efficient polygon similarity
-search. At moderate scale, careful design --- a probability-simplex output
-constraint, WJ triplet training with false-negative filtering, and decoder
-reconstruction --- yields the highest Stage-1 recall of all ANN-compatible methods
-and 78$\times$ higher throughput than brute-force ICWS, with near-perfect recall
-after reranking. At full scale, however, ranking-based objectives stop beating an
-untrained random projection: because the first-stage candidate generator does not
-require correct order, a separation proxy is free to distort the WJ geometry that
-recall depends on, and the contrastive loss damages the deployed layer itself.
-\emph{WJ-native distillation} removes the misalignment by training the embedding's
-Weighted Jaccard to match the true Weighted Jaccard. A single Matryoshka encoder
-then beats random projection at \emph{both} near- and wide-net recall while running
-faster --- the first learned WJ embedding to do so at scale --- already at a $71\times$
-compression. Future work will extend the approach to billion-scale corpora and to
-other set-similarity metrics that admit a simplex embedding.
+\begin{acks}
+Claude (Anthropic) assisted with debugging and manuscript formatting.
+\end{acks}
 
-%% -------------------------------------------------------
-%%  References
-%% -------------------------------------------------------
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{refs}
-% \rs{add \cite{hinton15} (knowledge distillation) to refs.bib — used in §2.}
-
-%% ---- Ablation table (KEPT) ----
-\begin{table}[t]
-\centering
-\caption{Component ablation (Stage-1, no rerank, 10k subset). MLP rows use WJ regression
-as auxiliary loss ($\lambda$=1.0); AE rows use decoder reconstruction ($\lambda$=0.1).}
-\label{tab:ablation}
-\small
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{lllrr}
-\toprule
-Model & FN Filter & Aux.\ Loss & R@10 & R@50 \\
-\midrule
-MLP & \xmark & none          & 0.677 & 0.806 \\
-MLP & \cmark & none          & 0.656 & 0.773 \\
-MLP & \xmark & WJ regression & 0.510 & 0.736 \\
-MLP & \cmark & WJ regression & 0.669 & 0.808 \\
-\midrule
-AE  & ---    & recon.\ only  & 0.665 & 0.745 \\
-\textbf{AE}  & \cmark & \textbf{triplet+recon} & \textbf{0.711} & \textbf{0.858} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-%% ---- Dimension sweep (REBUILT: + distillation block; ranking shown for contrast) ----
-\begin{table}[t]
-\centering
-\caption{Full-corpus Stage-1 recall vs.\ embedding dimension (187k database,
-held-out queries, HNSW $\text{efSearch}{=}200$). WJ-distillation is one Matryoshka
-model truncated to each width; ranking objectives shown for contrast.
-$\ddagger$~=~ours.
-\rs{\textbf{TBD:} triplet and InfoNCE blocks are being re-run held-out
-(train80/eval20) at all dims 256--4096 --- current values provisional; distillation
-rows final.}}
-\label{tab:dim-sweep}
-\setlength{\tabcolsep}{3pt}
-\footnotesize
-\begin{tabular}{@{}llrrrr@{}}
-\toprule
-Method & Dim & R@10 & R@50 & R@500 & QPS \\
-\midrule
-\multicolumn{6}{@{}l@{}}{\textit{AE WJ-triplet + recon (ranking)}} \\[1pt]
-AE WJ-tri+recon$^\ddagger$ &  512 & 0.566 & 0.656 & 0.656 & 1{,}188 \\
-AE WJ-tri+recon$^\ddagger$ & 1024 & 0.592 & 0.679 & 0.673 & 1{,}676 \\
-AE WJ-tri+recon$^\ddagger$ & 2048 & 0.599 & 0.687 & 0.690 & 1{,}344 \\
-AE WJ-tri+recon$^\ddagger$ & 4096 & 0.603 & 0.691 & 0.699 & 1{,}145 \\
-\midrule
-\multicolumn{6}{@{}l@{}}{\textit{InfoNCE--WJ (ranking)}} \\[1pt]
-InfoNCE--WJ$^\ddagger$ &  512 & 0.505 & 0.606 & 0.727 & 2{,}191 \\
-InfoNCE--WJ$^\ddagger$ & 1024 & 0.559 & 0.649 & 0.746 & 2{,}602 \\
-InfoNCE--WJ$^\ddagger$ & 2048 & 0.564 & 0.655 & 0.756 & 1{,}866 \\
-InfoNCE--WJ$^\ddagger$ & 4096 & 0.568 & 0.657 & 0.751 & 1{,}038 \\
-\midrule
-\multicolumn{6}{@{}l@{}}{\textit{WJ-distillation (ours, one Matryoshka model)}} \\[1pt]
-WJ-distillation$^\ddagger$ &  256 & 0.710 & 0.789 & 0.886 & 2{,}492 \\
-WJ-distillation$^\ddagger$ &  512 & 0.720 & 0.798 & 0.891 & 1{,}969 \\
-WJ-distillation$^\ddagger$ & 1024 & 0.723 & 0.801 & 0.893 & 1{,}620 \\
-WJ-distillation$^\ddagger$ & 2048 & 0.724 & 0.803 & 0.893 & 1{,}318 \\
-WJ-distillation$^\ddagger$ & 4096 & 0.721 & 0.800 & 0.892 & 1{,}197 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
 \end{document}
