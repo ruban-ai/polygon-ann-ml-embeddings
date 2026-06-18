@@ -31,13 +31,15 @@ def raw_wj(R,chunk=64):
     return out
 @torch.no_grad()
 def corpus_self_knn(Cr,k,rc=128,cc=1024):       # Cr:(nC,D) raw GPU -> top-k corpus idx per row (self removed)
-    nC=Cr.shape[0]; out=np.empty((nC,k),dtype=np.int64)
-    for i in range(0,nC,rc):
+    nC=Cr.shape[0]; out=np.empty((nC,k),dtype=np.int64); t0=time.time()
+    for ci,i in enumerate(range(0,nC,rc)):
         a=Cr[i:i+rc]; sims=torch.empty(a.shape[0],nC,device=DEV)
         for j in range(0,nC,cc):
             b=Cr[j:j+cc]
             sims[:,j:j+cc]=torch.minimum(a.unsqueeze(1),b.unsqueeze(0)).sum(2)/torch.maximum(a.unsqueeze(1),b.unsqueeze(0)).sum(2).clamp(min=1e-10)
         out[i:i+rc]=sims.topk(k+1,dim=1,largest=True).indices[:,1:].cpu().numpy()   # drop self
+        if ci%30==0:
+            done=min(i+rc,nC); print(f"  self-kNN {done}/{nC}  ({(time.time()-t0)/60:.1f}min)",flush=True)
     return out
 
 class Net(nn.Module):
