@@ -116,12 +116,12 @@ none produce WJ-compatible embeddings. Our contributions:
   \item A \textbf{diagnosis}: at scale, ranking objectives (triplet, InfoNCE)
     drop to random-projection level --- not for lack of capacity, but because
     recall needs WJ \emph{rank preservation}, not pairwise separation, and the loss
-    damages the deployed layer (\S\ref{sec:scale}).
+    damages the deployed layer (\S\ref{sec:exp}).
   \item \textbf{WJ-native distillation}: regressing the embedding's WJ onto the
     true WJ aligns objective with metric, giving a single
     Matryoshka~\cite{matryoshka22} encoder that beats random projection at near-
     \emph{and} wide-net recall at scale --- the first learned WJ embedding to do so
-    (\S\ref{sec:scale}).
+    (\S\ref{sec:exp}).
 \end{enumerate}
 
 %% ---------------- 2. Related Work ----------------
@@ -211,7 +211,7 @@ non-saturating InfoNCE~\cite{oord18},
 extend the supervised neighbourhood. These are strong at 10k (Table~\ref{tab:results}).
 \emph{Yet all are separation proxies}: they push positives above negatives, which
 does \emph{not} guarantee the global WJ \emph{ranking} that recall depends on. At
-the 187k scale (\S\ref{sec:scale}) their Stage-1 recall ties an untrained random
+the 187k scale (\S\ref{sec:exp}) their Stage-1 recall ties an untrained random
 projection and \emph{flatlines} with $k$. Worse, the loss \emph{damages the layer
 it is applied to}: reading the deployed output gives the \emph{worst} recall in the
 network (R@500 $0.65$, below a random projection's $0.77$), while an untouched
@@ -232,7 +232,7 @@ optimised quantity --- a metric distillation~\cite{hinton15} with exact $D$-dim 
 as teacher and the compact simplex embedding as student. We apply
 Eq.~\eqref{eq:distill} on nested prefixes $\{256,\dots,4096\}$
 (Matryoshka~\cite{matryoshka22}, each $\ell_1$-renormalised), so one model truncates
-to any width; the smallest already dominates (\S\ref{sec:scale}).
+to any width; the smallest already dominates (\S\ref{sec:exp}).
 
 \subsection{Two-stage retrieval}
 Stage-1 builds an HNSW index ($M{=}20$, $\mathrm{ef}{=}200$)~\cite{hnsw20} in
