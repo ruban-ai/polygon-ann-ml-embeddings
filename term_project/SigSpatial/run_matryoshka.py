@@ -9,10 +9,12 @@ from torch.utils.data import DataLoader, Dataset
 from tqdm.auto import tqdm
 sys.path.insert(0,'/raid/ruban/hpmlproj/term_project/SigSpatial')
 from sota_experiment_common import (build_fn_mask, build_gt_cache, build_gt_gpu, eval_recall, eval_recall_by_qids,
-    load_dataset_normalized, nmslib_neighbors, preload_rerank_corpus, release_rerank_corpus, rerank_wj_gpu)
+    load_10k_train8k_normalized, load_dataset_normalized, nmslib_neighbors, preload_rerank_corpus,
+    release_rerank_corpus, rerank_wj_gpu)
 
 ap=argparse.ArgumentParser()
 ap.add_argument('--loss',choices=['triplet','infonce'],required=True)
+ap.add_argument('--dataset',choices=['full','10k-train8k'],default='full')
 ap.add_argument('--split-file',default=None,help='e.g. /tmp/query_split_80_20.pkl (train80/eval20 of 47K queries)')
 A=ap.parse_args()
 DEV=torch.device('cuda:0'); THREADS=120; torch.set_num_threads(THREADS)
@@ -21,7 +23,12 @@ BATCH=1024; LR=1e-3; WD=1e-4; MARGIN=0.3; TEMP=0.07; LAM_REC=0.1
 EF=200; RB=64; CAND_KS=[1000,2000]; SEED=42
 MAX_POS = 30 if A.loss=='triplet' else 256
 EPOCHS  = 75 if A.loss=='triplet' else 18
-SPLIT_TAG = "train80" if A.split_file else "full"
+if A.dataset == "10k-train8k":
+    SPLIT_TAG = "10k-train8k"
+elif A.split_file:
+    SPLIT_TAG = "train80"
+else:
+    SPLIT_TAG = "full"
 CKPT=f"/tmp/best_matryoshka_{A.loss}_{SPLIT_TAG}.pt"
 CSV="/raid/ruban/hpmlproj/term_project/SigSpatial/NEW_RESULTS.csv"
 random.seed(SEED); np.random.seed(SEED); torch.manual_seed(SEED); torch.cuda.manual_seed_all(SEED)
