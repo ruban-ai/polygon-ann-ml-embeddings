@@ -27,7 +27,14 @@ We grade on **recall**, which needs the embedding to **preserve the true WJ rank
 - **The loss damages the exact layer it is applied to.** Reading the network's *deployed output* gives the **worst** recall in the whole model — *below a random projection* — while an *untouched intermediate layer* gives the best (Figure 1). This mirrors a known effect in self-supervised learning (e.g., SimCLR), where the contrastive "projection head" is discarded and the layer *before* it is used as the representation.
 - **Capacity was never the limiter** — so more dimensions can't help; the objective is the problem.
 
-**[Figure 1 — fig1_layer_tapping.png]:** within one trained triplet model, recall *increases* the further you read from the loss; the deployed 512-d output (0.65) sits below a random projection (0.77), while the untouched first layer (0.82) is best.
+| layer (one trained triplet model) | Stage-1 recall R@500 |
+|---|---|
+| 1st layer (4096-d) | **0.816** |
+| 2nd layer (1024-d) | 0.775 |
+| **output (512-d — loss applied here)** | **0.652** |
+| random projection (no training) | 0.770 |
+
+**[Figure 1 — fig1_layer_tapping.png]** plots the same numbers: recall *increases* the further you read from the loss; the deployed output sits *below* a random projection, while the untouched first layer is best.
 
 ## 3. The fix: WJ-native distillation (align the objective with the metric)
 Instead of a separation proxy, we train the embedding so that **its Weighted-Jaccard directly matches the true Weighted-Jaccard** — a distillation/regression objective (loss = MSE between the embedding's WJ and the raw 18,220-d WJ). Now **the objective *is* the metric**, so there is nothing to misalign — the output stops being distorted and becomes **directly deployable** (no discarded head, no layer-tapping tricks).
