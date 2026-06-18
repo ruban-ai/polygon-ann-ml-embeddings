@@ -18,7 +18,7 @@ ap.add_argument('--dataset',choices=['full','10k-train8k'],default='full')
 ap.add_argument('--split-file',default=None,help='e.g. /tmp/query_split_80_20.pkl (train80/eval20 of 47K queries)')
 A=ap.parse_args()
 DEV=torch.device('cuda:0'); THREADS=120; torch.set_num_threads(THREADS)
-PREFIXES=[1024,2048,4096]; EMB=4096
+PREFIXES=[256,512,1024,2048,4096]; EMB=4096
 BATCH=1024; LR=1e-3; WD=1e-4; MARGIN=0.3; TEMP=0.07; LAM_REC=0.1
 EF=200; RB=64; CAND_KS=[1000,2000]; SEED=42
 MAX_POS = 30 if A.loss=='triplet' else 256
