@@ -41,18 +41,22 @@ The WJ-distillation output is now the **best** layer (the opposite of triplet/In
 
 It also **generalizes** — on held-out (unseen) queries the recall holds (no memorization), unlike the contrastive models, whose top-50 recall dropped sharply on unseen queries.
 
-## 5. Full-scale on the 47K (in progress)
-Per your suggestion, we are running the same WJ-distillation on the **47K pool, split 80% corpus / 20% held-out queries** (area-stratified — the area distributions of the two partitions match to ~0.6 percentage points). Eval is the held-out 20% queries searched against the 80% corpus, using the official GT.
-
-**[RESULTS PLACEHOLDER — per-dimension recall + QPS]**
+## 5. Full-scale on the 47K (held-out)
+Per your suggestion, we ran the same WJ-distillation on the **47K pool, split 80% corpus (37,403) / 20% held-out queries (9,351)** — area-stratified (the area distributions of the two partitions match to ~0.6 percentage points). The model trains only on the corpus; the held-out queries are searched against it. One Matryoshka model, truncated to each dimension at query time.
 
 | dim | base R@50 | base R@500 | HNSW QPS | reranked R@50 | reranked R@500 |
 |---|---|---|---|---|---|
-| 256 | … | … | … | … | … |
-| 512 | … | … | … | … | … |
-| 1024 | … | … | … | … | … |
-| 2048 | … | … | … | … | … |
-| 4096 | … | … | … | … | … |
+| **256** | 0.742 | 0.846 | **6,072** | 0.993 | 0.921 |
+| 512 | 0.750 | 0.851 | 3,147 | 0.993 | 0.921 |
+| 1024 | 0.755 | 0.854 | 1,976 | 0.994 | 0.922 |
+| 2048 | 0.757 | 0.855 | 1,296 | 0.994 | 0.921 |
+| 4096 | 0.756 | 0.854 | 1,154 | 0.994 | 0.919 |
+
+*(rerank at K=1000, exact WJ; held-out 20% queries vs the official GT.)*
+
+**Takeaways:** Stage-1 recall is strong on **unseen** queries (R@500 ≈ 0.85); the exact-WJ rerank lifts top-50 to **≈ 0.994**; and **256-d is a sweet spot** — essentially the same recall as 4096-d at **~5× the throughput**. The entire curve comes from a *single* training.
+
+**[Figure 3 — fig3_47k_frontier.png]:** the recall–throughput frontier — recall stays ~0.85 while throughput spans 1,150 → 6,070 QPS across the truncation dimensions.
 
 ## 6. Next steps
 Once the 47K confirms, we will scale to the full 187K corpus and the larger Overture sets, and finalize the recall–throughput frontier (dimension as the tunable knob) for the paper.
