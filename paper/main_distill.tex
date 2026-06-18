@@ -48,7 +48,7 @@ Similarity Search under Extreme Area Variation}
 Similarity search over polygon datasets relies on Weighted Jaccard (WJ) to
 capture area-weighted shape overlap. ShapeToVec~\cite{shape2vec} encodes each
 polygon as an 18{,}219-dimensional probability-simplex vector indexed with
-HNSW~\cite{hnsw20} in nmslib's \texttt{WeightedJaccard} space~\cite{boytsov13},
+HNSW~\cite{hnsw20} in nmslib's \texttt{WeightedJaccard} space~\cite{shape2vec},
 but the dimensionality is costly to store and search. We learn a compact,
 WJ-native simplex embedding (up to $71\times$ smaller). A contrastive route
 (triplet, reconstruction, InfoNCE) is strong on a 10k subset but, at the full
@@ -100,7 +100,7 @@ uniform grid either explodes in dimension or collapses small shapes into
 near-empty vectors. ShapeToVec~\cite{shape2vec} resolves this with an adaptive
 \emph{quadtree} grid, encoding each polygon as an 18{,}219-d probability-simplex
 vector whose WJ preserves overlap across scales; indexed with HNSW~\cite{hnsw20}
-in nmslib's \texttt{WeightedJaccard} space~\cite{boytsov13} it reaches $97\%$ R@50
+in nmslib's \texttt{WeightedJaccard} space~\cite{shape2vec} it reaches $97\%$ R@50
 on up to 1.7M polygons. But such large vectors are costly to store and search;
 compressing them while preserving WJ structure is the goal of this work.
 
@@ -187,7 +187,7 @@ simplex projection:
   \label{eq:simplex}
 \end{equation}
 making $WJ(f_\theta(\mathbf{x}),f_\theta(\mathbf{y}))$ well-defined and directly
-indexable in nmslib's \texttt{WeightedJaccard} space~\cite{boytsov13}.
+indexable in nmslib's \texttt{WeightedJaccard} space~\cite{shape2vec}.
 
 \subsection{Contrastive objectives and why they break at scale}
 \label{sec:contrastive}
@@ -236,7 +236,7 @@ to any width; the smallest already dominates (\S\ref{sec:exp}).
 
 \subsection{Two-stage retrieval}
 Stage-1 builds an HNSW index ($M{=}20$, $\mathrm{ef}{=}200$)~\cite{hnsw20} in
-nmslib's \texttt{WeightedJaccard} space~\cite{boytsov13} over the $d$-dim
+nmslib's \texttt{WeightedJaccard} space~\cite{shape2vec} over the $d$-dim
 embeddings, returning top-$K$; Stage-2 reranks by exact WJ on the original vectors
 (Numba~\cite{lam15}). $K$ trades recall for speed.
 
