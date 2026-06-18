@@ -39,7 +39,7 @@ The WJ-distillation output is now the **best** layer (the opposite of triplet/In
 | Stage-1 (HNSW, no rerank) | **0.905** | 0.992 |
 | + exact-WJ rerank | **0.999** | 0.995 |
 
-It also **generalizes** — on held-out (unseen) queries the recall holds (no memorization), unlike the contrastive models, whose top-50 recall dropped sharply on unseen queries.
+It also **generalizes** — on a held-out split (queries never seen in training) it scores R@50 = 0.92 / R@500 = 0.995, matching the train-set numbers (i.e. no memorization). The contrastive models, by contrast, lost top-50 recall sharply on unseen queries.
 
 ## 5. Full-scale on the 47K (held-out)
 Per your suggestion, we ran the same WJ-distillation on the **47K pool, split 80% corpus (37,403) / 20% held-out queries (9,351)** — area-stratified (the area distributions of the two partitions match to ~0.6 percentage points). The model trains only on the corpus; the held-out queries are searched against it. One Matryoshka model, truncated to each dimension at query time.
