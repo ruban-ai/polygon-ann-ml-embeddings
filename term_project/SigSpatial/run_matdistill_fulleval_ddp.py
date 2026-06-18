@@ -16,7 +16,7 @@ from sota_experiment_common import (load_dataset_normalized, nmslib_neighbors,
     preload_rerank_corpus, release_rerank_corpus, rerank_wj_gpu, eval_recall)
 
 PREFIXES=[256,512,1024,2048,4096]; EMB=4096
-B=512; EPOCHS=20; LR=1e-3; WD=1e-4; MAX_POS=30
+B=512; EPOCHS=5; LR=1e-3; WD=1e-4; MAX_POS=30
 EF=200; RB=64; CAND_KS=[1000,2000]; SEED=42
 KNN_CACHE='/tmp/corpus_knn_full.npy'
 CSV="/raid/ruban/hpmlproj/term_project/SigSpatial/NEW_RESULTS.csv"
