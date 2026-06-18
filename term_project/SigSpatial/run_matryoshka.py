@@ -123,7 +123,7 @@ def main():
         for ai,pi in tqdm(loader,desc=f"ep{ep:02d}/{EPOCHS}",ncols=110,mininterval=10):
             a=vecs[ai.to(DEV)]; p=vecs[pi.to(DEV)]; b=a.shape[0]
             z,xr=model(torch.cat([a,p])); za,zb=z[:b],z[b:]
-            fn=build_fn_mask(ai,pi,gtg,qs); main_l,metric=matry(za,zb,fn); rec=F.mse_loss(xr[:b],a)
+            fn=build_fn_mask(ai,pi,gtg,gt_train_start); main_l,metric=matry(za,zb,fn); rec=F.mse_loss(xr[:b],a)
             loss=main_l+LAM_REC*rec
             opt.zero_grad(set_to_none=True); loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(),1.0); opt.step()
