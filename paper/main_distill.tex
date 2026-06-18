@@ -358,10 +358,29 @@ InfoNCE (512 / 4096)      & 0.505\,/\,0.568 & 0.606\,/\,0.657 & 0.727\,/\,0.751 
 \end{tabular}
 \end{table}
 
-\noindent\textbf{Ablation.} On 10k, the false-negative filter is essential: adding
-WJ regression \emph{without} it collapses recall to R@10 $=0.510$, while with it
-recall is restored (R@50 $0.808$); decoder reconstruction then adds $+5.0$\,pp
-R@50 (to $0.858$).
+\noindent\textbf{Ablation (Table~\ref{tab:ablation}).} On 10k, the false-negative
+filter is essential: adding WJ regression \emph{without} it collapses recall to
+R@10 $=0.510$, while with it recall is restored (R@50 $0.808$); decoder
+reconstruction then adds $+5.0$\,pp R@50 (to $0.858$).
+
+\begin{table}[t]\centering
+\caption{Component ablation (Stage-1, 10k, no rerank). The FN filter and decoder
+reconstruction are both required; without filtering, WJ regression collapses.
+$\ddagger$~=~ours.}
+\label{tab:ablation}\small\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}llcrr@{}}
+\toprule
+Model & FN filter & Aux.\ loss & R@10 & R@50 \\
+\midrule
+MLP & \xmark & ---           & 0.677 & 0.806 \\
+MLP & \cmark & ---           & 0.656 & 0.773 \\
+MLP & \xmark & WJ regression & 0.510 & 0.736 \\
+MLP & \cmark & WJ regression & 0.669 & 0.808 \\
+AE  & ---    & recon.\ only  & 0.665 & 0.745 \\
+\textbf{AE} & \cmark & \textbf{triplet+recon} & \textbf{0.711} & \textbf{0.858} \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 %% ---------------- 5. Conclusion ----------------
 \section{Conclusion}
