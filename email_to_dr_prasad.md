@@ -59,7 +59,7 @@ Per your suggestion, we ran the same WJ-distillation on the **47K pool, split 80
 **[Figure 3 — fig3_47k_frontier.png]:** the recall–throughput frontier — recall stays ~0.85 while throughput spans 1,150 → 6,070 QPS across the truncation dimensions.
 
 ## 6. Next steps
-Once the 47K confirms, we will scale to the full 187K corpus and the larger Overture sets, and finalize the recall–throughput frontier (dimension as the tunable knob) for the paper.
+With the 47K confirmed, we next scale to the full 187K corpus and the larger Overture sets, and finalize the recall–throughput frontier (dimension as the tunable knob) for the paper.
 
 Happy to walk through any of this in person.
 
