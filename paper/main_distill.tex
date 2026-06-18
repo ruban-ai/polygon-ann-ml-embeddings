@@ -467,14 +467,17 @@ AE WJ-tri+recon$^\ddagger$              & 512 & 0.711 & 0.858 & 0.977 & 10{,}903
 {\scriptsize $b$~=~binary bits (Hamming space).}
 \end{table}
 
-Table~\ref{tab:results} shows the moderate-scale results. \rs{Once the 10K
-distillation row lands, restate the best method here. If distillation also wins at
-10K, frame triplet/AE/InfoNCE as the ablation progression toward it.}
-The AE WJ-triplet+recon model achieves $+16.3$\,pp R@50 over the best non-learned
-baseline at 78$\times$ the QPS of brute-force ICWS; Stage-2 exact-WJ reranking lifts
-R@10 above 0.996 for all our variants. Since reranking reorders but cannot enlarge
-the candidate pool, recovering broad (R@500) recall instead requires a larger $K$
-(Table~\ref{tab:full}).
+Table~\ref{tab:results} shows the moderate-scale results. WJ-native distillation is
+the strongest method, reaching R@50 $=0.930$ --- $+7.2$\,pp over the best contrastive
+model (AE WJ-triplet+recon, 0.858) and exceeding even brute-force ICWS (0.897) at
+over 100$\times$ its throughput (14{,}552 vs.\ 139 QPS). The contrastive models
+(triplet, AE, and the InfoNCE variant of Sec.~\ref{sec:filter}) are competitive at
+this scale --- AE WJ-triplet+recon already beats the best non-learned baseline by
+$+9.9$\,pp R@50 --- but they reveal their limitation only at scale
+(Sec.~\ref{sec:fullscale}), motivating the alignment analysis that follows. Stage-2
+exact-WJ reranking lifts R@10 above 0.996 for all our variants. Since reranking
+reorders but cannot enlarge the candidate pool, recovering broad (R@500) recall
+instead requires a larger $K$ (Table~\ref{tab:full}).
 
 \subsection{Ablation Study}
 \label{sec:ablation}
