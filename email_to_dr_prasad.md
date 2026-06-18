@@ -2,7 +2,7 @@ Subject: WJ candidate generator — why triplet/InfoNCE underperformed, and a fi
 
 Dear Dr. Prasad,
 
-Quick update on the learned Stage-1 candidate generator for Weighted-Jaccard (WJ) polygon retrieval. We found *why* the triplet and InfoNCE embeddings were underperforming, and a principled fix that already works. Two figures attached.
+Quick update on the learned Stage-1 candidate generator for Weighted-Jaccard (WJ) polygon retrieval. We found *why* the triplet and InfoNCE embeddings were underperforming, and a principled fix that already works — now validated at scale. Three figures attached.
 
 — — —
 
