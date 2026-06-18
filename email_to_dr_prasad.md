@@ -75,7 +75,7 @@ For reference, a **random projection** on the same held-out 47K reaches only **R
 **[Figure 3 — fig3_47k_frontier.png]:** the recall–throughput frontier — recall stays ~0.85 while throughput spans 1,150 → 6,070 QPS across the truncation dimensions.
 
 ## 6. Next steps
-With the 47K confirmed, we next scale to the full 187K corpus and the larger Overture sets, and finalize the recall–throughput frontier (dimension as the tunable knob) for the paper.
+With the 47K confirmed, I think we have time to run a **full-scale experiment** (the complete 187K corpus, and the larger Overture sets) before the deadline and see how it turns out — finalizing the recall–throughput frontier, with dimension as the tunable knob, for the paper.
 
 Happy to walk through any of this in person.
 
