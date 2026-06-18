@@ -153,11 +153,11 @@ def main():
         for ck in CAND_KS:
             cand,ci=nmslib_neighbors(ce,qe,space="WeightedJaccard",k=ck,threads=THREADS,query_params={"efSearch":EF})
             t1=time.time(); rr=rerank_wj_gpu(qq_eval,cand,cq,cs,top_k=ck,batch_size=RB); e2e=len(qq_eval)/max(ci["query_s"]+(time.time()-t1),1e-9)
-            mm=eval_recall_by_qids(gt,rr,list(eval_idx),ck) if eval_qids else eval_recall(gt,rr,qs,ck)
+            mm=eval_recall_by_qids(eval_gt_use,rr,list(eval_idx),ck) if eval_qids else eval_recall(eval_gt_use,rr,qs,ck)
             print(f"[d={m} rerank K={ck} {tag}] R@50={mm[50]:.4f} R@500={mm[500]:.4f} e2eQPS={e2e:.0f}",flush=True)
             rows_all.append([m,"rerank",ck,mm[10],mm[50],mm[100],mm[500],round(e2e)])
         release_rerank_corpus()
-    split_note=f" eval20 n={len(eval_qids)}" if eval_qids else ""
+    split_note=f" {tag} n={len(eval_qids)}" if eval_qids else ""
     note=f"Matryoshka {A.loss} max_pos={MAX_POS} emb={EMB} prefixes={PREFIXES}; truncated+renorm; {THREADS} threads efSearch={EF}{split_note}"
     with open(CSV,"a",newline="") as f:
         w=csv.writer(f)
