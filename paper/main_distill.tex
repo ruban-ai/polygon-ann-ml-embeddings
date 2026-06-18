@@ -215,8 +215,20 @@ the 187k scale (\S\ref{sec:exp}) their Stage-1 recall ties an untrained random
 projection and \emph{flatlines} with $k$. Worse, the loss \emph{damages the layer
 it is applied to}: reading the deployed output gives the \emph{worst} recall in the
 network (R@500 $0.65$, below a random projection's $0.77$), while an untouched
-intermediate layer is best ($0.82$) --- the optimised layer is the wrong one to
-deploy. This motivates supervising the metric itself.
+intermediate layer is best ($0.82$, Fig.~\ref{fig:layer}) --- the optimised layer is
+the wrong one to deploy. Rank fidelity collapses with it: the Spearman correlation
+between embedding-WJ and true-WJ falls from $0.76$ at that intermediate layer to
+$0.14$ at the deployed output, tracking the recall drop. This motivates supervising
+the metric itself.
+
+\begin{figure}[t]\centering
+\includegraphics[width=0.74\columnwidth]{fig_layer_tap.png}
+\caption{The contrastive loss damages the layer it is applied to. Within one
+trained triplet model, Stage-1 recall \emph{falls} the closer the layer is to the
+loss: the deployed 512-d output is the \emph{worst} layer --- below an untrained
+random projection --- while an untouched intermediate layer is best.}
+\label{fig:layer}
+\end{figure}
 
 \subsection{WJ-native distillation}
 \label{sec:distill}
