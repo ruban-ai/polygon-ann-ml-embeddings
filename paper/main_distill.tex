@@ -178,7 +178,7 @@ embedding's WJ; retrieval is HNSW Stage-1 then exact-WJ rerank.
 
 \subsection{WJ-native simplex embedding}
 \label{sec:embed}
-The encoder is a three-layer MLP ($18{,}219\!\to\!4096\!\to\!1024\!\to\!d$). An MLP
+The encoder is an MLP ($D\!\to\!4096\!\to\!d$). An MLP
 is deliberate: boundary Transformers~\cite{mai22}, vertex GNNs~\cite{polygongnn24}
 and set encoders~\cite{deepsets17} aggregate \emph{local} context and assume
 cosine/Euclidean outputs, whereas WJ is a \emph{global} statistic over all $D$
