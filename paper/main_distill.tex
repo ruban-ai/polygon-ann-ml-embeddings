@@ -210,9 +210,11 @@ simplex projection:
 making $WJ(f_\theta(\mathbf{x}),f_\theta(\mathbf{y}))$ well-defined and directly
 indexable under ShapeToVec's Weighted Jaccard distance in HNSW~\cite{shape2vec}.
 
-\subsection{Limitations of contrastive objectives}
+\subsection{Contrastive autoencoder training}
 \label{sec:contrastive}
-Our first route is metric learning. With anchor--positive pairs and in-batch
+Our first route trains the encoder $f_\theta$ as a \emph{contrastive autoencoder},
+pairing it with a decoder $g_\phi$ and supervising the embedding with a contrastive
+loss plus a reconstruction term. With anchor--positive pairs and in-batch
 cross-WJ $S_{ij}=WJ(f_\theta(\mathbf{a}_i),f_\theta(\mathbf{p}_j))$, a
 \emph{false-negative filter} $\mathcal{G}$ masks a query's true neighbours before
 mining the hardest negative $j^\star$, and a triplet loss~\cite{schroff15} with
