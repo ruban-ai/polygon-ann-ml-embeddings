@@ -293,12 +293,12 @@ throughput. Reranking lifts R@10 above $0.996$ for all variants.
 At $23\times$ the database, the contrastive advantage collapses: AE WJ-triplet+recon
 ties random projection on R@50 and flatlines (R@500 $=$ R@50 $=0.656$); InfoNCE
 recovers wide-net recall (R@500 0.727) but never wins both ends. WJ-distillation, by
-aligning objective and metric, reaches Stage-1 R@500 $=0.886$ at 256-d ---
-$+16$\,pp over both --- and after reranking gives the highest recall at the highest
-throughput: R@500 $=0.964$ vs.\ random projection's $0.927$ at nearly $2\times$ the
-QPS. This is, to our knowledge, the first learned WJ embedding to beat random
-projection on \emph{both} the near- and wide-net frontiers at scale; recall no
-longer flatlines (R@500 $\gg$ R@50).
+aligning objective and metric, reaches Stage-1 R@500 $=0.890$ at 256-d ---
+$+16$\,pp over both, on all 46{,}754 held-out queries --- and after reranking gives
+the highest recall at the highest throughput: R@500 $=0.966$ vs.\ random
+projection's $0.927$ at nearly $2\times$ the QPS. This is, to our knowledge, the
+first learned WJ embedding to beat random projection on \emph{both} the near- and
+wide-net frontiers at scale; recall no longer flatlines (R@500 $\gg$ R@50).
 
 \begin{table}[t]\centering
 \caption{Full-corpus two-stage results (187k database, held-out queries; identical
