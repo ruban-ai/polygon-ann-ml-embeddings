@@ -164,22 +164,17 @@ def main():
         model.train(); sampler.set_epoch(ep); tl=st=0
         it=tqdm(loader,desc=f"ep{ep:02d}/{EPOCHS}",ncols=100,mininterval=10) if main else loader
         for ai,pi in it:
-            ids=torch.cat([ai,pi]).to(DEV)
+            aid=ai.to(DEV); pid=pi.to(DEV); ids=torch.cat([aid,pid])
             if distill:
                 xb=Cn_g[ids]; rb=torch.from_numpy(QT[ids.cpu().numpy()]).to(DEV); z=model(xb)
                 with torch.no_grad(): tw=raw_wj(rb)
                 loss=matry_distill(z,tw)
             else:
-                bn=ai.shape[0]; xb=Cn_g[ids]; z,xr=model(xb); za,zb=z[:bn],z[bn:]
-                bk=knn_t[ids]                          # (2bn,30) kNN ids of each batch item
-                gtm=(bk[:,None,:]==ids[None,:,None]).any(2)  # (2bn,2bn) FN mask
-                main_l=matry_contrastive(za,zb,gtm[:bn,bn:] if False else None,lossfn)  # in-batch over 2bn
-                main_l=matry_contrastive(za,zb,gtm[:bn][:, :bn] if False else None,lossfn)
-                # use full 2bn cross-WJ with FN mask:
-                main_l=0.
-                for mm in PREFIXES:
-                    zb_full=norm(z[:,:mm]); main_l=main_l+lossfn(norm(za[:,:mm]),norm(zb[:,:mm]),gtm[:bn,bn:])[0]
-                main_l=main_l/len(PREFIXES); rec=F.mse_loss(xr[:bn],xb[:bn])
+                bn=aid.shape[0]; xb=Cn_g[ids]; z,xr=model(xb); za,zb=z[:bn],z[bn:]
+                bk=knn_t[aid]                                 # (bn,30) kNN ids of anchors
+                gtm=(bk[:,None,:]==pid[None,:,None]).any(2)   # (bn,bn): positive j is a true neighbour of anchor i
+                main_l=sum(lossfn(norm(za[:,:mm]),norm(zb[:,:mm]),gtm)[0] for mm in PREFIXES)/len(PREFIXES)
+                rec=F.mse_loss(xr[:bn],xb[:bn])
                 loss=main_l+LAM_REC*rec
             opt.zero_grad(set_to_none=True); loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(),1.0); opt.step(); tl+=loss.item(); st+=1
