@@ -260,8 +260,8 @@ Eq.~\eqref{eq:distill} on nested prefixes $\{256,\dots,4096\}$
 to any width; the smallest already dominates (\S\ref{sec:exp}).
 
 \subsection{Two-stage retrieval}
-Stage-1 builds an HNSW index ($M{=}20$, $\mathrm{ef}{=}200$)~\cite{hnsw20} in
-nmslib's \texttt{WeightedJaccard} space~\cite{shape2vec} over the $d$-dim
+Stage-1 builds an HNSW index ($M{=}20$, $\mathrm{ef}{=}200$)~\cite{hnsw20} under
+ShapeToVec's custom Weighted Jaccard distance~\cite{shape2vec} over the $d$-dim
 embeddings, returning top-$K$; Stage-2 reranks by exact WJ on the original vectors
 (Numba~\cite{lam15}). $K$ trades recall for speed.
 
