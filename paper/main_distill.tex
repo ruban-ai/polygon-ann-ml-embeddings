@@ -257,10 +257,10 @@ embeddings, returning top-$K$; Stage-2 reranks by exact WJ on the original vecto
 \label{sec:exp}
 We use OSM Parks polygons~\cite{osm,shape2vec} at two scales: 10k (8k database / 2k
 queries) and the full corpus (187{,}019 database; 46{,}754 queries). At 10k the 2k
-queries are disjoint from the 8k database; at full scale, learned models are trained
-without seeing the evaluation queries (held out as described per experiment), so the
-full-scale numbers measure generalization to unseen queries. Ground truth is exact
-top-500 WJ on the $D$-dim vectors. We report R@$k$ ($k\in\{10,50,500\}$) and QPS (PyTorch~\cite{paszke19},
+queries are disjoint from the 8k database. At full scale, the distillation encoder is
+trained only on corpus-internal neighbour pairs and evaluated on \emph{all}
+46{,}754 queries --- none seen in training --- so the numbers measure generalization
+to entirely unseen queries. Ground truth is exact top-500 WJ on the $D$-dim vectors. We report R@$k$ ($k\in\{10,50,500\}$) and QPS (PyTorch~\cite{paszke19},
 AdamW~\cite{loshchilov19}, cosine annealing~\cite{loshchilov17}; single GPU).
 
 \begin{table}[t]\centering
