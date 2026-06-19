@@ -138,7 +138,16 @@ none produce WJ-compatible embeddings. Our contributions:
 %% ---------------- 2. Related Work ----------------
 \section{Related Work}
 \label{sec:related}
-ShapeToVec~\cite{shape2vec} produces the quadtree WJ vectors we compress.
+\textbf{ShapeToVec and its gap.} ShapeToVec~\cite{shape2vec} is the state of the art
+for WJ polygon retrieval: its adaptive quadtree grid encodes each polygon as a
+high-dimensional floating-point simplex vector, and a custom Weighted Jaccard
+distance it adds to NMSLIB~\cite{boytsov13} lets HNSW index these vectors directly,
+reaching $97\%$ R@50 (versus $67\%$ for its bit-vector variant). That accuracy,
+however, rests on tens of thousands of dimensions: ShapeToVec itself notes that such
+vectors strain HNSW memory as datasets grow, and that generic compression
+(e.g.\ product quantization) shrinks the footprint only by \emph{degrading} accuracy.
+We fill this gap with a learned, WJ-native compression --- up to $72\times$ smaller
+while preserving (indeed improving) WJ retrieval.
 WJ \emph{sketching} --- ICWS~\cite{ioffe10}, ProbMinHash~\cite{probminhash20},
 PolyMinHash~\cite{polyminhash25} --- gives unbiased estimators but integer codes
 incompatible with float-vector ANN indexes. Learned
