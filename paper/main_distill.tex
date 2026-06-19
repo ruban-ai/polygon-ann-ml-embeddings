@@ -93,14 +93,18 @@ approximate nearest neighbor, probability simplex}
 %% ---------------- 1. Introduction ----------------
 \section{Introduction}
 \label{sec:intro}
-Geospatial applications increasingly search large polygon datasets --- parks,
-water bodies, parcels --- for similar shapes, where Weighted Jaccard (WJ)
+Finding similar shapes in large polygon datasets is a fundamental geospatial
+operation, underpinning data deduplication, conflation, and map integration. Such
+polygons abound in open repositories: Natural Earth provides the park, water-body,
+and sports-facility shapes we study, with further sources such as Overture Maps and
+building-footprint collections (e.g.\ Google Open Buildings). Quantifying shape
+overlap calls for an area-aware metric; Weighted Jaccard (WJ),
 \begin{equation}
   WJ(\mathbf{a},\mathbf{b}) = \frac{\sum_i \min(a_i,b_i)}{\sum_i \max(a_i,b_i)},
   \quad \mathbf{a},\mathbf{b} \ge \mathbf{0},
   \label{eq:wj}
 \end{equation}
-is the standard area-weighted overlap metric. The core difficulty is
+is the standard choice. The core difficulty is
 \emph{extreme area variability}: polygon areas span orders of magnitude, so a
 uniform grid either explodes in dimension or collapses small shapes into
 near-empty vectors. ShapeToVec~\cite{shape2vec} resolves this with an adaptive
@@ -356,7 +360,7 @@ Stage-1 (no rerank)        & 0.720 & 0.797 & 0.890 & 2{,}136 \\
 \noindent\textbf{Dimension is a throughput knob (Fig.~\ref{fig:dim}, Table~\ref{tab:dim}).}
 Because the encoder is Matryoshka, one model serves every width. Distillation's
 recall is essentially flat from 256 to 4096 (R@500 $0.924\!\to\!0.925$) while QPS
-falls ${\sim}7\times$, so 256-d --- a $71\times$ compression --- is the natural
+falls ${\sim}7\times$, so 256-d --- a $72\times$ compression --- is the natural
 operating point. Baselines, by contrast, stay below distillation at \emph{every} width.
 
 \begin{figure}[t]\centering
@@ -415,7 +419,7 @@ AE  & ---    & recon.\ only  & 0.665 & 0.745 \\
 
 %% ---------------- 5. Conclusion ----------------
 \section{Conclusion}
-We compress ShapeToVec WJ vectors up to $71\times$ with a WJ-native simplex
+We compress ShapeToVec WJ vectors up to $72\times$ with a WJ-native simplex
 embedding. Contrastive objectives suffice at moderate scale but fall to
 random-projection level on the held-out 50K benchmark --- they optimise separation,
 not the WJ ranking recall needs, and damage the deployed layer. WJ-native
