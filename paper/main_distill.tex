@@ -125,10 +125,12 @@ none produce WJ-compatible embeddings. Our contributions:
   \item A \textbf{WJ-native simplex embedding}: ReLU\,+\,$\ell_1$ outputs let WJ be
     computed directly under ShapeToVec's custom Weighted Jaccard distance in
     HNSW~\cite{shape2vec}, no post-processing.
-  \item A \textbf{diagnosis}: at scale, ranking objectives (triplet, InfoNCE)
-    drop to random-projection level --- not for lack of capacity, but because
-    recall needs WJ \emph{rank preservation}, not pairwise separation, and the loss
-    damages the deployed layer (\S\ref{sec:exp}).
+  \item \textbf{A diagnosis} of why contrastive embeddings underperform for WJ
+    retrieval: recall is governed by preserving the true WJ \emph{ranking}, not
+    pairwise separation, so triplet/InfoNCE objectives are misaligned --- and the
+    loss \emph{damages the layer it is applied to}, making the deployed output the
+    worst layer in the network, even below an untrained random projection
+    (\S\ref{sec:contrastive}).
   \item \textbf{WJ-native distillation}: regressing the embedding's WJ onto the
     true WJ aligns objective with metric, giving a single
     Matryoshka~\cite{matryoshka22} encoder that beats random projection at near-
