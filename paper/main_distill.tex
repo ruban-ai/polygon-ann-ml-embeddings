@@ -301,25 +301,38 @@ first learned WJ embedding to beat random projection on \emph{both} the near- an
 wide-net frontiers at scale; recall no longer flatlines (R@500 $\gg$ R@50).
 
 \begin{table}[t]\centering
-\caption{Full-corpus two-stage results (187k database, held-out queries; identical
-HNSW/rerank). Distillation at its smallest (256-d) prefix. $\ddagger$~=~ours.
-\rs{Distillation rows = all 46{,}754 held-out queries (corpus-trained), final.
-Baseline rows provisional pending a consistent all-query re-eval.}}
-\label{tab:full}\setlength{\tabcolsep}{3.5pt}\small
+\caption{50K benchmark (40k corpus / 10k held-out queries; geometric-Jaccard GT).
+All methods corpus-trained, shown at 256-d. $\ddagger$~=~ours. \textbf{Bold}~=~best.}
+\label{tab:full50k}\setlength{\tabcolsep}{3.5pt}\small
 \begin{tabular}{@{}llrrrr@{}}
 \toprule
 Method & $K$ & R@10 & R@50 & R@500 & QPS \\
 \midrule
 \multicolumn{6}{@{}l@{}}{\textit{Stage 1 — no rerank}}\\[1pt]
-Rand.\ Proj.~\cite{achlioptas03}    & --- & 0.628 & 0.663 & 0.722 & 1{,}275 \\
-AE WJ-tri+recon$^\ddagger$          & --- & 0.566 & 0.656 & 0.656 & 1{,}188 \\
-InfoNCE--WJ$^\ddagger$              & --- & 0.505 & 0.606 & 0.727 & 2{,}191 \\
-\textbf{WJ-distillation}$^\ddagger$ & --- & \textbf{0.720} & \textbf{0.797} & \textbf{0.890} & \textbf{2{,}136} \\
+Rand.\ Proj.~\cite{achlioptas03}    & --- & 0.616 & 0.659 & 0.766 & 3{,}890 \\
+triplet+recon$^\ddagger$            & --- & 0.494 & 0.600 & 0.725 & 3{,}810 \\
+InfoNCE--WJ$^\ddagger$              & --- & 0.459 & 0.560 & 0.720 & 7{,}128 \\
+\textbf{WJ-distillation}$^\ddagger$ & --- & \textbf{0.692} & \textbf{0.794} & \textbf{0.924} & \textbf{6{,}772} \\
 \midrule
 \multicolumn{6}{@{}l@{}}{\textit{Stage 2 — exact-WJ rerank}}\\[1pt]
-Rand.\ Proj.~\cite{achlioptas03}    & 2000 & 0.991 & 0.991 & 0.927 & 585 \\
-InfoNCE--WJ$^\ddagger$              & 2000 & 0.992 & 0.992 & 0.863 & 730 \\
-\textbf{WJ-distillation}$^\ddagger$ & 1000 & \textbf{0.993} & \textbf{0.995} & \textbf{0.966} & \textbf{1{,}166} \\
+Rand.\ Proj.~\cite{achlioptas03}    & 2000 & 0.994 & 0.995 & 0.955 & 904 \\
+triplet+recon$^\ddagger$            & 2000 & 0.994 & 0.994 & 0.859 & 898 \\
+InfoNCE--WJ$^\ddagger$              & 2000 & 0.993 & 0.987 & 0.821 & 1{,}345 \\
+\textbf{WJ-distillation}$^\ddagger$ & 2000 & \textbf{0.995} & \textbf{0.997} & \textbf{0.976} & \textbf{1{,}253} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]\centering
+\caption{Scaling to the full 187k Parks corpus: WJ-distillation on \emph{all}
+46{,}754 held-out queries (corpus-trained), 256-d prefix. $\ddagger$~=~ours.}
+\label{tab:full187}\setlength{\tabcolsep}{4pt}\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Stage & R@10 & R@50 & R@500 & QPS \\
+\midrule
+Stage-1 (no rerank)        & 0.720 & 0.797 & 0.890 & 2{,}136 \\
+\textbf{+ exact-WJ rerank} & \textbf{0.993} & \textbf{0.995} & \textbf{0.966} & 1{,}166 \\
 \bottomrule
 \end{tabular}
 \end{table}
