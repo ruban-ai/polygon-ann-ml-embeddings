@@ -262,9 +262,11 @@ embeddings, returning top-$K$; Stage-2 reranks by exact WJ on the original vecto
 %% ---------------- 4. Experiments ----------------
 \section{Experiments}
 \label{sec:exp}
-We use the Parks dataset~\cite{eldawy15} (233{,}773 polygons) encoded by
-ShapeToVec~\cite{shape2vec} at its \emph{highest-fidelity} resolution (tens of
-thousands of dimensions): the finest quadtree best preserves shape detail and gives
+We use the publicly released ShapeToVec dataset~\cite{shapetovec-data} --- quadtree
+encodings and shape-similarity ground truth for the Parks polygons (233{,}773;
+sourced from SpatialHadoop~\cite{eldawy15}) --- at its \emph{highest-fidelity}
+resolution (tens of thousands of dimensions): the finest quadtree best preserves
+shape detail and gives
 the strongest WJ recall, but is also the costliest to store and index --- making it
 the most valuable compression target. The main benchmark is a 50K set (40k corpus / 10k queries); we also use a 10k subset (8k / 2k) for the moderate-scale
 study and the full 187k Parks corpus (46{,}754 queries) for a scaling check. At 50k
