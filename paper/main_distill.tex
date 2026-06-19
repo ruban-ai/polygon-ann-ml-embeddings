@@ -313,6 +313,24 @@ distillation's 256-d $0.976$, and at ${\sim}10\times$ the latency. To our knowle
 this is the first learned WJ embedding to beat random projection on \emph{both} the
 near- and wide-net frontiers.
 
+\noindent\textbf{Why contrastive fails (Fig.~\ref{fig:layer}).}
+The collapse is objective--metric misalignment, not a capacity limit. Within a
+trained contrastive model, Stage-1 recall \emph{rises} the further a layer sits from
+the loss: the deployed output is the \emph{worst} layer (R@500 $0.65$, below random
+projection's $0.77$), while an untouched intermediate layer is best ($0.82$). Rank
+fidelity mirrors this --- the Spearman correlation between embedding-WJ and true-WJ
+falls from $0.76$ at that layer to $0.14$ at the output --- so the loss harms exactly
+the representation it is meant to produce.
+
+\begin{figure}[t]\centering
+\includegraphics[width=0.74\columnwidth]{fig_layer_tap.png}
+\caption{The contrastive loss damages the layer it is applied to. Within one trained
+contrastive model, Stage-1 recall \emph{falls} the closer the layer is to the loss:
+the deployed 512-d output is the \emph{worst} layer --- below an untrained random
+projection --- while an untouched intermediate layer is best.}
+\label{fig:layer}
+\end{figure}
+
 \noindent\textbf{The full Parks corpus (Table~\ref{tab:full187}).}
 The same encoder applies unchanged to the full 187k Parks corpus: trained only on
 corpus neighbours and evaluated on \emph{all} 46{,}754 held-out queries, it reaches
