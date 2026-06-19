@@ -45,23 +45,28 @@ Similarity Search under Extreme Area Variation}
 \renewcommand{\shortauthors}{Sampath et al.}
 
 \begin{abstract}
-Similarity search over polygon datasets relies on Weighted Jaccard (WJ) to
-capture area-weighted shape overlap. ShapeToVec~\cite{shape2vec} encodes each
-polygon as an 18{,}219-dimensional probability-simplex vector indexed with
-HNSW~\cite{hnsw20} in nmslib's \texttt{WeightedJaccard} space~\cite{shape2vec},
-but the dimensionality is costly to store and search. We learn a compact,
-WJ-native simplex embedding (up to $71\times$ smaller). A contrastive route
-(triplet, reconstruction, InfoNCE) is strong on a 10k subset but, on a larger
-held-out 50K benchmark, is \emph{no better than an untrained random projection}:
-these are separation proxies that do not preserve the WJ ranking recall depends on,
-and the loss even damages the deployed output layer. We instead \emph{distill the
-metric} --- regressing the embedding's WJ onto the true WJ aligns the objective with
-the retrieval metric. A single Matryoshka~\cite{matryoshka22} encoder then surpasses
-random projection at \emph{both} near- and wide-net recall: on the 50K benchmark
-(40k corpus, 10k held-out queries), Stage-1 Recall@500 of 0.924 vs.\ 0.77 and 0.976
-vs.\ 0.97 after reranking, at higher throughput and already at 256 dimensions. It
-scales to the full 187k corpus (R@500 0.890 / 0.966 on all 46{,}754 held-out
-queries) and reaches 10k Recall@50 0.93 (above brute-force ICWS) at 14.5k QPS.
+Similarity search over polygonal datasets is a critical spatial-data operation, with
+Weighted Jaccard (WJ) capturing area-based shape overlap. The current state-of-the-art
+ShapeToVec encodes a polygon leveraging a quad-tree-based non-uniform grid, accounting
+for extreme area variations, employing a Hierarchical Navigable Small World (HNSW)
+index for fast retrieval. However, their high dimensionality imposes a heavy memory
+cost and query throughput penalty. We propose an efficient learned compact
+WJ-compatible compression employing a simplex-constrained encoder. A contrastive
+instantiation --- a WJ-native triplet loss with false-negative filtering and decoder
+reconstruction --- gives 36$\times$ smaller 512-dimensional vectors and, on a 10k
+subset of the Parks dataset, reaches Recall@50 $=0.858$ at 10{,}903 QPS (78$\times$
+faster than brute-force Improved Consistent Weighted Sampling (ICWS)) and Recall@10
+$>0.996$ following exact-WJ reranking. However, when scaling to a larger held-out
+benchmark, such ranking objectives no longer beat an untrained random projection:
+they optimize separation rather than the WJ ranking recall depends on, and the loss
+even damages the deployed layer. We close this gap with \emph{WJ-native distillation}
+--- regressing the embedding's WJ directly onto the true WJ --- which aligns the
+training objective with the retrieval metric and yields a single Matryoshka encoder
+deployable at any dimension. This is, to our knowledge, the first learned WJ embedding
+to surpass random projection on both the near- and wide-net recall--throughput
+frontiers at scale: on a 50K benchmark it reaches Recall@500 $=0.924$ ($0.976$ after
+reranking) at just 256 dimensions (72$\times$ compression), surpassing random
+projection at every dimension while running several-fold faster.
 \end{abstract}
 
 \begin{CCSXML}
