@@ -243,7 +243,7 @@ We align the objective with the metric directly. For a batch of $N$ encodings we
 form the true WJ on the original $D$-dim vectors, $T_{ij}=WJ(\mathbf{x}_i,\mathbf{x}_j)$,
 and the embedding WJ, $\hat T_{ij}=WJ(f_\theta(\mathbf{x}_i),f_\theta(\mathbf{x}_j))$, and minimise
 \begin{equation}
-  \mathcal{L}_{\mathrm{dist}}=\frac{1}{M^2}\sum_{i,j}\big(\hat T_{ij}-T_{ij}\big)^2 .
+  \mathcal{L}_{\mathrm{dist}}=\frac{1}{N^2}\sum_{i,j}\big(\hat T_{ij}-T_{ij}\big)^2 .
   \label{eq:distill}
 \end{equation}
 The objective \emph{is} the retrieval metric, so the deployed output is exactly the
