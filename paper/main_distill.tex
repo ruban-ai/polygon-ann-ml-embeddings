@@ -275,7 +275,9 @@ corpus-internal neighbour pairs, so every query is held out and the numbers meas
 generalization to unseen queries; at 10k they are trained on the 2k-query set. Ground
 truth is the exact \emph{geometric} (shapely) Jaccard on the polygon geometry, which
 the quadtree-vector WJ approximates to within $0.999$ R@500. We report R@$k$ ($k\in\{10,50,500\}$) and QPS (PyTorch~\cite{paszke19},
-AdamW~\cite{loshchilov19}, cosine annealing~\cite{loshchilov17}; single GPU).
+AdamW~\cite{loshchilov19}, cosine annealing~\cite{loshchilov17}). All runs use an
+NVIDIA DGX~A100 (8$\times$ A100-SXM4 80\,GB GPUs, dual 64-core AMD EPYC~7742 CPUs,
+2\,TB RAM); QPS is measured on a single GPU.
 
 \begin{table}[t]\centering
 \caption{Stage-1 recall on the 10k subset (no rerank). $\dagger$~brute-force.
