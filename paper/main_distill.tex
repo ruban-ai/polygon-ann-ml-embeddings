@@ -255,12 +255,14 @@ embeddings, returning top-$K$; Stage-2 reranks by exact WJ on the original vecto
 %% ---------------- 4. Experiments ----------------
 \section{Experiments}
 \label{sec:exp}
-We use OSM Parks polygons~\cite{osm,shape2vec} at two scales: 10k (8k database / 2k
-queries) and the full corpus (187{,}019 database; 46{,}754 queries). At 10k the 2k
-queries are disjoint from the 8k database. At full scale, the distillation encoder is
-trained only on corpus-internal neighbour pairs and evaluated on \emph{all}
-46{,}754 queries --- none seen in training --- so the numbers measure generalization
-to entirely unseen queries. Ground truth is exact top-500 WJ on the $D$-dim vectors. We report R@$k$ ($k\in\{10,50,500\}$) and QPS (PyTorch~\cite{paszke19},
+We use OSM Parks polygons~\cite{osm,shape2vec}. The main benchmark is a 50K set
+(40k corpus / 10k queries); we also use a 10k subset (8k / 2k) for the moderate-scale
+study and the full 187k Parks corpus (46{,}754 queries) for a scaling check. At 50k
+and 187k, learned methods are \emph{corpus-trained} --- trained only on
+corpus-internal neighbour pairs, so every query is held out and the numbers measure
+generalization to unseen queries; at 10k they are trained on the 2k-query set. Ground
+truth is the exact \emph{geometric} (shapely) Jaccard on the polygon geometry, which
+the quadtree-vector WJ approximates to within $0.999$ R@500. We report R@$k$ ($k\in\{10,50,500\}$) and QPS (PyTorch~\cite{paszke19},
 AdamW~\cite{loshchilov19}, cosine annealing~\cite{loshchilov17}; single GPU).
 
 \begin{table}[t]\centering
