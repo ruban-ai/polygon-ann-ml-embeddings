@@ -289,16 +289,22 @@ WJ-distillation is the strongest method: R@50 $=0.930$, $+7.2$\,pp over the best
 contrastive model and above brute-force ICWS (0.897) at ${>}100\times$ its
 throughput. Reranking lifts R@10 above $0.996$ for all variants.
 
-\noindent\textbf{Full scale (Table~\ref{tab:full}).}
-At $23\times$ the database, the contrastive advantage collapses: AE WJ-triplet+recon
-ties random projection on R@50 and flatlines (R@500 $=$ R@50 $=0.656$); InfoNCE
-recovers wide-net recall (R@500 0.727) but never wins both ends. WJ-distillation, by
-aligning objective and metric, reaches Stage-1 R@500 $=0.890$ at 256-d ---
-$+16$\,pp over both, on all 46{,}754 held-out queries --- and after reranking gives
-the highest recall at the highest throughput: R@500 $=0.966$ vs.\ random
-projection's $0.927$ at nearly $2\times$ the QPS. This is, to our knowledge, the
-first learned WJ embedding to beat random projection on \emph{both} the near- and
-wide-net frontiers at scale; recall no longer flatlines (R@500 $\gg$ R@50).
+\noindent\textbf{The 50K benchmark (Table~\ref{tab:full50k}).}
+On 40k corpus polygons with 10k fully held-out queries, the contrastive methods
+collapse to the level of an untrained random projection: triplet and InfoNCE reach
+only Stage-1 R@500 $\approx 0.72$, at or below random projection ($0.77$--$0.84$
+across dimensions). WJ-distillation, by aligning objective and metric, reaches
+R@500 $=0.924$ at 256-d, and after reranking delivers the highest recall at the
+highest throughput: R@500 $=0.976$ at 6{,}772 QPS. Even at its best dimension
+(4096-d), random projection reaches only $0.972$ reranked --- still below
+distillation's 256-d $0.976$, and at ${\sim}10\times$ the latency. To our knowledge
+this is the first learned WJ embedding to beat random projection on \emph{both} the
+near- and wide-net frontiers.
+
+\noindent\textbf{Scaling to the full corpus (Table~\ref{tab:full187}).}
+The same encoder scales to the full 187k Parks corpus: trained only on corpus
+neighbours and evaluated on \emph{all} 46{,}754 held-out queries, it reaches
+Stage-1 R@500 $=0.890$ and $0.966$ after reranking.
 
 \begin{table}[t]\centering
 \caption{50K benchmark (40k corpus / 10k held-out queries; geometric-Jaccard GT).
