@@ -185,7 +185,7 @@ and set encoders~\cite{deepsets17} aggregate \emph{local} context and assume
 cosine/Euclidean outputs, whereas WJ is a \emph{global} statistic over all $D$
 dimensions that is distorted when cosine features are forced onto the simplex; the
 dense first layer mixes all dimensions globally (and holds ${\sim}75$M of the
-${\sim}80$M parameters). Because quadtree vectors are extremely sparse
+${\sim}92$M parameters). Because quadtree vectors are extremely sparse
 ($\sim$73\% zeros), we place BatchNorm~\cite{ioffe15bn} \emph{before} each ReLU to
 avoid a near-degenerate output. WJ requires non-negative inputs, enforced by a
 simplex projection:
