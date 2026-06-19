@@ -345,9 +345,9 @@ Stage-1 (no rerank)        & 0.720 & 0.797 & 0.890 & 2{,}136 \\
 
 \noindent\textbf{Dimension is a throughput knob (Fig.~\ref{fig:dim}, Table~\ref{tab:dim}).}
 Because the encoder is Matryoshka, one model serves every width. Distillation's
-recall is essentially flat from 256 to 4096 (R@500 $0.890\!\to\!0.899$) while QPS
-falls $2\times$, so 256-d --- a $71\times$ compression --- is the natural operating
-point. Ranking objectives, by contrast, stay low at \emph{every} width.
+recall is essentially flat from 256 to 4096 (R@500 $0.924\!\to\!0.925$) while QPS
+falls ${\sim}7\times$, so 256-d --- a $71\times$ compression --- is the natural
+operating point. Baselines, by contrast, stay below distillation at \emph{every} width.
 
 \begin{figure}[t]\centering
 \includegraphics[width=0.86\columnwidth]{fig_dim_distill.png}
