@@ -95,10 +95,10 @@ approximate nearest neighbor, probability simplex}
 \label{sec:intro}
 Finding similar shapes in large polygon datasets is a fundamental geospatial
 operation, underpinning data deduplication, conflation, and map integration. Such
-polygons abound in open repositories: Natural Earth provides the park, water-body,
-and sports-facility shapes we study, with further sources such as Overture Maps and
-building-footprint collections (e.g.\ Google Open Buildings). Quantifying shape
-overlap calls for an area-aware metric; Weighted Jaccard (WJ),
+polygons abound in open repositories: the park, water-body, and sports datasets we
+study come from the SpatialHadoop GIS benchmark~\cite{eldawy15}, with further
+large-scale sources such as Overture Maps and Google Open Buildings. Quantifying
+shape overlap calls for an area-aware metric; Weighted Jaccard (WJ),
 \begin{equation}
   WJ(\mathbf{a},\mathbf{b}) = \frac{\sum_i \min(a_i,b_i)}{\sum_i \max(a_i,b_i)},
   \quad \mathbf{a},\mathbf{b} \ge \mathbf{0},
