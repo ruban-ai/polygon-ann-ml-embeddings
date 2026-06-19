@@ -123,8 +123,8 @@ learning~\cite{hashsurvey14,deephashsurvey22} target Hamming or cosine spaces --
 none produce WJ-compatible embeddings. Our contributions:
 \begin{enumerate}[leftmargin=1.2em,itemsep=1pt,topsep=1pt]
   \item A \textbf{WJ-native simplex embedding}: ReLU\,+\,$\ell_1$ outputs let WJ be
-    computed directly in nmslib's \texttt{WeightedJaccard} HNSW
-    space~\cite{shape2vec}, no post-processing.
+    computed directly under ShapeToVec's custom Weighted Jaccard distance in
+    HNSW~\cite{shape2vec}, no post-processing.
   \item A \textbf{diagnosis}: at scale, ranking objectives (triplet, InfoNCE)
     drop to random-projection level --- not for lack of capacity, but because
     recall needs WJ \emph{rank preservation}, not pairwise separation, and the loss
