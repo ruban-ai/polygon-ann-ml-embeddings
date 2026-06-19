@@ -56,7 +56,7 @@ instantiation --- a WJ-native triplet loss with false-negative filtering and dec
 reconstruction --- gives 36$\times$ smaller 512-dimensional vectors and, on a 10k
 subset of the Parks dataset, reaches Recall@50 $=0.858$ at 10{,}903 QPS (78$\times$
 faster than brute-force Improved Consistent Weighted Sampling (ICWS)) and Recall@10
-$>0.996$ following exact-WJ reranking. However, when scaling to a larger held-out
+$>0.996$ following exact-WJ reranking. However, on a larger held-out
 benchmark, such ranking objectives no longer beat an untrained random projection:
 they optimize separation rather than the WJ ranking recall depends on, and the loss
 even damages the deployed layer. We close this gap with \emph{WJ-native distillation}
