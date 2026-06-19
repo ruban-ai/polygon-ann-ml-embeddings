@@ -212,8 +212,8 @@ non-saturating InfoNCE~\cite{oord18},
 extend the supervised neighbourhood. These are strong at 10k (Table~\ref{tab:results}).
 \emph{Yet all are separation proxies}: they push positives above negatives, which
 does \emph{not} guarantee the global WJ \emph{ranking} that recall depends on. At
-the 187k scale (\S\ref{sec:exp}) their Stage-1 recall ties an untrained random
-projection and \emph{flatlines} with $k$. Worse, the loss \emph{damages the layer
+the 50K benchmark (\S\ref{sec:exp}) their Stage-1 recall falls to that of an
+untrained random projection. Worse, the loss \emph{damages the layer
 it is applied to}: reading the deployed output gives the \emph{worst} recall in the
 network (R@500 $0.65$, below a random projection's $0.77$), while an untouched
 intermediate layer is best ($0.82$, Fig.~\ref{fig:layer}) --- the optimised layer is
