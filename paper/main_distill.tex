@@ -352,23 +352,23 @@ spot.}
 \end{figure}
 
 \begin{table}[t]\centering
-\caption{Full-corpus Stage-1 recall vs.\ dimension. Distillation is one Matryoshka
-model truncated per row; ranking objectives shown for contrast. $\ddagger$~=~ours.
-\rs{\textbf{TBD:} triplet/InfoNCE held-out re-eval (256--4096) in progress; values
-provisional.}}
+\caption{50K Stage-1 recall vs.\ dimension (40k corpus, 10k held-out queries).
+Distillation is one Matryoshka model truncated per row; baselines shown for
+contrast (256\,/\,4096). $\ddagger$~=~ours.}
 \label{tab:dim}\setlength{\tabcolsep}{3pt}\footnotesize
 \begin{tabular}{@{}lrrrr@{}}
 \toprule
 Method ($d$) & R@10 & R@50 & R@500 & QPS \\
 \midrule
-AE tri+recon (512 / 4096) & 0.566\,/\,0.603 & 0.656\,/\,0.691 & 0.656\,/\,0.699 & 1188\,/\,1145 \\
-InfoNCE (512 / 4096)      & 0.505\,/\,0.568 & 0.606\,/\,0.657 & 0.727\,/\,0.751 & 2191\,/\,1038 \\
+triplet+recon$^\ddagger$ & 0.494\,/\,0.495 & 0.600\,/\,0.601 & 0.725\,/\,0.734 & 3810\,/\,710 \\
+InfoNCE$^\ddagger$       & 0.459\,/\,0.464 & 0.560\,/\,0.563 & 0.720\,/\,0.720 & 7128\,/\,1168 \\
+Rand.\ Proj.             & 0.616\,/\,0.705 & 0.659\,/\,0.749 & 0.766\,/\,0.841 & 3890\,/\,704 \\
 \addlinespace[2pt]
-\textbf{Distill} 256 & \textbf{0.720} & \textbf{0.797} & \textbf{0.890} & 2{,}136 \\
-\textbf{Distill} 512 & 0.730 & 0.806 & 0.894 & 1{,}451 \\
-\textbf{Distill} 1024 & 0.737 & 0.812 & 0.898 & 1{,}489 \\
-\textbf{Distill} 2048 & 0.741 & 0.815 & 0.899 & 1{,}390 \\
-\textbf{Distill} 4096 & 0.740 & 0.814 & 0.899 & 1{,}168 \\
+\textbf{Distill} 256 & \textbf{0.692} & \textbf{0.794} & \textbf{0.924} & 6{,}772 \\
+\textbf{Distill} 512 & 0.697 & 0.799 & 0.926 & 3{,}111 \\
+\textbf{Distill} 1024 & 0.698 & 0.800 & 0.926 & 2{,}258 \\
+\textbf{Distill} 2048 & 0.697 & 0.799 & 0.926 & 1{,}180 \\
+\textbf{Distill} 4096 & 0.693 & 0.796 & 0.925 & 967 \\
 \bottomrule
 \end{tabular}
 \end{table}
