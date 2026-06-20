@@ -342,10 +342,11 @@ projection --- while an untouched intermediate layer is best.}
 \label{fig:layer}
 \end{figure}
 
-\noindent\textbf{The full Parks corpus (Table~\ref{tab:full187}).}
+\noindent\textbf{The full Parks corpus.}
 The same encoder applies unchanged to the full 187k Parks corpus: trained only on
 corpus neighbours and evaluated on \emph{all} 46{,}754 held-out queries, it reaches
-Stage-1 R@500 $=0.890$ and $0.966$ after reranking.
+Stage-1 R@50/R@500 $=0.797/0.890$ at 2{,}136 QPS, rising to $0.995/0.966$ after
+exact-WJ reranking (1{,}166 QPS).
 
 \begin{table}[t]\centering
 \caption{50K benchmark (40k corpus / 10k held-out queries; geometric-Jaccard GT).
