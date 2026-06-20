@@ -275,7 +275,9 @@ sourced from SpatialHadoop~\cite{eldawy15}) --- at its \emph{highest-fidelity}
 resolution ($D{=}18{,}382$ dimensions for the 50K benchmark, ${\sim}18.2$--$18.5$k
 across subsets): the finest quadtree best preserves shape detail and gives
 the strongest WJ recall, but is also the costliest to store and index --- making it
-the most valuable compression target. The main benchmark is a 50K set (40k corpus / 10k queries); we also use a 10k subset (8k / 2k) for the moderate-scale
+the most valuable compression target. The main benchmark is a 50K set partitioned into a 40k-polygon \emph{corpus} --- the
+indexed database that queries are searched against --- and 10k held-out query
+polygons; we also use a 10k subset (8k corpus / 2k queries) for the moderate-scale
 study and the full 187k Parks corpus (46{,}754 queries) for a scaling check. At 50k
 and 187k, learned methods are \emph{corpus-trained} --- trained only on
 corpus-internal neighbour pairs, so every query is held out and the numbers measure
