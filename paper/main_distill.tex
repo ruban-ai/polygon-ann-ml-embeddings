@@ -171,21 +171,25 @@ preserving WJ for fast HNSW retrieval (Fig.~\ref{fig:pipeline}).
   node distance=4.5mm and 5mm,
   box/.style={draw=black!55,rounded corners=2pt,fill=black!4,
               minimum height=9mm,align=center,inner sep=3pt},
-  tbox/.style={box,fill=blue!8,draw=blue!45}]
+  tbox/.style={box,fill=blue!8,draw=blue!45},
+  dbox/.style={box,fill=orange!8,draw=orange!55}]
  \node[box] (x) {ShapeToVec\\$\mathbf{x}\!\in\!\Delta^{D}$};
  \node[box,right=of x] (e) {Encoder $f_\theta$\\{\scriptsize MLP/BN/ReLU/$\ell_1$}};
  \node[box,right=of e] (z) {Embedding\\$\mathbf{z}\!\in\!\Delta^{d}$};
  \node[tbox,above=5mm of z] (t) {exact WJ teacher\\{\scriptsize ($D$-dim)}};
+ \node[dbox,below=5mm of z] (dec) {decoder $g_\phi$\\{\scriptsize reconstruct $\mathbf{x}$}};
  \node[box,right=of z] (h) {HNSW\\{\scriptsize Stage-1}};
  \node[box,right=of h] (r) {exact-WJ\\{\scriptsize Stage-2}};
  \draw[->](x)--(e); \draw[->](e)--(z);
  \draw[<->,dashed,blue!55](z)--node[right=0.4mm]{$\mathcal{L}_{\mathrm{dist}}$}(t);
+ \draw[->,dashed,orange!80](z)--node[right=0.4mm]{$\mathcal{L}_{\mathrm{rec}}$}(dec);
  \draw[->](z)--(h); \draw[->](h)--(r);
 \end{tikzpicture}}
 \caption{WJ-native pipeline. The encoder maps a quadtree vector onto the
-probability simplex; training distills the exact $D$-dim WJ (teacher) into the
-embedding's WJ; retrieval is HNSW Stage-1 then exact-WJ rerank.
-\rs{tweak node spacing if it overflows the column.}}
+probability simplex. Dashed boxes are two \emph{alternative} training routes
+(training-only): WJ-distillation regresses the embedding's WJ onto the exact
+$D$-dim WJ teacher (top); the contrastive autoencoder reconstructs $\mathbf{x}$
+through a decoder (bottom). Retrieval (solid) is HNSW Stage-1 then exact-WJ rerank.}
 \label{fig:pipeline}
 \end{figure}
 
