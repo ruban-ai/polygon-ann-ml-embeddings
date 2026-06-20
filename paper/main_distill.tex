@@ -343,7 +343,8 @@ projection --- while an untouched intermediate layer is best.}
 \end{figure}
 
 \noindent\textbf{The full Parks corpus.}
-The same encoder applies unchanged to the full 187k Parks corpus: trained only on
+Our WJ-distillation encoder --- identical architecture, loss, and 256-d prefix as on
+the 50K benchmark --- scales unchanged to the full 187k Parks corpus: trained only on
 corpus neighbours and evaluated on \emph{all} 46{,}754 held-out queries, it reaches
 Stage-1 R@50/R@500 $=0.797/0.890$ at 2{,}136 QPS, rising to $0.995/0.966$ after
 exact-WJ reranking (1{,}166 QPS).
