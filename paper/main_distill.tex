@@ -371,20 +371,6 @@ InfoNCE--WJ$^\ddagger$              & 2000 & 0.993 & 0.987 & 0.821 & 1{,}345 \\
 \end{tabular}
 \end{table}
 
-\begin{table}[t]\centering
-\caption{The full 187k Parks corpus: WJ-distillation on \emph{all}
-46{,}754 held-out queries (corpus-trained), 256-d prefix. $\ddagger$~=~ours.}
-\label{tab:full187}\setlength{\tabcolsep}{4pt}\small
-\begin{tabular}{@{}lrrrr@{}}
-\toprule
-Stage & R@10 & R@50 & R@500 & QPS \\
-\midrule
-Stage-1 (no rerank)        & 0.720 & 0.797 & 0.890 & 2{,}136 \\
-\textbf{+ exact-WJ rerank} & \textbf{0.993} & \textbf{0.995} & \textbf{0.966} & 1{,}166 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
 \noindent\textbf{Trade-off between dimension and throughput (Fig.~\ref{fig:dim}, Table~\ref{tab:dim}).}
 Because the encoder is Matryoshka, one model serves every width. Distillation's
 recall is essentially flat from 256 to 4096 (R@500 $0.924\!\to\!0.925$) while QPS
