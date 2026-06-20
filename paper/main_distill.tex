@@ -26,6 +26,14 @@
 \newcommand{\rs}[1]{\textcolor{green!55!black}{[RS: #1]}}
 \newcommand{\ba}[1]{\textcolor{orange}{[BA: #1]}}
 
+% --- tighten whitespace around floats/captions (reclaim space, no content cut) ---
+\setlength{\textfloatsep}{7pt plus 2pt minus 2pt}   % float <-> body text
+\setlength{\floatsep}{6pt plus 2pt minus 2pt}       % float <-> float
+\setlength{\intextsep}{6pt plus 2pt minus 2pt}      % in-text floats
+\setlength{\dbltextfloatsep}{8pt plus 2pt minus 2pt}
+\setlength{\abovecaptionskip}{4pt}
+\setlength{\belowcaptionskip}{0pt}
+
 \begin{document}
 
 % Title — method is DISTILLATION (not an autoencoder). Alternatives:
