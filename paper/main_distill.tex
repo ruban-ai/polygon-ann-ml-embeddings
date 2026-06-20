@@ -230,13 +230,15 @@ separates positives from negatives. A non-saturating InfoNCE~\cite{oord18},
        {\sum_{j:(i,j)\notin\mathcal{G}}\exp(S_{ij}/\tau)},
   \label{eq:infonce}
 \end{equation}
-extend the supervised neighbourhood. These are strong at 10k (Table~\ref{tab:results}),
-but all optimise the same thing --- pushing positives above negatives --- which does
-not guarantee the global WJ \emph{ranking} that recall depends on.
-Empirically their recall collapses to that of an untrained random projection, and
-the loss \emph{damages the very layer it is applied to}, so the deployed output is
-not the network's best representation (\S\ref{sec:exp}). This motivates supervising
-the metric itself.
+is an alternative. A reconstruction term
+$\mathcal{L}_{\mathrm{rec}}{=}\|g_\phi(\mathbf{z})-\mathbf{x}\|_2^2$ regularises the
+embedding; the full objective is $\mathcal{L}_{\mathrm{trip}}{+}\lambda\mathcal{L}_{\mathrm{rec}}$,
+with the decoder dropped at inference. All variants are strong at 10k
+(Table~\ref{tab:results}). Yet they optimise only \emph{separation} --- pushing
+positives above negatives --- not the global WJ \emph{ranking} that recall depends on.
+Empirically their recall collapses to an untrained random projection's. Worse, the
+loss \emph{damages the very layer it is applied to} (\S\ref{sec:exp}). This motivates
+supervising the metric itself.
 
 \subsection{WJ-native distillation}
 \label{sec:distill}
