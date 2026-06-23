@@ -1,0 +1,18 @@
+dataset=full | qt=(233773, 18220) | corpus=(187019, 18220) | queries=(46754, 18220)
+qt_norm loaded from cache (233773, 18220) in 6.2s
+gt_stacked loaded from cache (46754, 17410) in 1.0s
+gt_gpu on cuda:0: (46754, 17410) (3.03 GB) in 0.3s
+OUT_DIM=2048 lr=0.001 steps=400
+/raid/ruban/hpmlproj/term_project/SigSpatial/sota_experiment_common.py:398: UserWarning: torch.searchsorted(): input value tensor is non-contiguous, this will lower the performance due to extra data copy when converting non-contiguous tensor to contiguous, please use contiguous input value tensor if possible. This message will only appear once per program. (Triggered internally at ../aten/src/ATen/native/BucketizationUtils.h:32.)
+  pos  = torch.searchsorted(gt_rows, p_exp).clamp(0, K - 1)   # (B, B)
+  step   1 loss=0.3360 main=0.3358 viol=1.000 embdiv=0.8152
+Traceback (most recent call last):
+  File "/tmp/diag_collapse.py", line 45, in <module>
+    loss=main+0.1*rec; opt.zero_grad(set_to_none=True); loss.backward()
+  File "/raid/ruban/installs/miniconda3/envs/hpmlproj/lib/python3.10/site-packages/torch/_tensor.py", line 581, in backward
+    torch.autograd.backward(
+  File "/raid/ruban/installs/miniconda3/envs/hpmlproj/lib/python3.10/site-packages/torch/autograd/__init__.py", line 347, in backward
+    _engine_run_backward(
+  File "/raid/ruban/installs/miniconda3/envs/hpmlproj/lib/python3.10/site-packages/torch/autograd/graph.py", line 825, in _engine_run_backward
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 32.00 GiB. GPU 0 has a total capacity of 79.15 GiB of which 25.94 GiB is free. Including non-PyTorch memory, this process has 53.20 GiB memory in use. Of the allocated memory 21.35 GiB is allocated by PyTorch, and 31.35 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)

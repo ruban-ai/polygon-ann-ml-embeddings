@@ -1,0 +1,9 @@
+dataset=full | qt=(233773, 18220) | corpus=(187019, 18220) | queries=(46754, 18220)
+qt_norm loaded from cache (233773, 18220) in 79.9s
+train_q=35732 eval_q=8934
+
+== train80 INFONCE Matryoshka ==
+first-4096 (NO loss)       train: R@50=0.7447 R@500=0.8340  |  eval20: R@50=0.7340 R@500=0.8271  |  gap R@50=+0.011
+output-4096 (LOSS)         train: R@50=0.6580 R@500=0.7488  |  eval20: R@50=0.6363 R@500=0.7341  |  gap R@50=+0.022
+random-proj-4096 (no train) train: R@50=0.7178 R@500=0.7734  |  eval20: R@50=0.7141 R@500=0.7730  |  gap R@50=+0.004
+done

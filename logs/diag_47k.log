@@ -1,0 +1,18 @@
+corpus=37403 query=9351 dim=18220
+
+=== (1) ORACLE: exact raw-WJ kNN (held-out queries) vs official GT  [should be ~1.0 if pipeline OK] ===
+   raw-WJ oracle: R@50=0.6681 R@500=0.7354
+
+=== (2) RANDOM PROJECTION held-out (calibrate task difficulty) ===
+   random-512: R@50=0.4851 R@500=0.5299
+   random-4096: R@50=0.5123 R@500=0.5622
+
+=== (3) DISTILL exact-kNN held-out (vs HNSW 0.70 -> sanity) ===
+   distill-256 exact: R@50=0.6236 R@500=0.7102
+   distill-4096 exact: R@50=0.6308 R@500=0.7152
+
+=== (4) TRAIN-CORPUS vs HELD-OUT-QUERY (generalization gap?) ===
+   d=256:  TRAIN-corpus R@50=0.7694 R@500=0.8736   |   HELD-OUT-query R@50=0.6236 R@500=0.7102
+   d=4096:  TRAIN-corpus R@50=0.7800 R@500=0.8835   |   HELD-OUT-query R@50=0.6308 R@500=0.7152
+
+done

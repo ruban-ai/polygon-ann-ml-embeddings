@@ -1,0 +1,17 @@
+dataset=full | qt=(233773, 18220) | corpus=(187019, 18220) | queries=(46754, 18220)
+qt_norm loaded from cache (233773, 18220) in 5.8s
+gt_stacked loaded from cache (46754, 17410) in 1.2s
+gt_gpu on cuda:0: (46754, 17410) (3.03 GB) in 0.3s
+OUT_DIM=512 lr=0.001 steps=400
+/raid/ruban/hpmlproj/term_project/SigSpatial/sota_experiment_common.py:398: UserWarning: torch.searchsorted(): input value tensor is non-contiguous, this will lower the performance due to extra data copy when converting non-contiguous tensor to contiguous, please use contiguous input value tensor if possible. This message will only appear once per program. (Triggered internally at ../aten/src/ATen/native/BucketizationUtils.h:32.)
+  pos  = torch.searchsorted(gt_rows, p_exp).clamp(0, K - 1)   # (B, B)
+  step   1 loss=0.3439 main=0.3422 viol=1.000 embdiv=0.8150
+  step  50 loss=0.3155 main=0.3155 viol=1.000 embdiv=0.5751
+  step 100 loss=0.3113 main=0.3113 viol=1.000 embdiv=0.4315
+  step 150 loss=0.3091 main=0.3091 viol=1.000 embdiv=0.2546
+  step 200 loss=0.3066 main=0.3066 viol=1.000 embdiv=0.1591
+  step 250 loss=0.3039 main=0.3039 viol=1.000 embdiv=0.1197
+  step 300 loss=0.3070 main=0.3070 viol=1.000 embdiv=0.1119
+  step 350 loss=0.3055 main=0.3055 viol=1.000 embdiv=0.1439
+  step 400 loss=0.3033 main=0.3033 viol=1.000 embdiv=0.0867
+done

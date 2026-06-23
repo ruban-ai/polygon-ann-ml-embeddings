@@ -31,7 +31,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, '/raid/ruban/hpmlproj/term_project/SigSpatial')
 from sota_experiment_common import (
     build_fn_mask,
     build_gt_cache,

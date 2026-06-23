@@ -1,0 +1,31 @@
+GT queries with labels: 44,666 (ids 187019..233772)
+split seed=42 train=35,732 eval=8,934
+loading 233,773 polygon areas from WKT (one-time, cached to /tmp/polygon_areas_233773.npz)...
+  loaded 50,000 / 233,773 areas
+  loaded 100,000 / 233,773 areas
+  loaded 150,000 / 233,773 areas
+  loaded 200,000 / 233,773 areas
+
+Area summary (query polygons):
+  all_queries   n= 44,666  median=    49,620.1 m²  p95=  21,526,894.0 m²  max=44,562,283,603.3 m²
+  train80       n= 35,732  median=    49,648.0 m²  p95=  21,682,679.6 m²  max=44,562,283,603.3 m²
+  eval20        n=  8,934  median=    49,318.5 m²  p95=  20,959,681.7 m²  max=4,683,125,105.4 m²
+
+Fraction per log10 decade (% of each split):
+          decade   train80    eval20       gap
+  10^-1–10^0  m²     0.02%     0.01%    -0.01pp
+  10^0 –10^1  m²     0.31%     0.30%    -0.00pp
+  10^1 –10^2  m²     2.02%     2.22%    +0.20pp
+  10^2 –10^3  m²     9.06%     9.19%    +0.12pp
+  10^3 –10^4  m²    20.48%    20.60%    +0.12pp
+  10^4 –10^5  m²    25.58%    25.26%    -0.32pp
+  10^5 –10^6  m²    21.68%    21.45%    -0.23pp
+  10^6 –10^7  m²    13.26%    13.51%    +0.25pp
+  10^7 –10^8  m²     6.30%     6.21%    -0.09pp
+  10^8 –10^9  m²     1.12%     1.14%    +0.02pp
+  10^9 –10^10 m²     0.15%     0.10%    -0.05pp
+  10^10–10^11 m²     0.02%     0.00%    -0.02pp
+
+ECDF max gap train80 vs eval20: 0.62pp
+ECDF max gap corpus vs all_queries (reference): 0.57pp
+saved split → /tmp/query_split_80_20.pkl

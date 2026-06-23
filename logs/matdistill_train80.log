@@ -1,0 +1,8 @@
+split: train=35,732 eval=8,934
+dataset=full | qt=(233773, 18220) | corpus=(187019, 18220) | queries=(46754, 18220)
+qt_norm loaded from cache (233773, 18220) in 15.3s
+DataParallel 8 GPUs
+pairs=1,028,101 steps/epoch~2008
+ep01/20:   0%|                                                             | 0/2008 [00:00<?, ?it/s]/raid/ruban/installs/miniconda3/envs/hpmlproj/lib/python3.10/site-packages/torch/nn/modules/linear.py:125: UserWarning: Attempting to run cuBLAS, but there was no current CUDA context! Attempting to set the primary context... (Triggered internally at ../aten/src/ATen/cuda/CublasHandlePool.cpp:135.)
+  return F.linear(input, self.weight, self.bias)
+ep01/20:   0%|                                                  | 1/2008 [01:05<36:34:12, 65.60s/it]ep01/20:   1%|▎                                                 | 12/2008 [01:16<2:40:32,  4.83s/it]ep01/20:   1%|▌                                                 | 23/2008 [01:27<1:27:27,  2.64s/it]ep01/20:   2%|▊                                                 | 34/2008 [01:37<1:02:08,  1.89s/it]ep01/20:   2%|█▏                                                  | 46/2008 [01:48<47:52,  1.46s/it]ep01/20:   2%|█▏                                                  | 46/2008 [02:00<47:52,  1.46s/it]ep01/20:   3%|█▍                                                  | 55/2008 [02:00<47:01,  1.44s/it]ep01/20:   3%|█▋                                                  | 66/2008 [02:11<41:05,  1.27s/it]ep01/20:   3%|█▋                                                  | 66/2008 [02:30<41:05,  1.27s/it]ep01/20:   4%|█▉                                                  | 75/2008 [02:31<49:32,  1.54s/it]

@@ -1,0 +1,167 @@
+80 encoding files
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+/raid/ruban/hpmlproj/term_project/SigSpatial/build_50k.py:15: FutureWarning: The 'delim_whitespace' keyword in pd.read_csv is deprecated and will be removed in a future version. Use ``sep='\s+'`` instead
+  parts=[pd.read_csv(f,delim_whitespace=True,header=None,dtype=np.float32).values for f in files]
+qt (50000, 18382) built in 4.4min
+GT queries=9417 depth~1000
+RAW-vector-WJ  oracle vs GT : R@50=0.9947 R@500=0.9992
+NORM-vector-WJ oracle vs GT : R@50=0.6600 R@500=0.7988
+=> GT metric = RAW-vector WJ
+done

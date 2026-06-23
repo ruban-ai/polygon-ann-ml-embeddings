@@ -1,0 +1,9 @@
+dataset=full | qt=(233773, 18220) | corpus=(187019, 18220) | queries=(46754, 18220)
+qt_norm loaded from cache (233773, 18220) in 54.1s
+train_q=35732 eval_q=8934
+
+== train80 triplet Matryoshka ==
+first-4096 (NO loss)       train: R@50=0.7718 R@500=0.7903  |  eval20: R@50=0.7356 R@500=0.7760  |  gap R@50=+0.036
+output-4096 (LOSS)         train: R@50=0.6771 R@500=0.6945  |  eval20: R@50=0.5647 R@500=0.6684  |  gap R@50=+0.112
+random-proj-4096 (no train) train: R@50=0.7178 R@500=0.7734  |  eval20: R@50=0.7141 R@500=0.7730  |  gap R@50=+0.004
+done

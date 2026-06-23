@@ -1,0 +1,226 @@
+Reading 50,000 lake polygons...
+Loaded 50,000 polygons from 51,047 rows  (skipped 1,047)
+50000 polygons centered (80 fixed with make_valid)
+Corpus: [0, 40000)  Query: [40000, 50000)
+nodeCapacityPerc=0.022  Output: /raid/ruban/hpmlproj/encoding/lakes-real50k0.022/
+Using 200 processors
+Global MBR [0-50000] = [-90.0297774, -2.053786024563993, 28.0013231, 61.04725]
+Quad tree: 18943 nodes, height 22, built from 40000 polygons
+Process 157 finished.
+Process 97 finished.
+Process 110 finished.
+Process 76 finished.
+Process 88 finished.
+Process 187 finished.
+Process 113 finished.
+Process 87 finished.
+Process 111 finished.
+Process 60 finished.
+Process 161 finished.
+Process 114 finished.
+Process 93 finished.
+Process 141 finished.
+Process 173 finished.
+Process 182 finished.
+Process 193 finished.
+Process 199 finished.
+Process 131 finished.
+Process 146 finished.
+Process 183 finished.
+Process 94 finished.
+Process 165 finished.
+Process 181 finished.
+Process 68 finished.
+Process 124 finished.
+Process 134 finished.
+Process 117 finished.
+Process 139 finished.
+Process 112 finished.
+Process 34 finished.
+Process 172 finished.
+Process 108 finished.
+Process 198 finished.
+Process 150 finished.
+Process 49 finished.
+Process 120 finished.
+Process 119 finished.
+Process 184 finished.
+Process 105 finished.
+Process 163 finished.
+Process 197 finished.
+Process 190 finished.
+Process 180 finished.
+Process 145 finished.
+Process 98 finished.
+Process 138 finished.
+Process 100 finished.
+Process 166 finished.
+Process 102 finished.
+Process 154 finished.
+Process 127 finished.
+Process 115 finished.
+Process 72 finished.
+Process 177 finished.
+Process 152 finished.
+Process 33 finished.
+Process 123 finished.
+Process 77 finished.
+Process 164 finished.
+Process 144 finished.
+Process 129 finished.
+Process 192 finished.
+Process 85 finished.
+Process 19 finished.
+Process 179 finished.
+Process 137 finished.
+Process 151 finished.
+Process 29 finished.
+Process 170 finished.
+Process 121 finished.
+Process 176 finished.
+Process 136 finished.
+Process 156 finished.
+Process 174 finished.
+Process 140 finished.
+Process 147 finished.
+Process 171 finished.
+Process 153 finished.
+Process 59 finished.
+Process 99 finished.
+Process 191 finished.
+Process 178 finished.
+Process 130 finished.
+Process 135 finished.
+Process 188 finished.
+Process 28 finished.
+Process 126 finished.
+Process 142 finished.
+Process 168 finished.
+Process 160 finished.
+Process 83 finished.
+Process 195 finished.
+Process 149 finished.
+Process 155 finished.
+Process 122 finished.
+Process 65 finished.
+Process 31 finished.
+Process 57 finished.
+Process 17 finished.
+Process 116 finished.
+Process 194 finished.
+Process 148 finished.
+Process 63 finished.
+Process 143 finished.
+Process 48 finished.
+Process 13 finished.
+Process 118 finished.
+Process 2 finished.
+Process 84 finished.
+Process 8 finished.
+Process 24 finished.
+Process 5 finished.
+Process 78 finished.
+Process 44 finished.
+Process 103 finished.
+Process 169 finished.
+Process 42 finished.
+Process 50 finished.
+Process 89 finished.
+Process 51 finished.
+Process 40 finished.
+Process 55 finished.
+Process 104 finished.
+Process 35 finished.
+Process 38 finished.
+Process 95 finished.
+Process 6 finished.
+Process 107 finished.
+Process 167 finished.
+Process 128 finished.
+Process 39 finished.
+Process 196 finished.
+Process 73 finished.
+Process 20 finished.
+Process 70 finished.
+Process 91 finished.
+Process 7 finished.
+Process 71 finished.
+Process 175 finished.
+Process 22 finished.
+Process 101 finished.
+Process 81 finished.
+Process 18 finished.
+Process 66 finished.
+Process 43 finished.
+Process 41 finished.
+Process 32 finished.
+Process 9 finished.
+Process 67 finished.
+Process 109 finished.
+Process 125 finished.
+Process 75 finished.
+Process 23 finished.
+Process 15 finished.
+Process 11 finished.
+Process 61 finished.
+Process 12 finished.
+Process 14 finished.
+Process 47 finished.
+Process 25 finished.
+Process 92 finished.
+Process 86 finished.
+Process 64 finished.
+Process 16 finished.
+Process 158 finished.
+Process 10 finished.
+Process 58 finished.
+Process 4 finished.
+Process 186 finished.
+Process 82 finished.
+Process 21 finished.
+Process 62 finished.
+Process 74 finished.
+Process 37 finished.
+Process 46 finished.
+Process 90 finished.
+Process 36 finished.
+Process 56 finished.
+Process 45 finished.
+Process 96 finished.
+Process 133 finished.
+Process 54 finished.
+Process 69 finished.
+Process 162 finished.
+Process 30 finished.
+Process 1 finished.
+Process 132 finished.
+Process 52 finished.
+Process 27 finished.
+Process 80 finished.
+Process 185 finished.
+Process 0 finished.
+Process Process-160:
+Traceback (most recent call last):
+  File "/home/buddhi/anaconda3/envs/ssearch2/lib/python3.9/multiprocessing/process.py", line 315, in _bootstrap
+    self.run()
+  File "/home/buddhi/anaconda3/envs/ssearch2/lib/python3.9/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/raid/ruban/hpmlproj/encode_lakes_50k_ruban.py", line 134, in encodePolygonsRtreeVal
+    intersectArea = box_geom.intersection(wktList[j]).area
+  File "/home/buddhi/anaconda3/envs/ssearch2/lib/python3.9/site-packages/shapely/geometry/base.py", line 599, in intersection
+    return shapely.intersection(self, other, grid_size=grid_size)
+  File "/home/buddhi/anaconda3/envs/ssearch2/lib/python3.9/site-packages/shapely/decorators.py", line 77, in wrapped
+    return func(*args, **kwargs)
+  File "/home/buddhi/anaconda3/envs/ssearch2/lib/python3.9/site-packages/shapely/set_operations.py", line 131, in intersection
+    return lib.intersection(a, b, **kwargs)
+shapely.errors.GEOSException: TopologyException: Input geom 1 is invalid: Self-intersection at 27.790741035847997 60.964243609169223
+Process 26 finished.
+Process 79 finished.
+Process 3 finished.
+Process 106 finished.
+Process 53 finished.
+Process 189 finished.
+Quadtree construction: 158.5s
+RTtree construction: 0.7s
+Encoding: 782.1s
+Total time: 1014.4s

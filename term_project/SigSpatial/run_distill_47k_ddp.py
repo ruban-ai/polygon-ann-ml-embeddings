@@ -60,7 +60,7 @@ def main():
     Cn=QTN[:QS]; Cr=QT[:QS]; Qn=QTN[QS:]; Qr=QT[QS:]
     if main: print(f"DDP world={world} | corpus={len(Cn)} query={len(Qn)} dim={QT.shape[1]}",flush=True)
     if main: print("precompute corpus WJ matrix (per rank, parallel)...",flush=True)
-    t0=time.time(); W=corpus_W(torch.from_numpy(Cr).to(DEV),DEV,main)
+    t0=time.time(); W=corpus_W(torch.from_numpy(Cn).to(DEV),DEV,main)
     knn=W.topk(MAXPOS+1,dim=1).indices[:,1:].cpu().numpy()
     if main: print(f"  WJ matrix+kNN done {(time.time()-t0)/60:.1f}min",flush=True)
     Cn_g=torch.from_numpy(Cn).to(DEV)
@@ -93,7 +93,7 @@ def main():
     with torch.no_grad():
         ZC=torch.cat([enc(Cn_g[i:i+1024]) for i in range(0,len(Cn),1024)])
         ZQ=torch.cat([enc(torch.from_numpy(Qn[i:i+1024]).to(DEV)) for i in range(0,len(Qn),1024)])
-    torch.set_num_threads(THREADS); Cr_sum=Cr.sum(1).astype(np.float32); today=datetime.date.today().isoformat(); rows=[]
+    torch.set_num_threads(THREADS); Cn_sum=Cn.sum(1).astype(np.float32); today=datetime.date.today().isoformat(); rows=[]
     for k in PREFIXES:
         ce=norm(ZC[:,:k]).cpu().numpy().astype(np.float32); qe=norm(ZQ[:,:k]).cpu().numpy().astype(np.float32)
         mk=max(max(CAND_KS),500)
@@ -101,10 +101,10 @@ def main():
         base=recall_local(GTlist,nb)
         print(f"[d={k} base] R@50={base[50]:.4f} R@500={base[500]:.4f} HNSW_QPS={info['qps']:.0f}",flush=True)
         rows.append([k,"base","",base[50],base[500],round(info['qps'])])
-        preload_rerank_corpus(Cr,Cr_sum)
+        preload_rerank_corpus(Cn,Cn_sum)
         for ck in CAND_KS:
             cand,ci=nmslib_neighbors(ce,qe,space="WeightedJaccard",k=ck,threads=THREADS,query_params={"efSearch":EF})
-            t1=time.time(); rr=rerank_wj_gpu(Qr,cand,Cr,Cr_sum,top_k=ck,batch_size=RB); e2e=len(Qr)/max(ci["query_s"]+(time.time()-t1),1e-9)
+            t1=time.time(); rr=rerank_wj_gpu(Qn,cand,Cn,Cn_sum,top_k=ck,batch_size=RB); e2e=len(Qr)/max(ci["query_s"]+(time.time()-t1),1e-9)
             mm=recall_local(GTlist,rr)
             print(f"[d={k} rerank K={ck}] R@50={mm[50]:.4f} R@500={mm[500]:.4f} e2eQPS={e2e:.0f}",flush=True)
             rows.append([k,"rerank",ck,mm[50],mm[500],round(e2e)])

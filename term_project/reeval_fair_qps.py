@@ -10,7 +10,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, '/raid/ruban/hpmlproj/term_project/SigSpatial')
 from sota_experiment_common import (
     eval_recall, load_dataset_normalized, nmslib_neighbors,
     preload_rerank_corpus, release_rerank_corpus, rerank_wj_gpu, shifted_l1_simplex,

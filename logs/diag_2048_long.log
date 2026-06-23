@@ -1,0 +1,59 @@
+dataset=full | qt=(233773, 18220) | corpus=(187019, 18220) | queries=(46754, 18220)
+qt_norm loaded from cache (233773, 18220) in 5.4s
+gt_stacked loaded from cache (46754, 17410) in 0.9s
+gt_gpu on cuda:0: (46754, 17410) (3.03 GB) in 0.3s
+OUT_DIM=2048 lr=0.001 steps=2500
+/raid/ruban/hpmlproj/term_project/SigSpatial/sota_experiment_common.py:398: UserWarning: torch.searchsorted(): input value tensor is non-contiguous, this will lower the performance due to extra data copy when converting non-contiguous tensor to contiguous, please use contiguous input value tensor if possible. This message will only appear once per program. (Triggered internally at ../aten/src/ATen/native/BucketizationUtils.h:32.)
+  pos  = torch.searchsorted(gt_rows, p_exp).clamp(0, K - 1)   # (B, B)
+  step   1 loss=0.3360 main=0.3358 viol=1.000 embdiv=0.8152
+  step  50 loss=0.3135 main=0.3135 viol=1.000 embdiv=0.5117
+  step 100 loss=0.3099 main=0.3099 viol=1.000 embdiv=0.3224
+  step 150 loss=0.3051 main=0.3051 viol=1.000 embdiv=0.1906
+  step 200 loss=0.3060 main=0.3060 viol=1.000 embdiv=0.1765
+  step 250 loss=0.3046 main=0.3046 viol=1.000 embdiv=0.1368
+  step 300 loss=0.3051 main=0.3051 viol=1.000 embdiv=0.1136
+  step 350 loss=0.3062 main=0.3062 viol=1.000 embdiv=0.1682
+  step 400 loss=0.3049 main=0.3049 viol=1.000 embdiv=0.1334
+  step 450 loss=0.3058 main=0.3058 viol=1.000 embdiv=0.0915
+  step 500 loss=0.3025 main=0.3025 viol=1.000 embdiv=0.0659
+  step 550 loss=0.3015 main=0.3015 viol=1.000 embdiv=0.0564
+  step 600 loss=0.3041 main=0.3041 viol=1.000 embdiv=0.1148
+  step 650 loss=0.3112 main=0.3112 viol=1.000 embdiv=0.1533
+  step 700 loss=0.3038 main=0.3038 viol=1.000 embdiv=0.0939
+  step 750 loss=0.3029 main=0.3029 viol=1.000 embdiv=0.0651
+  step 800 loss=0.3034 main=0.3034 viol=1.000 embdiv=0.0638
+  step 850 loss=0.3033 main=0.3033 viol=1.000 embdiv=0.0601
+  step 900 loss=0.3025 main=0.3025 viol=1.000 embdiv=0.0497
+  step 950 loss=0.3016 main=0.3016 viol=1.000 embdiv=0.0548
+  step1000 loss=0.3020 main=0.3020 viol=1.000 embdiv=0.0460
+  step1050 loss=0.3027 main=0.3027 viol=1.000 embdiv=0.0475
+  step1100 loss=0.3016 main=0.3016 viol=1.000 embdiv=0.0403
+  step1150 loss=0.3022 main=0.3022 viol=1.000 embdiv=0.0407
+  step1200 loss=0.3015 main=0.3015 viol=1.000 embdiv=0.0313
+  step1250 loss=0.3010 main=0.3010 viol=1.000 embdiv=0.0330
+  step1300 loss=0.3007 main=0.3007 viol=1.000 embdiv=0.0247
+  step1350 loss=0.3018 main=0.3018 viol=1.000 embdiv=0.0287
+  step1400 loss=0.3013 main=0.3013 viol=1.000 embdiv=0.0254
+  step1450 loss=0.3014 main=0.3014 viol=1.000 embdiv=0.0281
+  step1500 loss=0.3005 main=0.3005 viol=1.000 embdiv=0.0213
+  step1550 loss=0.3011 main=0.3011 viol=1.000 embdiv=0.0201
+  step1600 loss=0.3010 main=0.3010 viol=1.000 embdiv=0.0155
+  step1650 loss=0.3023 main=0.3023 viol=1.000 embdiv=0.0217
+  step1700 loss=0.3013 main=0.3013 viol=1.000 embdiv=0.0229
+  step1750 loss=0.3011 main=0.3011 viol=0.999 embdiv=0.0146
+  step1800 loss=0.3006 main=0.3006 viol=1.000 embdiv=0.0112
+  step1850 loss=0.3004 main=0.3004 viol=0.999 embdiv=0.0140
+  step1900 loss=0.3003 main=0.3003 viol=1.000 embdiv=0.0124
+  step1950 loss=0.3005 main=0.3005 viol=1.000 embdiv=0.0100
+  step2000 loss=0.3001 main=0.3001 viol=1.000 embdiv=0.0084
+  step2050 loss=0.3001 main=0.3001 viol=1.000 embdiv=0.0079
+  step2100 loss=0.3001 main=0.3001 viol=1.000 embdiv=0.0074
+  step2150 loss=0.2999 main=0.2999 viol=1.000 embdiv=0.0059
+  step2200 loss=0.3000 main=0.3000 viol=1.000 embdiv=0.0059
+  step2250 loss=0.3001 main=0.3001 viol=0.999 embdiv=0.0058
+  step2300 loss=0.2999 main=0.2999 viol=1.000 embdiv=0.0045
+  step2350 loss=0.3002 main=0.3002 viol=1.000 embdiv=0.0056
+  step2400 loss=0.3001 main=0.3001 viol=1.000 embdiv=0.0039
+  step2450 loss=0.3000 main=0.3000 viol=1.000 embdiv=0.0043
+  step2500 loss=0.3001 main=0.3001 viol=1.000 embdiv=0.0041
+done
