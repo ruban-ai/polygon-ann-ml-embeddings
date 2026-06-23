@@ -28,3 +28,14 @@ outputs_*/
 .DS_Store
 .idea/
 .vscode/
+
+# Large raw data (encoding/ holds ~10GB of ShapeToVec vectors) + analysis outputs
+encoding/
+area_distribution/
+area_distribution_10k/
+
+# Backups, archives, correspondence (keep code + notebooks + logs only)
+Legacy files/
+*.zip
+*_backup.tex
+email_to_dr_prasad.*
