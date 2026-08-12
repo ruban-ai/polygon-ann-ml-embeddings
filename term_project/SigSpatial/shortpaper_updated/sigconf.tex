@@ -147,10 +147,10 @@ reaching $97\%$ R@50 (versus $67\%$ for its binary bit-vector variant). That acc
 however, rests on tens of thousands of dimensions: ShapeToVec itself notes that such
 vectors strain HNSW memory as datasets grow, and that generic compression
 (e.g.\ product quantization) shrinks the footprint only by \emph{degrading} accuracy.
-We fill this gap with a learned, WJ-native compression --- up to $72\times$ smaller
+We fill this gap with a learned, WJ-native compression, up to $72\times$ smaller,
 while preserving (indeed improving) WJ retrieval.
-WJ \emph{sketching} --- ICWS~\cite{ioffe10}, ProbMinHash~\cite{probminhash20},
-PolyMinHash~\cite{polyminhash25} --- gives unbiased estimators but integer codes
+WJ \emph{sketching} (ICWS~\cite{ioffe10}, ProbMinHash~\cite{probminhash20},
+PolyMinHash~\cite{polyminhash25}) gives unbiased estimators but integer codes
 incompatible with float-vector approximate-nearest-neighbor (ANN) indexes. Learned
 hashing~\cite{hashsurvey14,deephashsurvey22} and Matryoshka representation
 learning~\cite{matryoshka22} target Hamming/cosine spaces and degrade on the WJ
