@@ -113,8 +113,8 @@ near-empty vectors. ShapeToVec~\cite{shape2vec} resolves this with an adaptive
 \emph{quadtree} grid, encoding each polygon as a high-dimensional probability-simplex
 vector (tens of thousands of dimensions, varying with grid resolution) whose WJ
 preserves overlap across scales. Indexed with HNSW~\cite{hnsw20} under a \emph{custom}
-Weighted Jaccard distance --- added by ShapeToVec~\cite{shape2vec} to
-NMSLIB~\cite{boytsov13} --- it reaches $97\%$ R@50
+Weighted Jaccard distance (added by ShapeToVec~\cite{shape2vec} to
+NMSLIB~\cite{boytsov13}), it reaches $97\%$ R@50
 on up to 1.7M polygons. But such large vectors are costly to store and search;
 compressing them while preserving WJ structure is our goal.
 
