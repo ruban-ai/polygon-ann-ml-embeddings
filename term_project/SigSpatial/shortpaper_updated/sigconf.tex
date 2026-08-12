@@ -251,7 +251,7 @@ and the embedding WJ, $\hat T_{ij}=WJ(f_\theta(\mathbf{x}_i),f_\theta(\mathbf{x}
 \end{equation}
 Each batch's $N$ rows are anchors and their top-30 WJ neighbours (mined once per
 corpus, \S\ref{sec:contrastive}), so $T$ spans both genuine near-neighbour pairs and
-the far more numerous low-similarity cross-pairs a random polygon pair would have ---
+the far more numerous low-similarity cross-pairs a random polygon pair would have:
 exactly the full range Eq.~\eqref{eq:distill} needs to regress, since, unlike the
 margin losses of \S\ref{sec:contrastive}, it must reproduce similarity
 \emph{values}, not just their order, to be interchangeable with exact WJ at query
