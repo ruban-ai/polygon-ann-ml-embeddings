@@ -130,10 +130,10 @@ none produce WJ-compatible embeddings. Our contributions are as follows:
     under WJ, without post-processing.
   \item A \textbf{shape-similarity distillation loss}: WJ-native distillation
     regresses the embedding's WJ onto the true (shape-overlap) WJ, making the training
-    objective the retrieval metric --- the first learned WJ embedding to beat an
+    objective the retrieval metric: the first learned WJ embedding to beat an
     untrained random projection (\S\ref{sec:exp}).
   \item \textbf{Matryoshka deployment}: a single trained model serves every
-    embedding width $\{256, 512, \dots,4096\}$, giving the full recall--throughput frontier from one round of training --- 256-d dominates.
+    embedding width $\{256, 512, \dots,4096\}$, giving the full recall--throughput frontier from one round of training; 256-d dominates.
 \end{enumerate}
 
 %% ---------------- 2. Related Work ----------------
