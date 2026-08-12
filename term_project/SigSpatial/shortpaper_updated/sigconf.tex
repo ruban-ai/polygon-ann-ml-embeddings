@@ -395,7 +395,7 @@ Stage-1 (no rerank)        & 0.720 & 0.797 & 0.890 & 2{,}136 \\
 \textbf{Trade-off between dimension and throughput (Fig.~\ref{fig:dim}, Table~\ref{tab:dim}).}
 Because the encoder is Matryoshka, one model serves every width. Distillation's
 recall is essentially flat from 256 to 4096 (R@500 $0.924\!\to\!0.925$) while QPS
-falls ${\sim}7\times$, so 256-d --- a $72\times$ compression --- is the natural
+falls ${\sim}7\times$, so 256-d, a $72\times$ compression, is the natural
 operating point. Baselines, by contrast, stay below distillation at \emph{every} width.
 
 \begin{figure}[t]\centering
