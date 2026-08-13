@@ -95,9 +95,11 @@ approximate nearest neighbor, probability simplex}
 \label{sec:intro}
 Finding similar shapes in large polygon datasets is a fundamental geospatial
 operation, for deduplication, conflation, and map integration. We study
-polygons from the SpatialHadoop GIS benchmark's~\cite{eldawy15} Parks collection
-(\S\ref{sec:exp}); water-body and sports collections from the same benchmark are a
-natural extension (\S5). Quantifying
+polygons from the SpatialHadoop GIS benchmark~\cite{eldawy15}, primarily its
+Parks collection (\S\ref{sec:exp}), and confirm our method is not
+collection-specific with a second, structurally different polygon class, water
+bodies (\S\ref{sec:exp}); a sports-field collection from the same benchmark is a
+natural further extension (\S5). Quantifying
 shape overlap calls for an area-aware metric; Weighted Jaccard (WJ),
 \begin{equation}
   WJ(\mathbf{a},\mathbf{b}) = \frac{\sum_i \min(a_i,b_i)}{\sum_i \max(a_i,b_i)},
