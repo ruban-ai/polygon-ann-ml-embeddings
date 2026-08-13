@@ -194,26 +194,57 @@ embedding's WJ; retrieval is HNSW Stage-1 then exact-WJ rerank.
 \label{fig:pipeline}
 \end{figure}
 
-\subsection{WJ-native simplex embedding}
+\subsection{Encoder Architecture}
 \label{sec:embed}
-The encoder's core, $h_\theta$, is a two-layer MLP ($D\!\to\!4096\!\to\!4096$); its
-$4096$-d output is $\ell_1$-normalised (Eq.~\ref{eq:simplex}) and truncated to width
-$d$ at inference (Matryoshka, \S\ref{sec:distill}). An MLP is deliberate: boundary Transformers~\cite{mai22}, vertex GNNs~\cite{polygongnn24}
-and set encoders~\cite{deepsets17} aggregate \emph{local} context and assume
-cosine/Euclidean outputs, whereas WJ is a \emph{global} statistic over all $D$
-dimensions that is distorted when cosine features are forced onto the simplex; the
-dense first layer mixes all dimensions globally (and holds ${\sim}75$M of the
-${\sim}92$M parameters). Because quadtree vectors are extremely sparse
-($\sim$73\% zeros), we place BatchNorm~\cite{ioffe15bn} \emph{before} each ReLU to
-avoid a near-degenerate output. WJ requires non-negative inputs, enforced by a
-simplex projection:
+The encoder's core, $h_\theta$, is a two-layer MLP ($D\!\to\!4096\!\to\!4096$,
+$\sim$92M parameters); its $4096$-d output is $\ell_1$-normalised
+(Eq.~\ref{eq:simplex}, \S\ref{sec:simplex}) and truncated to width $d$ at inference
+(Matryoshka, \S\ref{sec:distill}). Three considerations dictate this design, each
+driven by the structure of WJ and of the quadtree input rather than by convention.
+
+\noindent\textbf{Why an MLP, not a Transformer or graph encoder.} The neural polygon
+encoders common in the literature, boundary Transformers~\cite{mai22}, vertex graph
+networks~\cite{polygongnn24}, and set encoders~\cite{deepsets17}, target cosine or
+Euclidean output spaces and are ill-suited to WJ retrieval. Two mismatches explain
+this. First, \emph{space mismatch}: an encoder trained under an L2 or cosine
+objective learns a metric structure that is destroyed when its outputs are forced
+onto the WJ simplex via ReLU\,+\,$\ell_1$-normalisation. Second, \emph{loss of
+global structure}: sequence- and graph-based encoders aggregate \emph{local}
+context (token windows, vertex hops), whereas WJ is a global statistic summed over
+all $D$ dimensions that cannot be decomposed into local sub-computations. A plain
+MLP trained \emph{natively} in WJ space avoids both.
+
+\noindent\textbf{Global projection.} Accordingly, the first layer is a single dense
+projection $\mathbb{R}^{D}\!\to\!\mathbb{R}^{4096}$ that mixes \emph{all} input
+dimensions in one matrix multiply, so every pair of quadtree cells can interact and
+the cross-dimension co-occurrence statistics WJ depends on are preserved. This
+global mixing is why $\sim$75M of the $\sim$92M parameters reside in this first
+layer.
+
+\noindent\textbf{BatchNorm before ReLU.} Quadtree rasterisation yields extremely
+sparse vectors ($\sim$73\% zeros), so pre-activation responses have near-zero
+variance; applying ReLU directly would suppress almost all activations and produce a
+degenerate output whose pairwise WJ is too flat to rank candidates. Placing
+BatchNorm~\cite{ioffe15bn} \emph{before} each ReLU re-centers and rescales the
+activations first, guaranteeing a non-degenerate output distribution.
+
+\subsection{Probability Simplex Output Constraint}
+\label{sec:simplex}
+WJ (Eq.~\ref{eq:wj}) requires non-negative inputs. We enforce this with a final
+simplex projection layer:
 \begin{equation}
   f_\theta(\mathbf{x}) = \frac{\mathrm{ReLU}(h_\theta(\mathbf{x}))}
-       {\max(\|\mathrm{ReLU}(h_\theta(\mathbf{x}))\|_1,\;\epsilon)} \in \Delta^{d},
+       {\max(\|\mathrm{ReLU}(h_\theta(\mathbf{x}))\|_1,\;\epsilon)} \in \Delta^{d}.
   \label{eq:simplex}
 \end{equation}
-making $WJ(f_\theta(\mathbf{x}),f_\theta(\mathbf{y}))$ well-defined and directly
-indexable under ShapeToVec's Weighted Jaccard distance in HNSW~\cite{shape2vec}.
+The sequence BatchNorm~$\to$~ReLU~$\to$~$\ell_1$-normalisation is necessary and
+sufficient for WJ compatibility: non-negativity makes the element-wise $\min$/$\max$
+in Eq.~\ref{eq:wj} meaningful, and $\ell_1$-normalisation places every embedding on
+the probability simplex $\Delta^{d}$ so the $\min$/$\max$ ratio is computed at a
+comparable scale regardless of polygon size. Together this makes
+$WJ(f_\theta(\mathbf{x}),f_\theta(\mathbf{y}))$ well-defined for any input pair and
+enables direct use of nmslib's \texttt{WeightedJaccard} HNSW
+space~\cite{shape2vec,boytsov13} with no post-processing.
 
 \subsection{Why contrastive objectives are not enough}
 \label{sec:contrastive}
