@@ -290,7 +290,23 @@ the far more numerous low-similarity cross-pairs a random polygon pair would hav
 exactly the full range Eq.~\eqref{eq:distill} needs to regress, since, unlike the
 margin losses of \S\ref{sec:contrastive}, it must reproduce similarity
 \emph{values}, not just their order, to be interchangeable with exact WJ at query
-time.
+time. Figure~\ref{fig:batchdist} shows this empirically for one 10k training batch:
+the curated anchor--positive pairs concentrate at high similarity (mean
+$T{=}0.78$), while the remaining, uncurated cross-pairs are not degenerately
+concentrated at zero either (mean $0.19$, median $0.13$; only $10.5\%$ fall below
+$0.01$) -- MSE is not spending most of its gradient on trivial near-zero pairs, and
+retains the low-similarity signal that lets Eq.~\eqref{eq:distill} distinguish
+genuine non-matches from moderate partial overlap.
+
+\begin{figure}[t]\centering
+\includegraphics[width=0.85\columnwidth]{fig_batch_wj_dist.png}
+\caption{Distribution of the WJ distillation target $T_{ij}$ within one training
+batch (10k), split into curated anchor--positive pairs (top-30 neighbours) and the
+remaining in-batch cross-pairs. The cross-pairs are broadly spread, not
+concentrated at zero.}
+\label{fig:batchdist}
+\end{figure}
+
 The objective \emph{is} the retrieval metric, so the deployed output is exactly the
 optimised quantity: a metric distillation~\cite{hinton15} with exact $D$-dim WJ
 as teacher and the compact simplex embedding as student. We apply
