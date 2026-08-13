@@ -79,7 +79,9 @@ def main():
             nbrs = [int(x) for x in p[1:] if x.strip() != '']
             nbrs = [n for n in nbrs if n < CORPUS_N][:1000]
             if nbrs:
-                gt[qid] = nbrs
+                # remap to CORPUS_N-relative offset, matching eval_recall's convention
+                # (query_start_id + offset), NOT the original absolute polygon id.
+                gt[CORPUS_N + (qid - QUERY_START)] = nbrs
     pickle.dump(gt, open(OUT_GT, 'wb'))
     print(f"GT queries with >=1 in-corpus neighbour: {len(gt)}/{QUERY_N} "
           f"(some queries' true neighbours may fall outside the 40K mini-corpus "
