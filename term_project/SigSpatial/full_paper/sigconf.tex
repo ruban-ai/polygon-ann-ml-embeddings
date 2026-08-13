@@ -300,10 +300,16 @@ to any width; the smallest %already
 dominates (\S\ref{sec:exp}).
 
 \subsection{Two-stage retrieval}
+\label{sec:twostage}
 Stage-1 builds an HNSW index ($M{=}20$, $\mathrm{ef}{=}200$)~\cite{hnsw20} under
 ShapeToVec's custom Weighted Jaccard distance~\cite{shape2vec} over the $d$-dim
-embeddings, returning top-$k$; Stage-2 reranks by exact WJ on the original vectors
-(Numba~\cite{lam15}). $K$ trades recall for speed.
+embeddings and retrieves a candidate pool of size $K$ per query; Stage-2 reranks
+only that pool by exact WJ on the original $D$-dim vectors (Numba~\cite{lam15}),
+recovering near-exact ordering within it. Because Stage-2 can only reorder the pool
+Stage-1 hands it, not enlarge it, $K$ is the single knob that trades recall for
+speed end to end: a larger $K$ costs more HNSW and rerank time but is more likely to
+contain the true top-$k$ neighbours; the compact embedding's job is to make a
+\emph{small} $K$ already contain them.
 
 %% ---------------- 4. Experiments ----------------
 \section{Experiments}
