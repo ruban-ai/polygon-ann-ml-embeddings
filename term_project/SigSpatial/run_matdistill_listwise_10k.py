@@ -16,7 +16,7 @@ from tqdm.auto import tqdm
 sys.path.insert(0, '/raid/ruban/hpmlproj/term_project/SigSpatial')
 from sota_experiment_common import (load_dataset_normalized, nmslib_neighbors,
     preload_rerank_corpus, release_rerank_corpus, rerank_wj_gpu, eval_recall)
-DEV = torch.device('cuda:1'); THREADS = 32; torch.set_num_threads(THREADS)
+DEV = torch.device('cuda:0'); THREADS = 32; torch.set_num_threads(THREADS)
 PREFIXES = [256, 512, 1024, 2048, 4096]; EMB = 4096; B = 512; EPOCHS = 40; LR = 1e-3; WD = 1e-4; MAX_POS = 100
 TAU = 0.1  # listwise softmax temperature
 EF = 200; RB = 64; CAND_KS = [100, 500, 1000]; SEED = 42
