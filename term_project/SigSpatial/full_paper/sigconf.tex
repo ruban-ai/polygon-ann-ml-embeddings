@@ -108,12 +108,11 @@ is the standard choice, where $\mathbf{a},\mathbf{b}\in\mathbb{R}^D_{\ge0}$ are 
 polygons' vector encodings over a shared partition of $D$ spatial cells and $a_i$ is
 polygon $\mathbf{a}$'s area-weighted occupancy of cell $i$. The core difficulty is
 \emph{extreme area variability}: polygon areas span several orders of magnitude
-(e.g.\ a neighbourhood park versus a national forest), so a
-uniform grid either explodes in dimension or collapses small shapes into
-near-empty vectors: a grid fine enough to resolve small polygons is intractable at
-the scale of large ones, while a grid coarse enough to be tractable leaves small
-polygons occupying only a handful of cells, collapsing their shape information into
-near-empty vectors. ShapeToVec~\cite{shape2vec} resolves this with an adaptive
+(e.g.\ a neighbourhood park versus a national forest), and a single uniform grid
+cannot serve both regimes: a grid fine enough to resolve small polygons explodes in
+dimension at the scale of large ones, while a grid coarse enough to be tractable
+leaves small polygons occupying only a handful of cells, collapsing their shape
+information into near-empty vectors. ShapeToVec~\cite{shape2vec} resolves this with an adaptive
 \emph{quadtree} grid that recursively subdivides space where polygon detail is
 concentrated, encoding each polygon as a high-dimensional probability-simplex
 vector (tens of thousands of dimensions, varying with grid resolution) whose WJ
