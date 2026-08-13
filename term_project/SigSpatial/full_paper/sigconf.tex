@@ -489,6 +489,39 @@ Stage-1 (no rerank)        & 0.720 & 0.797 & 0.890 & 2{,}136 \\
 \end{tabular}
 \end{table}
 
+\textbf{A second polygon class: water bodies (Table~\ref{tab:wb50k}).} Every result
+so far is on Parks; to test whether WJ-distillation is Parks-specific we build an
+identically-scaled benchmark (40k corpus / 10k held-out queries, methodology
+matching \S\ref{sec:exp}) on the SpatialHadoop water-body
+collection~\cite{eldawy15}, with the same architecture, loss, and 256-d prefix,
+no method changes. The gap over random projection is, if anything, larger than on
+Parks: Stage-1 R@50 $=0.815$ vs.\ $0.632$ ($+18.3$pp) and R@500 $=0.930$ vs.\
+$0.763$ ($+16.7$pp), at higher throughput ($4{,}632$ vs.\ $2{,}652$ QPS). After
+reranking, distillation's 256-d reaches R@500 $=0.987$ at $1{,}280$ QPS
+($K{=}2000$), versus random projection's best dimension (4096-d) reaching only
+$0.971$ at $246$ QPS, the same pattern as the Parks 50K benchmark
+(\S\ref{sec:exp}). WJ-native distillation is not tuned to one polygon class.
+
+\begin{table}[t]\centering
+\caption{Water-body benchmark (40k corpus / 10k held-out queries; same
+methodology as the Parks 50K benchmark), shown at 256-d. $\ddagger$~=~ours.
+\textbf{Bold}~=~best.}
+\label{tab:wb50k}\setlength{\tabcolsep}{3.5pt}\small
+\begin{tabular}{@{}llrrrr@{}}
+\toprule
+Method & $K$ & R@10 & R@50 & R@500 & QPS \\
+\midrule
+\multicolumn{6}{@{}l@{}}{\textit{Stage 1 --- no rerank}}\\[1pt]
+Rand.\ Proj.~\cite{achlioptas03}    & --- & 0.563 & 0.632 & 0.763 & 2{,}652 \\
+\textbf{WJ-distillation}$^\ddagger$ & --- & \textbf{0.722} & \textbf{0.815} & \textbf{0.930} & \textbf{4{,}632} \\
+\midrule
+\multicolumn{6}{@{}l@{}}{\textit{Stage 2 --- exact-WJ rerank}}\\[1pt]
+Rand.\ Proj.~\cite{achlioptas03}    & 2000 & 0.994 & 0.994 & 0.958 & 362 \\
+\textbf{WJ-distillation}$^\ddagger$ & 2000 & \textbf{0.995} & \textbf{0.997} & \textbf{0.987} & \textbf{1{,}280} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \textbf{Trade-off between dimension and throughput (Fig.~\ref{fig:dim}, Table~\ref{tab:dim}).}
 Because the encoder is Matryoshka, one model serves every width. Distillation's
 recall is essentially flat from 256 to 4096 (R@500 $0.924\!\to\!0.925$) while QPS
