@@ -399,6 +399,35 @@ distillation's 256-d $0.976$, and at ${\sim}10\times$ the latency. To our knowle
 this is the first learned WJ embedding to beat random projection on \emph{both} the
 near- and wide-net frontiers.
 
+\textbf{Recall by polygon class (Table~\ref{tab:bucket}).} The paper's motivating
+claim is that extreme area variation is the hard case (\S\ref{sec:intro}), so we
+break the 50K benchmark's Stage-1 recall down by query-polygon area quartile (Q1 =
+smallest 25\% of the 10k held-out queries by encoded area, Q4 = largest) and,
+separately, by quadtree-cell count (a shape-complexity proxy; same pattern, omitted
+for space). WJ-distillation is essentially flat across the size range (R@50
+$0.784$--$0.801$), while random projection degrades sharply on large polygons: R@50
+falls from $0.753$ at Q1 to $0.594$ at Q4, a $16$pp gap absent from distillation.
+The compact embedding does not merely match random projection on average, as
+Table~\ref{tab:full50k} shows; it is uniform across exactly the axis of variation
+ShapeToVec was built to handle, where the untrained baseline is not.
+
+\begin{table}[t]\centering
+\caption{Stage-1 recall by polygon-area quartile (50K benchmark, 256-d, no rerank).
+Q1 = smallest 25\% of held-out queries by encoded area, Q4 = largest.
+$\ddagger$~=~ours.}
+\label{tab:bucket}\setlength{\tabcolsep}{3pt}\footnotesize
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Quartile & Distill R@50$^\ddagger$ & Distill R@500$^\ddagger$ & RP R@50 & RP R@500 \\
+\midrule
+Q1 (smallest) & 0.792 & 0.933 & 0.753 & 0.854 \\
+Q2             & 0.801 & 0.910 & 0.661 & 0.729 \\
+Q3             & 0.800 & 0.913 & 0.637 & 0.734 \\
+Q4 (largest)   & 0.784 & \textbf{0.942} & 0.594 & 0.776 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \textbf{Why contrastive fails (Fig.~\ref{fig:layer}).}
 The collapse is due to objective--metric misalignment, not capacity limit. Within a
 trained contrastive model, Stage-1 recall \emph{rises} the further a layer sits from
