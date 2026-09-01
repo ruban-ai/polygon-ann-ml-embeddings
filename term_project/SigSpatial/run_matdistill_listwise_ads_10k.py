@@ -68,7 +68,13 @@ def raw_wj(R, chunk=64):
 NEG_INF = -1e9
 
 
-def gumbel_like(x): return -torch.log(-torch.log(torch.rand_like(x).clamp(min=1e-10, max=1 - 1e-10)).clamp(min=1e-10))
+def gumbel_like(x):
+    # NOTE: -torch.log(Y).clamp(min=eps) parses as -(torch.log(Y).clamp(min=eps)), NOT (-torch.log(Y)).clamp(min=eps) --
+    # explicit parens required, or the always-negative torch.log(Y) gets clamped to a constant and the outer
+    # log() of that (still negative after negation) is log(negative) = NaN, uniformly, every call.
+    u = torch.rand_like(x).clamp(min=1e-10, max=1 - 1e-10)
+    inner = (-torch.log(u)).clamp(min=1e-10)
+    return -torch.log(inner)
 
 
 def st_topk_mask(imp, m, sharpness, training):
