@@ -181,10 +181,10 @@ def main():
         sch.step()
         if main:
             print(f"ep{ep:02d} loss={tl/st:.5f} {(time.time()-t0)/60:.1f}min",flush=True)
-            if tl/st<best: best=tl/st; torch.save(model.module.state_dict(),f'/tmp/best_50k_{A.method}.pt')
+            if tl/st<best: best=tl/st; torch.save(model.module.state_dict(),f'/raid/ruban/hpmlproj/term_project/SigSpatial/best_50k_{A.method}.pt')
     dist.barrier()
     if not main: dist.destroy_process_group(); return
-    enc=Model(IN).to(DEV); enc.load_state_dict(torch.load(f'/tmp/best_50k_{A.method}.pt',map_location=DEV,weights_only=True)); enc.eval()
+    enc=Model(IN).to(DEV); enc.load_state_dict(torch.load(f'/raid/ruban/hpmlproj/term_project/SigSpatial/best_50k_{A.method}.pt',map_location=DEV,weights_only=True)); enc.eval()
     evaluate(enc.embed,IN,gt,QS,Cr,Qr,Cr_sum,QTN,DEV,A.method)
     dist.destroy_process_group()
 
