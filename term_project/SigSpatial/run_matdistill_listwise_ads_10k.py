@@ -124,8 +124,8 @@ def main():
     imp = nn.Parameter(torch.zeros(EMB, device=DEV))  # neutral init: no prior over dim importance
     opt = torch.optim.AdamW([
         {"params": m.parameters(), "weight_decay": WD},
-        {"params": [imp], "weight_decay": 0.0},
-    ], lr=LR)
+        {"params": [imp], "weight_decay": 0.0, "lr": LR * 0.1},  # imp has no BatchNorm to keep it bounded;
+    ], lr=LR)                                                    # first run at full LR diverged to NaN within epoch 1
     loader = DataLoader(DS(gt, qs), batch_size=B, shuffle=True, num_workers=8, drop_last=True, persistent_workers=True)
     sch = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=EPOCHS); best = 1e9; t0 = time.time()
 
