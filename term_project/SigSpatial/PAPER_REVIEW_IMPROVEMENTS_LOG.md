@@ -81,7 +81,15 @@ Checked: **no such baseline exists in the results logs yet** (`grep` for full-di
 HNSW runs returned nothing) — this would be a new experiment, not a repositioning of
 existing numbers.
 
-**Status: not started.** Next step once the QPS/ICWS work below is clear.
+**Status: IN PROGRESS (2026-09-01)** — launched `run_uncompressed_baseline_50k.py`.
+CPU-bound (nmslib HNSW build+query, no GPU), running concurrently with the GPU jobs in
+§2/§4 with no resource conflict (verified: 256 cores available, load average 8.93 before
+launch). Loads the raw 50K quadtree vectors, applies the same `l1_simplex` normalization
+ShapeToVec's own vectors carry, and indexes them directly under nmslib's WeightedJaccard
+HNSW space at D=18,382 (no learned compression at all) — same corpus/queries/GT as every
+other 50K result in the paper, so it's a same-benchmark uncompressed-accuracy ceiling.
+Log: `logs_uncompressed_baseline_50k.log`. Result to be logged here and to
+`NEW_RESULTS.csv` (tag `50k-uncompressed-d18382`) once complete.
 
 ## 4. ICWS-brute at 50K (in progress → nearly done)
 
