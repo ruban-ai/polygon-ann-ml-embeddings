@@ -109,17 +109,29 @@ R@10 and R@50 match the baseline to 4 decimal places at every single width; R@50
 
 **Verdict per protocol: flat result, don't auto-escalate — but this one has a specific, reasoned case for an exception** (see above) if there's appetite to spend one more 50K run confirming before fully closing the book on it.
 
+#### 3.3b Escalation to 50K (resolving the scale-dependence caveat)
+- **Status: IN PROGRESS (2026-09-01)** — "no stones unturned" pass. Script: `run_50k_listwise_sxbm.py`, 8-GPU DDP, same protocol as `run_50k_listwise.py`. Results pending.
+
+### 3.4 ADS — learnable dimension selection (candidate #4)
+- **Status: IN PROGRESS (2026-09-01)** — previously deferred without testing; now actually implemented. Script: `run_matdistill_listwise_ads_10k.py` (GPU5). One shared learnable importance vector over EMB=4096 dims, straight-through Gumbel top-m mask per Matryoshka width replaces static first-m prefix truncation. Results pending.
+
+### 3.5 MIPIC — cross-dimension self-distillation (candidate #5)
+- **Status: IN PROGRESS (2026-09-01)** — previously deferred without testing; now actually implemented. Script: `run_matdistill_listwise_mipic_10k.py` (GPU6). Largest (4096-d) prefix's own predicted similarity matrix, detached, used as an extra softmax-CE teacher for smaller widths, additive to the raw-WJ listwise loss (lambda=0.5). Results pending.
+
 ---
 
-## 4. Overall session verdict (all candidates tested)
+## 4. Overall session verdict (updated 2026-09-01 — "no stones unturned" pass in progress)
 
 | Candidate | Verdict |
 |---|---|
 | SMRL (curriculum, both directions) | **Rejected** — structural mismatch with our architecture, clean mechanistic explanation, confirmed by symmetric evidence |
-| RKD angle-wise term | **Skipped** — reasoned to be redundant with existing full-matrix matching; not empirically tested |
-| S-XBM (cross-batch memory) | **Null result at 10K** — flat, not negative; scale-dependence caveat above |
+| RKD angle-wise term | **In progress** — now actually implemented and running (was previously reasoned-and-skipped) |
+| S-XBM (cross-batch memory) @10K | **Null result at 10K** — flat, not negative |
+| S-XBM (cross-batch memory) @50K | **In progress** — resolving the 10K scale-dependence caveat |
+| ADS (dimension selection) | **In progress** — now actually implemented and running (was previously deferred) |
+| MIPIC (cross-dim self-distillation) | **In progress** — now actually implemented and running (was previously deferred) |
 
-**None of the three candidates tested/considered beat plain joint-trained listwise at 10K.** Every SOTA-informed idea explored either made things worse (SMRL) or made no measurable difference (S-XBM), or wasn't likely to help for identifiable reasons (RKD angle-term). **Listwise itself remains the best method found across this entire exploration**, on top of already being established as the best across all three scales (10K/50K/187K) tested earlier. The practical implication: the original pending decision — promote listwise to the paper's primary method — now has even more support than before, since a genuine attempt to beat it with recent (2024–2025) literature-informed ideas came up empty. The one open thread (S-XBM at 50K, given the scale-dependence argument) is a candidate for a single follow-up run if there's appetite, not a blocker.
+Prior conclusion (SMRL rejected, S-XBM@10K flat, listwise remains the best-known method) still stands. This section will be updated with real numbers for all four in-progress runs as they land — see below for live status.
 
 ---
 
