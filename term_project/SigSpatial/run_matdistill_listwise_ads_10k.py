@@ -94,7 +94,7 @@ def listwise_ads(z, tw, imp, sharpness, training):
     tot = 0.
     for m in PREFIXES:
         mask = st_topk_mask(imp, m, sharpness, training)
-        zm = norm(z * mask.unsqueeze(0))
+        zm = norm_masked(z * mask.unsqueeze(0))
         that = emb_wj(zm, zm).masked_fill(diag, NEG_INF)
         logp = F.log_softmax(that / TAU, dim=1)
         tot = tot + (-(target * logp).sum(1)).mean()
