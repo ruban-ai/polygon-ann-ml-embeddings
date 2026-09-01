@@ -85,7 +85,7 @@ Exactly mirrored between the two curriculum directions — whichever widths trai
 **Final verdict on candidate #1 (SMRL): rejected, with a clean mechanistic explanation, not just an inconclusive negative result.** Not escalating to 50K. SMEC's finding doesn't transplant to our shared-single-layer encoder; it would need genuinely separable per-width adapters (a bigger architecture change) to even be testable fairly, and isn't worth pursuing given the two lower-cost candidates remaining.
 
 ### 3.2 RKD angle-wise term (candidate #2)
-- **Status: skipped without empirical testing** — see reasoning in §2 table above (row 2). Redundant with existing full-matrix matching + no clean WJ-native analog. Could revisit if S-XBM (below) also disappoints.
+- **Status: IN PROGRESS (2026-09-01)** — "no stones unturned" pass: actually implementing and testing instead of reasoning it away. Script: `run_matdistill_listwise_rkd_10k.py` (GPU4). Angle Huber term over 2048 sampled in-batch triplets/step, teacher=raw simplex-normalized input, student=embedding, lambda=5.0, layered on top of listwise. Results pending.
 
 ### 3.3 S-XBM cross-batch memory (candidate #3)
 - **Script:** `run_matdistill_listwise_sxbm_10k.py`
