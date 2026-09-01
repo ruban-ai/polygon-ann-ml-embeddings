@@ -49,6 +49,10 @@ random.seed(SEED); np.random.seed(SEED); torch.manual_seed(SEED)
 
 
 def norm(x): return x / x.sum(1, keepdim=True).clamp(min=1e-10)
+def norm_masked(x): return x / x.sum(1, keepdim=True).clamp(min=1e-4)  # ADS-only: with near-random early
+    # selection (imp starts at 0), a row's chosen top-m columns can plausibly be ALL exactly zero
+    # post-ReLU -- far more likely here than under the trained first-m prefix the other scripts use.
+    # 1e-10 lets 1/denom explode to ~1e10 in the backward pass and NaN the run; 1e-4 keeps it finite.
 def emb_wj(a, b): l1 = torch.cdist(a, b, p=1); return (2.0 - l1) / (2.0 + l1)
 
 
