@@ -669,9 +669,12 @@ AE  & ---    & recon.\ only  & 0.665 & 0.745 \\
 We compress ShapeToVec WJ vectors up to $72\times$ with a WJ-native simplex embedding.
 Contrastive objectives work at moderate scale but collapse to random-projection level
 at 50K, since they optimise separation rather than the WJ ranking recall needs.
-WJ-native distillation removes this misalignment: a single Matryoshka encoder beats
-random projection at both near- and wide-net recall, confirmed up to 187k polygons.
-Future work targets billion-scale corpora and other simplex-embeddable set metrics.
+WJ-native distillation removes this misalignment, and a rank-aware \emph{listwise}
+formulation of it beats absolute-value regression decisively at every scale we test
+(10K/50K/187K) and against five further 2024--2025 rank-aware alternatives: a single
+Matryoshka encoder beats random projection at both near- and wide-net recall,
+confirmed up to 187k polygons and on a second polygon class. Future work targets
+billion-scale corpora and other simplex-embeddable set metrics.
 
 \begin{acks}
 Claude (Anthropic) assisted with debugging and manuscript formatting.
