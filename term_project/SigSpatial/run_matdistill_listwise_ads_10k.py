@@ -138,7 +138,11 @@ def main():
             with torch.no_grad(): tw = raw_wj(RAW[ids])
             loss = listwise_ads(z, tw, imp, sharpness, training=True)
             opt.zero_grad(set_to_none=True); loss.backward()
-            torch.nn.utils.clip_grad_norm_(list(m.parameters()) + [imp], 1.0); opt.step(); tl += loss.item(); st += 1
+            torch.nn.utils.clip_grad_norm_(m.parameters(), 1.0)
+            torch.nn.utils.clip_grad_norm_([imp], 1.0)  # separate clip: imp's own gradient norm was getting
+            opt.step()                                  # diluted by the encoder's much larger combined norm
+            with torch.no_grad(): imp.clamp_(-15.0, 15.0)  # bounded range: unconstrained param, no BN to self-limit
+            tl += loss.item(); st += 1
         sch.step()
         with torch.no_grad():
             sel_preview = {p: sorted(torch.topk(imp, p).indices.tolist())[:5] for p in [256]}
