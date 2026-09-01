@@ -41,8 +41,10 @@ DEV = torch.device('cuda:0'); THREADS = 32; torch.set_num_threads(THREADS)
 PREFIXES = [256, 512, 1024, 2048, 4096]; EMB = 4096; B = 512; EPOCHS = 40; LR = 1e-3; WD = 1e-4; MAX_POS = 100
 TAU = 0.1
 NUM_TRIPLETS = 2048   # sampled per step, not the full O(N^3) enumeration
-LAMBDA_ANGLE = 5.0    # angle Huber term is O(0.01-0.5); this brings it to a comparable-but-smaller
-                       # scale than listwise CE (O(1-4)), so it acts as a regularizer, not the primary signal
+LAMBDA_ANGLE = 300.0  # recalibrated from an initial guess of 5.0 after observing epoch-1 magnitudes on a
+                       # real run: raw angle Huber ~0.003 vs listwise CE ~5.3 (cosine-bounded potentials are
+                       # naturally small-scale) -- lambda=5 made the angle term contribute ~0.015, functionally
+                       # inert. 300x brings it to ~0.9, a real ~15% regularizer contribution without dominating.
 HUBER_DELTA = 1.0
 EF = 200; RB = 64; CAND_KS = [500, 1000]; SEED = 42
 CSV = "/raid/ruban/hpmlproj/term_project/SigSpatial/NEW_RESULTS.csv"
