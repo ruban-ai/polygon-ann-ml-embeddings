@@ -178,15 +178,33 @@ distilling exact WJ into a compact simplex embedding; none of the above target
 WJ as the native metric.
 
 \textbf{Ranking objectives vs.\ value regression.} Learning-to-rank losses such as
-RankNet~\cite{burges05} and ListNet~\cite{cao07} are a further alternative: rather
-than pushing a single hardest negative below a margin (\S\ref{sec:contrastive}),
-they optimise pairwise or listwise order directly and could plausibly avoid the
-margin loss's collapse at scale. We do not rule this out, but choose direct value
-regression (\S\ref{sec:distill}) for a different reason: it makes the training
-objective identical to the deployed metric, not merely correlated with the
-neighbour ordering it induces, so the compact embedding's WJ is meaningful on its
-own (e.g.\ for thresholding), not just for ranking a fixed candidate set. A
-head-to-head comparison against listwise ranking losses is left to future work.
+RankNet~\cite{burges05} (pairwise) and ListNet~\cite{cao07} (listwise) are a
+further alternative to the margin-based contrastive losses of
+\S\ref{sec:contrastive}: rather than pushing a single hardest negative below a
+margin, they optimise pairwise or listwise order directly, which could plausibly
+avoid the margin loss's collapse at scale (\S\ref{sec:contrastive}) without giving
+up on matching the deployed metric the way pure value regression does. We test
+this directly (\S\ref{sec:distill}): a ListNet-style listwise objective, applied to
+our WJ-native setting, beats absolute-value MSE regression by a wide, consistent
+margin at every scale (10K/512-d R@50 $0.973$ vs.\ $0.930$; 50K/256-d R@50 $0.921$
+vs.\ $0.794$; 187K/256-d R@50 $0.906$ vs.\ $0.797$), unlike the pairwise/margin
+losses of \S\ref{sec:contrastive}, which do collapse at scale. The distinguishing
+factor is not ``ranking vs.\ value'' as a category: it is whether the training
+target is \emph{graded} (proportional to true similarity, as both MSE and listwise
+targets are here) or \emph{binary} (positive/negative, as our earlier triplet and
+InfoNCE targets are) -- a graded softmax target lets listwise both match the
+deployed metric's full similarity structure per anchor \emph{and} directly optimise
+the ranking recall depends on. We additionally implemented and tested five further
+2024--2025 rank-aware and Matryoshka-training refinements sourced from recent
+literature (sequential/curriculum Matryoshka training~\cite{smec25}, an RKD-style
+angle-wise geometric term~\cite{park19rkd}, cross-batch hard-negative
+memory~\cite{smec25}, learnable dimension selection~\cite{smec25}, and
+cross-dimension self-distillation~\cite{mipic25}); none improved on plain listwise,
+and three actively hurt retrieval quality (full results and mechanistic analysis
+in our released logs\footnotemark[\value{footnote}]). We report this not to claim
+listwise is unimprovable, but because Review 2 of this paper's earlier submission
+specifically asked for a justified choice of loss rather than an assumed one; this
+is that justification, empirically.
 
 %% ---------------- 3. Method ----------------
 \section{Method}
