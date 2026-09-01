@@ -387,12 +387,12 @@ concentrated at zero.}
 \label{fig:batchdist}
 \end{figure}
 
-The objective \emph{is} the retrieval metric, so the deployed output is exactly the
-optimised quantity: a metric distillation~\cite{hinton15} with exact $D$-dim WJ
-as teacher and the compact simplex embedding as student. We apply
-Eq.~\eqref{eq:distill} on nested prefixes $\{256, 512, \dots,4096\}$
+The objective \emph{is} the retrieval metric's ranking, so the deployed output is
+directly the optimised quantity: a listwise metric distillation~\cite{hinton15,cao07}
+with exact $D$-dim WJ as teacher and the compact simplex embedding as student. We
+apply Eq.~\eqref{eq:distill} on nested prefixes $\{256, 512, \dots,4096\}$
 (Matryoshka~\cite{matryoshka22}, each $\ell_1$-renormalised), so one model truncates
-to any width; the smallest %already 
+to any width; the smallest %already
 dominates (\S\ref{sec:exp}).
 
 \subsection{Two-stage retrieval}
