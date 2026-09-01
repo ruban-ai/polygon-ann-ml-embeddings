@@ -53,8 +53,11 @@ def raw_wj(R, chunk=64):
 
 
 @torch.no_grad()
-def raw_wj_cross(A, Bm, chunk=256):
-    """Cross WJ between two (possibly different-sized) sets of raw vectors."""
+def raw_wj_cross(A, Bm, chunk=16):
+    """Cross WJ between two (possibly different-sized) sets of raw vectors.
+    chunk=16 is deliberately small: intermediate is chunk*len(Bm)*D floats
+    (D~18220), so 16*2048*18220*4B ~= 2.4GB -- chunk=256 here would be ~76GB
+    and OOM immediately."""
     out = torch.empty(A.shape[0], Bm.shape[0], device=A.device)
     for i in range(0, A.shape[0], chunk):
         ai = A[i:i + chunk]
