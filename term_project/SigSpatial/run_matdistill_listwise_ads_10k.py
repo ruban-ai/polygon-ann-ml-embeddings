@@ -163,7 +163,7 @@ def main():
     for k in PREFIXES:
         with torch.no_grad():
             mask = st_topk_mask(imp_final, k, 0, training=False)
-            Zk = norm(Z * mask.unsqueeze(0))
+            Zk = norm_masked(Z * mask.unsqueeze(0))
         emb = Zk.cpu().numpy().astype(np.float32); ce = emb[:qs]; qe = emb[qs:]
         mk = max(max(CAND_KS), 500)
         nb, info = nmslib_neighbors(ce, qe, space="WeightedJaccard", k=mk, threads=THREADS, query_params={"efSearch": EF})
