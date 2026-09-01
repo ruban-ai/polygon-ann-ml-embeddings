@@ -85,10 +85,13 @@ Exactly mirrored between the two curriculum directions — whichever widths trai
 **Final verdict on candidate #1 (SMRL): rejected, with a clean mechanistic explanation, not just an inconclusive negative result.** Not escalating to 50K. SMEC's finding doesn't transplant to our shared-single-layer encoder; it would need genuinely separable per-width adapters (a bigger architecture change) to even be testable fairly, and isn't worth pursuing given the two lower-cost candidates remaining.
 
 ### 3.2 RKD angle-wise term (candidate #2)
-- **Status:** not started (queued behind 3.1's verdict)
+- **Status: skipped without empirical testing** — see reasoning in §2 table above (row 2). Redundant with existing full-matrix matching + no clean WJ-native analog. Could revisit if S-XBM (below) also disappoints.
 
 ### 3.3 S-XBM cross-batch memory (candidate #3)
-- **Status:** not started
+- **Script:** `run_matdistill_listwise_sxbm_10k.py`
+- **Change from baseline:** same architecture/data/40-epoch budget/listwise loss as `run_matdistill_listwise_10k.py`; each training step, the batch (~1024 ids) is augmented with up to 64 additional ids mined by true raw-WJ similarity from a 2048-id FIFO queue of recently-seen ids (queue is pushed with each step's own batch ids after use). Adapted from SMEC's S-XBM: they store stale embeddings from a frozen backbone and mine by embedding similarity (necessary since their corpus doesn't fit in memory); we mine by *exact* raw WJ instead, since our whole 10K corpus fits in GPU memory and exact similarity is cheap and strictly more reliable than embedding-based mining, especially early in training.
+- **Pre-flight check:** original chunk size (256) in the cross-similarity computation would have needed ~76GB per intermediate tensor and OOM'd; corrected to chunk=16, queue=2048 (~2.4GB/intermediate, verified). Timing-tested standalone: ~0.46s/mining call × ~10,360 total steps ≈ 79 min added overhead; total run time expected ~2.5–3h.
+- **Status:** _running — results pending_
 
 ---
 
