@@ -46,12 +46,24 @@ Full research notes/citations are also in the chat transcript; this table is the
 
 Testing protocol: every candidate is layered on top of listwise (not standalone), tested at **10K only** first, compared against the 10K listwise baseline above. Escalation to 50K/187K is a separate, explicit decision per candidate — not automatic.
 
-### 3.1 SMRL-curriculum (candidate #1)
+### 3.1 SMRL-curriculum (candidate #1) — DONE, verdict: not a win, do not escalate
 - **Script:** `run_matdistill_listwise_curriculum_10k.py`
-- **Change from baseline:** same architecture/data/40-epoch budget/listwise loss as `run_matdistill_listwise_10k.py`; only the *schedule* differs — prefixes {256} → {256,512} → ... → all 5 are widened in 5 stages of 8 epochs each, instead of all 5 supervised jointly from epoch 1.
-- **Status:** _running — results pending_
-- **Result:** _(fill in once eval completes)_
-- **Verdict:** _(fill in: escalate to 50K / flat / worse)_
+- **Change from baseline:** same architecture/data/40-epoch budget/listwise loss as `run_matdistill_listwise_10k.py`; only the *schedule* differs — prefixes {256} → {256,512} → {256,512,1024} → {256,512,1024,2048} → all 5, widened in 5 stages of 8 epochs each, instead of all 5 supervised jointly from epoch 1.
+
+**Result (Stage-1 base, no rerank, R@50):**
+
+| Dim | Listwise (joint, baseline) | Curriculum | Δ |
+|---|---|---|---|
+| 256 | 0.9715 | 0.9731 | +0.16pp |
+| 512 | 0.9734 | 0.9731 | −0.03pp (noise) |
+| 1024 | 0.9747 | 0.9680 | −0.67pp |
+| 2048 | 0.9751 | 0.8912 | **−8.39pp** |
+| 4096 | 0.9752 | 0.8699 | **−10.53pp** |
+
+(Full R@10/R@500/QPS/rerank numbers in `NEW_RESULTS.csv`, method tag `ListwiseCurriculum10K-d*`.)
+
+- **Verdict: not a win, do not escalate to 50K.** Marginal, noise-level change at the two smallest widths (256, 512 — the ones we actually deploy), but a severe regression at the three largest. Root cause: the *cumulative-widening* schedule I used gives later-added widths systematically less total training exposure than earlier ones (2048 only got supervised for ~16/40 epochs, 4096 for ~8/40), which is the opposite of what we want if all widths are meant to be usable.
+- **Also worth flagging:** this curriculum went **small → large** (256 first, widening outward), which is actually the *reverse* of SMEC's own design — their sequential compression starts from the pretrained full-size embedding and derives progressively *smaller* stages from an already-converged larger one (large → small). What I tested is a reasonable adaptation to our shared-single-layer architecture, but it isn't a faithful test of SMEC's actual hypothesis. A large→small ordering (train 4096 to convergence first, then narrow) would be a fairer retest if we want to revisit this idea later, but isn't queued right now per the "move to next candidate" branch of the protocol.
 
 ### 3.2 RKD angle-wise term (candidate #2)
 - **Status:** not started (queued behind 3.1's verdict)
