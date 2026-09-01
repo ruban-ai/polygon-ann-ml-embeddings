@@ -63,7 +63,12 @@ Testing protocol: every candidate is layered on top of listwise (not standalone)
 (Full R@10/R@500/QPS/rerank numbers in `NEW_RESULTS.csv`, method tag `ListwiseCurriculum10K-d*`.)
 
 - **Verdict: not a win, do not escalate to 50K.** Marginal, noise-level change at the two smallest widths (256, 512 — the ones we actually deploy), but a severe regression at the three largest. Root cause: the *cumulative-widening* schedule I used gives later-added widths systematically less total training exposure than earlier ones (2048 only got supervised for ~16/40 epochs, 4096 for ~8/40), which is the opposite of what we want if all widths are meant to be usable.
-- **Also worth flagging:** this curriculum went **small → large** (256 first, widening outward), which is actually the *reverse* of SMEC's own design — their sequential compression starts from the pretrained full-size embedding and derives progressively *smaller* stages from an already-converged larger one (large → small). What I tested is a reasonable adaptation to our shared-single-layer architecture, but it isn't a faithful test of SMEC's actual hypothesis. A large→small ordering (train 4096 to convergence first, then narrow) would be a fairer retest if we want to revisit this idea later, but isn't queued right now per the "move to next candidate" branch of the protocol.
+- **Also worth flagging:** this curriculum went **small → large** (256 first, widening outward), which is actually the *reverse* of SMEC's own design — their sequential compression starts from the pretrained full-size embedding and derives progressively *smaller* stages from an already-converged larger one (large → small). What I tested is a reasonable adaptation to our shared-single-layer architecture, but it isn't a faithful test of SMEC's actual hypothesis.
+
+#### 3.1b Diagnostic retest: reversed order (large → small)
+- **Script:** `run_matdistill_listwise_curriculum_rev_10k.py` — identical to 3.1 except the stage order is flipped: 4096 supervised first (all 40 epochs), 256 added last (only the final 8).
+- **Hypothesis being tested:** it's not "small-first helps," it's "whichever width trains *last* gets starved of epochs" — a structural property of curriculum scheduling on our shared-single-dense-layer encoder (no separable per-width weights to freeze, unlike SMEC's stacked adapters). If true: 4096 should recover to ~baseline (0.975) here, and 256 should now be the one that collapses.
+- **Status:** _running — results pending_
 
 ### 3.2 RKD angle-wise term (candidate #2)
 - **Status:** not started (queued behind 3.1's verdict)
