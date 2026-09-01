@@ -84,9 +84,25 @@ Exactly mirrored between the two curriculum directions — whichever widths trai
 
 **Final verdict on candidate #1 (SMRL): rejected, with a clean mechanistic explanation, not just an inconclusive negative result.** Not escalating to 50K. SMEC's finding doesn't transplant to our shared-single-layer encoder; it would need genuinely separable per-width adapters (a bigger architecture change) to even be testable fairly, and isn't worth pursuing given the two lower-cost candidates remaining.
 
-### 3.2 RKD angle-wise term (candidate #2)
-- **Status: IN PROGRESS (2026-09-01)** — "no stones unturned" pass: actually implementing and testing instead of reasoning it away. Script: `run_matdistill_listwise_rkd_10k.py` (GPU4). Angle Huber term over 2048 sampled in-batch triplets/step, teacher=raw simplex-normalized input, student=embedding, layered on top of listwise.
-- **Calibration note:** first launch used `LAMBDA_ANGLE=5.0` (a priori guess); epoch-1 data showed angle_huber≈0.003 vs listwise_ce≈5.3, so lambda=5 contributed only ≈0.015 — functionally inert. Killed after 5min and relaunched with `LAMBDA_ANGLE=300` (≈0.9 contribution, ~15% of total loss) so the run actually tests the hypothesis instead of silently no-op'ing the angle term for 40 epochs. Results pending.
+### 3.2 RKD angle-wise term (candidate #2) — DONE, verdict: rejected, real regression (not just null)
+- **Script:** `run_matdistill_listwise_rkd_10k.py`. Angle Huber term over 2048 sampled in-batch triplets/step, teacher=raw simplex-normalized input, student=embedding, layered on top of listwise.
+- **Calibration note:** first launch used `LAMBDA_ANGLE=5.0` (a priori guess); epoch-1 data showed angle_huber≈0.003 vs listwise_ce≈5.3, so lambda=5 contributed only ≈0.015 — functionally inert. Killed after 5min and relaunched with `LAMBDA_ANGLE=300` (≈0.9 contribution, ~15% of total loss).
+
+**Result (base, no rerank, R@10/R@50), all five widths — a real, consistent regression, unlike S-XBM/MIPIC's flat nulls:**
+
+| Dim | Baseline R@10 | +RKD R@10 | Δ | Baseline R@50 | +RKD R@50 | Δ |
+|---|---|---|---|---|---|---|
+| 256 | 0.9411 | 0.8292 | **−11.2pp** | 0.9715 | 0.9089 | **−6.3pp** |
+| 512 | 0.9454 | 0.8456 | **−10.0pp** | 0.9734 | 0.9193 | **−5.4pp** |
+| 1024 | 0.9477 | 0.8531 | **−9.5pp** | 0.9747 | 0.9257 | **−4.9pp** |
+| 2048 | 0.9478 | 0.8583 | **−9.0pp** | 0.9751 | 0.9292 | **−4.6pp** |
+| 4096 | 0.9481 | 0.8622 | **−8.6pp** | 0.9752 | 0.9315 | **−4.4pp** |
+
+**But this recovers substantially after reranking** — at rerank K=500, R@10/R@50 fully match baseline (0.9966/0.9986 both) at every width; R@500 still trails (e.g. 256-d: 0.9900 vs baseline 0.9954). At the deeper K=1000, R@500 closes to within noise too (e.g. 256-d: 0.9960 vs 0.9967).
+
+**Interpretation:** the angle term genuinely degrades base HNSW-retrieval embedding quality — this is not the batch-diversity/self-distillation kind of null result seen in S-XBM/MIPIC, it's an active negative interaction with the primary listwise objective. A deep-enough rerank stage masks most of the damage for top-K metrics, but the base/ANN-only retrieval mode (relevant when rerank isn't used, or for R@500-level candidate-pool quality) is clearly worse. Plausible mechanism: forcing the student to match RKD's Euclidean/cosine-angle geometry pulls the embedding away from the WJ-native ratio-space geometry the primary listwise loss (and the deployed `(2-L1)/(2+L1)` WJ approximation) actually relies on — the two objectives are less "additive/complementary" and more "in tension" than hypothesized.
+
+**Verdict: rejected — and more decisively than the original "reasoned to be redundant" skip.** The original reasoning (full-matrix matching already implicit) undersold the risk; the real finding is actively harmful, not merely superfluous.
 
 ### 3.3 S-XBM cross-batch memory (candidate #3)
 - **Script:** `run_matdistill_listwise_sxbm_10k.py`
