@@ -110,8 +110,22 @@ R@10 and R@50 match the baseline to 4 decimal places at every single width; R@50
 
 **Verdict per protocol: flat result, don't auto-escalate — but this one has a specific, reasoned case for an exception** (see above) if there's appetite to spend one more 50K run confirming before fully closing the book on it.
 
-#### 3.3b Escalation to 50K (resolving the scale-dependence caveat)
-- **Status: IN PROGRESS (2026-09-01)** — "no stones unturned" pass. Script: `run_50k_listwise_sxbm.py`, 8-GPU DDP, same protocol as `run_50k_listwise.py`. Results pending.
+#### 3.3b Escalation to 50K (resolving the scale-dependence caveat) — DONE, verdict: confirmed null, not a scale artifact
+- **Script:** `run_50k_listwise_sxbm.py`, 8-GPU DDP, same protocol/arch/data/10-epoch budget as `run_50k_listwise.py`; per-rank FIFO queue (queue_max=2048, mine_k=64), same as the 10K version.
+
+**Result (base, no rerank, R@50), all five widths:**
+
+| Dim | Listwise (baseline) R@50 | + S-XBM R@50 | Δ |
+|---|---|---|---|
+| 256 | 0.9208 | 0.9211 | +0.03pp (noise) |
+| 512 | 0.9254 | 0.9257 | +0.03pp (noise) |
+| 1024 | 0.9278 | 0.9279 | +0.01pp (noise) |
+| 2048 | 0.9291 | 0.9290 | −0.01pp (noise) |
+| 4096 | 0.9291 | 0.9291 | 0.0000 |
+
+Rerank (K=1000/2000) numbers match the baseline to within 0.01pp at every width too — e.g. d=256 rerank K=1000 R@500: baseline 0.9895 vs +S-XBM 0.9895.
+
+**Verdict: confirmed null at 50K — this closes the 10K scale-dependence caveat.** The hypothesis that S-XBM's mechanism might "kick in" once the corpus is large enough relative to the batch does not hold up: at 50K (5x the corpus, 40K queries traversed with the same batch size) the result is exactly as flat as at 10K, not a smaller-but-nonzero gain. S-XBM is fully ruled out, not just deprioritized — no remaining open thread on this candidate.
 
 ### 3.4 ADS — learnable dimension selection (candidate #4)
 - **Status: IN PROGRESS (2026-09-01)** — previously deferred without testing; now actually implemented. Script: `run_matdistill_listwise_ads_10k.py` (GPU5). One shared learnable importance vector over EMB=4096 dims, straight-through Gumbel top-m mask per Matryoshka width replaces static first-m prefix truncation.
