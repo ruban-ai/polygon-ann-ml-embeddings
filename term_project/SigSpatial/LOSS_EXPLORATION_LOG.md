@@ -114,7 +114,8 @@ R@10 and R@50 match the baseline to 4 decimal places at every single width; R@50
 - **Status: IN PROGRESS (2026-09-01)** — "no stones unturned" pass. Script: `run_50k_listwise_sxbm.py`, 8-GPU DDP, same protocol as `run_50k_listwise.py`. Results pending.
 
 ### 3.4 ADS — learnable dimension selection (candidate #4)
-- **Status: IN PROGRESS (2026-09-01)** — previously deferred without testing; now actually implemented. Script: `run_matdistill_listwise_ads_10k.py` (GPU5). One shared learnable importance vector over EMB=4096 dims, straight-through Gumbel top-m mask per Matryoshka width replaces static first-m prefix truncation. Results pending.
+- **Status: IN PROGRESS (2026-09-01)** — previously deferred without testing; now actually implemented. Script: `run_matdistill_listwise_ads_10k.py` (GPU5). One shared learnable importance vector over EMB=4096 dims, straight-through Gumbel top-m mask per Matryoshka width replaces static first-m prefix truncation.
+- **Stability note:** first launch diverged to NaN within epoch 1 — `imp` (the raw importance vector) has no BatchNorm to self-limit, unlike every other parameter in this codebase, and its gradient norm was getting diluted by the encoder's much larger combined norm under a single shared `clip_grad_norm_` call. Fixed: separate grad-norm clip for `imp`, its own LR reduced 10x, and hard-clamped to ±15 after every step. Relaunched. Results pending.
 
 ### 3.5 MIPIC — cross-dimension self-distillation (candidate #5)
 - **Status: IN PROGRESS (2026-09-01)** — previously deferred without testing; now actually implemented. Script: `run_matdistill_listwise_mipic_10k.py` (GPU6). Largest (4096-d) prefix's own predicted similarity matrix, detached, used as an extra softmax-CE teacher for smaller widths, additive to the raw-WJ listwise loss (lambda=0.5). Results pending.
