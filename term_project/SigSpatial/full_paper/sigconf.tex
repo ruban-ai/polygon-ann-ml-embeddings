@@ -576,10 +576,12 @@ identically-scaled benchmark (40k corpus / 10k held-out queries, methodology
 matching \S\ref{sec:exp}) on the SpatialHadoop water-body
 collection~\cite{eldawy15}, with the same architecture, loss, and 256-d prefix,
 no method changes. The gap over random projection is, if anything, larger than on
-Parks: Stage-1 R@50 $=0.815$ vs.\ $0.632$ ($+18.3$pp) and R@500 $=0.930$ vs.\
-$0.763$ ($+16.7$pp), at higher throughput ($4{,}632$ vs.\ $2{,}652$ QPS). After
-reranking, distillation's 256-d reaches R@500 $=0.987$ at $1{,}280$ QPS
-($K{=}2000$), versus random projection's best dimension (4096-d) reaching only
+Parks: Stage-1 R@50 $=0.912$ vs.\ $0.632$ ($+28.0$pp) and R@500 $=0.965$ vs.\
+$0.763$ ($+20.2$pp), at higher throughput ($6{,}293$ vs.\ $2{,}652$ QPS) --
+both the recall margin and the listwise-over-MSE margin established on Parks
+(MSE reaches only R@50 $=0.815$, R@500 $=0.930$ here) hold on this second polygon
+class. After reranking, distillation's 256-d reaches R@500 $=0.994$ at $1{,}300$
+QPS ($K{=}2000$), versus random projection's best dimension (4096-d) reaching only
 $0.971$ at $246$ QPS, the same pattern as the Parks 50K benchmark
 (\S\ref{sec:exp}). WJ-native distillation is not tuned to one polygon class.
 
@@ -594,11 +596,13 @@ Method & $K$ & R@10 & R@50 & R@500 & QPS \\
 \midrule
 \multicolumn{6}{@{}l@{}}{\textit{Stage 1 --- no rerank}}\\[1pt]
 Rand.\ Proj.~\cite{achlioptas03}    & --- & 0.563 & 0.632 & 0.763 & 2{,}652 \\
-\textbf{WJ-distillation}$^\ddagger$ & --- & \textbf{0.722} & \textbf{0.815} & \textbf{0.930} & \textbf{4{,}632} \\
+WJ-distill.\ (MSE)$^\ddagger$       & --- & 0.722 & 0.815 & 0.930 & 4{,}632 \\
+\textbf{WJ-distill.\ (listwise)}$^\ddagger$ & --- & \textbf{0.858} & \textbf{0.912} & \textbf{0.965} & \textbf{6{,}293} \\
 \midrule
 \multicolumn{6}{@{}l@{}}{\textit{Stage 2 --- exact-WJ rerank}}\\[1pt]
 Rand.\ Proj.~\cite{achlioptas03}    & 2000 & 0.994 & 0.994 & 0.958 & 362 \\
-\textbf{WJ-distillation}$^\ddagger$ & 2000 & \textbf{0.995} & \textbf{0.997} & \textbf{0.987} & \textbf{1{,}280} \\
+WJ-distill.\ (MSE)$^\ddagger$       & 2000 & 0.995 & 0.997 & 0.987 & 1{,}280 \\
+\textbf{WJ-distill.\ (listwise)}$^\ddagger$ & 2000 & \textbf{0.995} & \textbf{0.997} & \textbf{0.994} & \textbf{1{,}300} \\
 \bottomrule
 \end{tabular}
 \end{table}
