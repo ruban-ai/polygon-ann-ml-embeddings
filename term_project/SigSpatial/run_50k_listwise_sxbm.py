@@ -137,7 +137,7 @@ def evaluate(embed_fn, gt, qs, Cr, Qr, Cr_sum, qtn, DEV, tag):
             rows.append([m, "rerank", ck, mm[10], mm[50], mm[100], mm[500], round(e2e)])
         release_rerank_corpus()
     note = (f"pk-real50k0.002 listwise+S-XBM (50K escalation of 10K null result, see "
-            f"LOSS_EXPLORATION_LOG.md {{3.3): queue_max={QUEUE_MAX} mine_k={MINE_K}, per-rank FIFO; "
+            f"LOSS_EXPLORATION_LOG.md sec 3.3): queue_max={QUEUE_MAX} mine_k={MINE_K}, per-rank FIFO; "
             f"raw-WJ; tau={TAU}; efSearch={EF}")
     with open(CSV, "a", newline="") as f:
         w = csv.writer(f)
