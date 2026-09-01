@@ -604,16 +604,17 @@ Rand.\ Proj.~\cite{achlioptas03}    & 2000 & 0.994 & 0.994 & 0.958 & 362 \\
 \end{table}
 
 \textbf{Trade-off between dimension and throughput (Fig.~\ref{fig:dim}, Table~\ref{tab:dim}).}
-Because the encoder is Matryoshka, one model serves every width. Distillation's
-recall is essentially flat from 256 to 4096 (R@500 $0.924\!\to\!0.925$) while QPS
-falls ${\sim}7\times$, so 256-d, a $72\times$ compression, is the natural
-operating point. Baselines, by contrast, stay below distillation at \emph{every} width.
+Because the encoder is Matryoshka, one model serves every width. Listwise
+distillation's recall is essentially flat from 256 to 4096 (R@500
+$0.969\!\to\!0.973$) while QPS falls ${\sim}3.3\times$, so 256-d, a $72\times$
+compression, is the natural operating point. Baselines, by contrast, stay below
+distillation at \emph{every} width.
 
 \begin{figure}[t]\centering
 \includegraphics[width=0.86\columnwidth]{fig_dim_distill.png}
-\caption{WJ-distillation on the 50K benchmark: Stage-1 recall is flat across
-dimension while HNSW throughput rises sharply at small $d$; 256-d is the sweet
-spot.}
+\caption{WJ-distillation (listwise) on the 50K benchmark: Stage-1 recall is flat
+across dimension while HNSW throughput rises sharply at small $d$; 256-d is the
+sweet spot.}
 \label{fig:dim}
 \end{figure}
 
@@ -629,12 +630,13 @@ Method ($d$) & R@10 & R@50 & R@500 & QPS \\
 triplet+recon$^\ddagger$ & 0.494\,/\,0.495 & 0.600\,/\,0.601 & 0.725\,/\,0.734 & 3810\,/\,710 \\
 InfoNCE$^\ddagger$       & 0.459\,/\,0.464 & 0.560\,/\,0.563 & 0.720\,/\,0.720 & 7128\,/\,1168 \\
 Rand.\ Proj.             & 0.616\,/\,0.705 & 0.659\,/\,0.749 & 0.766\,/\,0.841 & 3890\,/\,704 \\
+Distill (MSE)$^\ddagger$ & 0.692\,/\,0.693 & 0.794\,/\,0.796 & 0.924\,/\,0.925 & 6772\,/\,967 \\
 \addlinespace[2pt]
-\textbf{Distill} 256$^\ddagger$ & \textbf{0.692} & \textbf{0.794} & \textbf{0.924} & 6{,}772 \\
-\textbf{Distill} 512$^\ddagger$ & 0.697 & 0.799 & 0.926 & 3{,}111 \\
-\textbf{Distill} 1024$^\ddagger$ & 0.698 & 0.800 & 0.926 & 2{,}258 \\
-\textbf{Distill} 2048$^\ddagger$ & 0.697 & 0.799 & 0.926 & 1{,}180 \\
-\textbf{Distill} 4096$^\ddagger$ & 0.693 & 0.796 & 0.925 & 967 \\
+\textbf{Distill (listwise)} 256$^\ddagger$ & \textbf{0.871} & \textbf{0.921} & \textbf{0.969} & 4{,}921 \\
+\textbf{Distill (listwise)} 512$^\ddagger$ & 0.877 & 0.925 & 0.971 & 2{,}682 \\
+\textbf{Distill (listwise)} 1024$^\ddagger$ & 0.880 & 0.928 & 0.972 & 1{,}958 \\
+\textbf{Distill (listwise)} 2048$^\ddagger$ & 0.881 & 0.929 & 0.973 & 1{,}631 \\
+\textbf{Distill (listwise)} 4096$^\ddagger$ & 0.881 & 0.929 & 0.973 & 1{,}493 \\
 \bottomrule
 \end{tabular}
 \end{table}
