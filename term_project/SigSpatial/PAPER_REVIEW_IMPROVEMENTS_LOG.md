@@ -81,15 +81,38 @@ Checked: **no such baseline exists in the results logs yet** (`grep` for full-di
 HNSW runs returned nothing) — this would be a new experiment, not a repositioning of
 existing numbers.
 
-**Status: IN PROGRESS (2026-09-01)** — launched `run_uncompressed_baseline_50k.py`.
-CPU-bound (nmslib HNSW build+query, no GPU), running concurrently with the GPU jobs in
-§2/§4 with no resource conflict (verified: 256 cores available, load average 8.93 before
-launch). Loads the raw 50K quadtree vectors, applies the same `l1_simplex` normalization
-ShapeToVec's own vectors carry, and indexes them directly under nmslib's WeightedJaccard
-HNSW space at D=18,382 (no learned compression at all) — same corpus/queries/GT as every
-other 50K result in the paper, so it's a same-benchmark uncompressed-accuracy ceiling.
-Log: `logs_uncompressed_baseline_50k.log`. Result to be logged here and to
-`NEW_RESULTS.csv` (tag `50k-uncompressed-d18382`) once complete.
+**Status: DONE (2026-09-01) — result is stronger than expected, changes the framing.**
+`run_uncompressed_baseline_50k.py` completed in 1.9 min total (HNSW build+query: 1.7 min).
+
+**Result — full D=18,382-dim vectors, no compression, direct HNSW under WeightedJaccard,
+same 50K corpus/queries/GT as every other result in the paper:**
+
+| Method | Dim | R@10 | R@50 | R@500 | QPS |
+|---|---|---|---|---|---|
+| Uncompressed (ShapeToVec's own method, reproduced) | 18,382 | 0.6486 | 0.6990 | 0.8166 | 1,102 |
+| **Ours (listwise distill)** | **256** | **0.871** | **0.921** | **0.969** | **4,921** |
+
+**This is not "retains most of the accuracy while compressing" — the compressed
+embedding beats the uncompressed one, by +22.2pp R@50 and +15.2pp R@500, while also
+running ~4.5x faster.** Compression is not a tradeoff here, it's a net win on both axes.
+
+**Mechanism (plausible, not yet independently verified):** this is the curse of
+dimensionality hitting *approximate* graph search (HNSW) specifically, not the WJ metric
+itself — brute-force/exact WJ on the raw vectors is still near-ceiling (the paper's
+existing 0.999 R@500 quadtree-vs-geometric-Jaccard claim), but HNSW's approximate greedy
+traversal degrades in very high-dimensional spaces (distance concentration reduces the
+signal available for graph navigation). A well-shaped, lower-dimensional learned
+embedding is not just cheaper to search, it is an *easier* search problem for HNSW.
+Since candidate_k=500=top_k here, note R@500 is capped by Stage-1 alone — Stage-2 rerank
+cannot improve it further for the uncompressed pipeline, since reranking only reorders
+within a fixed candidate pool, it cannot add missed items back in.
+
+**Action needed:** this is a much stronger and more citable core-contribution claim than
+originally discussed ("beats an untrained random projection") — recommend leading the
+abstract/intro with this same-benchmark uncompressed comparison instead of (or in
+addition to) the RP comparison. Pending: rewrite abstract/intro/conclusion around this;
+consider running the same uncompressed baseline at 187K for confirmation at the largest
+scale too (same script pattern, CPU-only, cheap).
 
 ## 4. ICWS-brute at 50K (in progress → nearly done)
 
