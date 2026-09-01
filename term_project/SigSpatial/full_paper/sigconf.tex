@@ -60,13 +60,19 @@ exact-WJ reranking. On a larger benchmark, however, this and other ranking-style
 objectives no longer beat an untrained random projection: they optimize local separation
 rather than the global WJ ranking recall depends on, and the loss even damages the very
 layer it is deployed from. We close this gap with \emph{WJ-native distillation}:
-regressing the embedding's WJ directly onto the true WJ, aligning the training
-objective with the retrieval metric and yielding a single Matryoshka encoder deployable
-at any dimension. This is, to our knowledge, the first learned WJ embedding to surpass
-random projection on both the near- and wide-net recall--throughput frontiers: on a 50K
-benchmark it reaches Recall@500 $=0.924$ ($0.976$ after reranking) at just 256
-dimensions ($72\times$ compression), beating random projection at every dimension while
-running several-fold faster. The same encoder, unchanged, generalises to a second,
+aligning the training objective with the retrieval metric directly, so the deployed
+embedding's WJ reproduces the true WJ, and yielding a single Matryoshka encoder
+deployable at any dimension. Within this framework we compare two distillation
+objectives, absolute value regression (MSE) and a rank-aware \emph{listwise}
+objective that matches each anchor's full similarity distribution rather than
+individual values; the listwise variant wins decisively at every scale we test
+(10K/50K/187K polygons) and against every 2024--2025 rank-aware alternative we
+tried (\S\ref{sec:distill}), so it is our primary method throughout. This is, to
+our knowledge, the first learned WJ embedding to surpass random projection on both
+the near- and wide-net recall--throughput frontiers: on a 50K benchmark it reaches
+Recall@500 $=0.969$ ($0.990$ after reranking) at just 256 dimensions ($72\times$
+compression), beating random projection at every dimension while running
+competitively fast. The same encoder, unchanged, generalises to a second,
 structurally different polygon class (water bodies), where its margin over random
 projection is if anything larger.
 \end{abstract}
