@@ -131,8 +131,22 @@ Rerank (K=1000/2000) numbers match the baseline to within 0.01pp at every width 
 - **Status: IN PROGRESS (2026-09-01)** — previously deferred without testing; now actually implemented. Script: `run_matdistill_listwise_ads_10k.py` (GPU5). One shared learnable importance vector over EMB=4096 dims, straight-through Gumbel top-m mask per Matryoshka width replaces static first-m prefix truncation.
 - **Stability note (three rounds) — root cause found and fixed:** first two launches diverged to NaN within epoch 1, identically (round 1's gradient-magnitude fixes didn't help; round 2's denominator-floor theory was also wrong — `imp` stayed at exactly 0.000 rather than NaN, meaning the *forward pass itself* was NaN, not a backward-pass gradient explosion). Isolated the actual bug with a standalone repro against real batch data (see session transcript): `gumbel_like()` had a Python operator-precedence bug — `-torch.log(Y).clamp(min=eps)` parses as `-(torch.log(Y).clamp(min=eps))`, not `(-torch.log(Y)).clamp(min=eps)`. Since `torch.log(U)` for `U∈[1e-10,1)` is always negative, clamping it to `min=1e-10` forced every element to the same constant, and the outer `log()` of that (still negative after the outer negation) hit `log(negative)=NaN` uniformly, every single call — deterministic, hence identical failure both times. Fixed with explicit parens; verified standalone against 100K samples (mean=0.579, std=1.289, matching the theoretical Gumbel(0,1) mean=0.577/std=1.283 exactly). Relaunched. Results pending.
 
-### 3.5 MIPIC — cross-dimension self-distillation (candidate #5)
-- **Status: IN PROGRESS (2026-09-01)** — previously deferred without testing; now actually implemented. Script: `run_matdistill_listwise_mipic_10k.py` (GPU6). Largest (4096-d) prefix's own predicted similarity matrix, detached, used as an extra softmax-CE teacher for smaller widths, additive to the raw-WJ listwise loss (lambda=0.5). Results pending.
+### 3.5 MIPIC — cross-dimension self-distillation (candidate #5) — DONE, verdict: null result
+- **Script:** `run_matdistill_listwise_mipic_10k.py`. Largest (4096-d) prefix's own predicted similarity matrix, detached, used as an extra softmax-CE teacher for smaller widths, additive to the raw-WJ listwise loss (lambda=0.5). Ran cleanly from the first launch — no stability issues.
+
+**Result (base, no rerank, R@50), all five widths:**
+
+| Dim | Listwise (baseline) R@50 | + MIPIC R@50 | Δ |
+|---|---|---|---|
+| 256 | 0.9715 | 0.9712 | −0.03pp (noise) |
+| 512 | 0.9734 | 0.9736 | +0.02pp (noise) |
+| 1024 | 0.9747 | 0.9743 | −0.04pp (noise) |
+| 2048 | 0.9751 | 0.9746 | −0.05pp (noise) |
+| 4096 | 0.9752 | 0.9747 | −0.05pp (noise) |
+
+Rerank numbers match the baseline within 0.01-0.02pp at every width too.
+
+**Verdict: null result, don't escalate.** The self-distillation term added no measurable benefit at any width, including the smaller ones (256/512) it was specifically meant to help. Consistent with the reasoning that motivated skipping RKD's angle-term: every width already receives dense, full-matrix ground-truth supervision (the raw-WJ target) every single step, so a same-architecture, same-training-run larger prefix has little genuinely new structure left to teach a smaller one that the ground truth hasn't already supplied.
 
 ---
 
