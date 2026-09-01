@@ -31,8 +31,8 @@ from sota_experiment_common import (load_dataset_normalized, nmslib_neighbors,
 DEV = torch.device('cuda:0'); THREADS = 32; torch.set_num_threads(THREADS)
 PREFIXES = [256, 512, 1024, 2048, 4096]; EMB = 4096; B = 512; EPOCHS = 40; LR = 1e-3; WD = 1e-4; MAX_POS = 100
 TAU = 0.1
-QUEUE_MAX = 4096   # FIFO memory size, within SMEC's own ablation range (1k-10k)
-MINE_K = 128       # extra ids appended per step (global top-k anchor<->queue pairs by true WJ)
+QUEUE_MAX = 2048   # FIFO memory size, within SMEC's own ablation range (1k-10k)
+MINE_K = 64        # extra ids appended per step (global top-k anchor<->queue pairs by true WJ)
 EF = 200; RB = 64; CAND_KS = [500, 1000]; SEED = 42
 CSV = "/raid/ruban/hpmlproj/term_project/SigSpatial/NEW_RESULTS.csv"
 CKPT = '/raid/ruban/hpmlproj/term_project/SigSpatial/best_matdistill_listwise_sxbm_10k.pt'
