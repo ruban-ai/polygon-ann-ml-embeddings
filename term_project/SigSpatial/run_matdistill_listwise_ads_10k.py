@@ -142,6 +142,9 @@ def main():
             with torch.no_grad(): tw = raw_wj(RAW[ids])
             loss = listwise_ads(z, tw, imp, sharpness, training=True)
             opt.zero_grad(set_to_none=True); loss.backward()
+            for p in list(m.parameters()) + [imp]:  # defensive: root cause (near-zero-denom division in
+                if p.grad is not None:                # norm_masked's backward pass) is fixed above, but
+                    torch.nan_to_num_(p.grad, nan=0.0, posinf=1.0, neginf=-1.0)  # this is a cheap safety net
             torch.nn.utils.clip_grad_norm_(m.parameters(), 1.0)
             torch.nn.utils.clip_grad_norm_([imp], 1.0)  # separate clip: imp's own gradient norm was getting
             opt.step()                                  # diluted by the encoder's much larger combined norm
