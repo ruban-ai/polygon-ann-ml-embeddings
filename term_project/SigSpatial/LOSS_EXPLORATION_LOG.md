@@ -183,18 +183,17 @@ Rerank numbers match the baseline within 0.01-0.02pp at every width too.
 
 ---
 
-## 4. Overall session verdict (updated 2026-09-01 — "no stones unturned" pass in progress)
+## 4. Overall session verdict (final — 2026-09-01, "no stones unturned" pass complete)
 
-| Candidate | Verdict |
-|---|---|
-| SMRL (curriculum, both directions) | **Rejected** — structural mismatch with our architecture, clean mechanistic explanation, confirmed by symmetric evidence |
-| RKD angle-wise term | **In progress** — now actually implemented and running (was previously reasoned-and-skipped) |
-| S-XBM (cross-batch memory) @10K | **Null result at 10K** — flat, not negative |
-| S-XBM (cross-batch memory) @50K | **In progress** — resolving the 10K scale-dependence caveat |
-| ADS (dimension selection) | **In progress** — now actually implemented and running (was previously deferred) |
-| MIPIC (cross-dim self-distillation) | **In progress** — now actually implemented and running (was previously deferred) |
+| Candidate | Verdict | Severity |
+|---|---|---|
+| SMRL (curriculum, both directions) | **Rejected** — structural mismatch with our architecture (no separable per-width weights), clean mechanistic explanation confirmed by symmetric evidence | Regression at 3/5 widths (up to −10.5pp) |
+| ADS (learnable dimension selection) | **Rejected** — worse than plain first-k prefix truncation at every width, even after fixing two real implementation bugs (NaN, eval padding) | **Largest regression: −15.5pp R@10 at 256-d** |
+| RKD angle-wise term | **Rejected** — real, consistent regression on base HNSW retrieval, not a null result; angle-matching objective is in tension with the primary WJ-native loss, not complementary to it | Regression at all 5 widths (up to −11.2pp R@10) |
+| S-XBM (cross-batch memory) | **Rejected (fully, not just deferred)** — confirmed flat/null at both 10K and 50K; the "might kick in at scale" caveat is closed | No measurable effect, positive or negative |
+| MIPIC (cross-dim self-distillation) | **Rejected** — no measurable benefit at any width, including the small widths it specifically targeted | No measurable effect, positive or negative |
 
-Prior conclusion (SMRL rejected, S-XBM@10K flat, listwise remains the best-known method) still stands. This section will be updated with real numbers for all four in-progress runs as they land — see below for live status.
+**Every candidate sourced from the 2024–2025 literature scan has now been actually implemented and empirically tested — nothing left resting on reasoning alone.** Three actively hurt retrieval quality (SMRL, RKD, ADS — with ADS the worst), two were clean nulls (S-XBM, MIPIC). **Plain joint-trained listwise remains the best method found, undefeated across this entire exploration and across all three corpus scales (10K/50K/187K) tested earlier.** The practical implication is now about as strong as this kind of investigation can make it: promote listwise to the paper's primary method, with a genuinely thorough "we tried harder to break it" story to tell reviewers if asked about more recent ranking-loss alternatives.
 
 ---
 
