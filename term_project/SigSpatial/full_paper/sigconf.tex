@@ -142,10 +142,13 @@ none produce WJ-compatible embeddings. Our contributions are as follows:
     ReLU\,+\,$\ell_1$ output lies on the probability simplex, compressing
     high-dimensional ShapeToVec encodings into compact embeddings indexable directly
     under WJ, without post-processing.
-  \item A \textbf{shape-similarity distillation loss}: WJ-native distillation
-    regresses the embedding's WJ onto the true (shape-overlap) WJ, making the training
-    objective the retrieval metric: the first learned WJ embedding to beat an
-    untrained random projection (\S\ref{sec:exp}).
+  \item A \textbf{shape-similarity distillation loss}: WJ-native distillation makes
+    the training objective the retrieval metric itself. We compare absolute value
+    regression (MSE) against a rank-aware \emph{listwise} objective and find the
+    latter wins decisively at every scale tested and against five further
+    2024--2025 rank-aware alternatives (\S\ref{sec:distill}); either variant is,
+    to our knowledge, the first learned WJ embedding to beat an untrained random
+    projection (\S\ref{sec:exp}).
   \item \textbf{Matryoshka deployment}: a single trained model serves every
     embedding width $\{256, 512, \dots,4096\}$, giving the full recall--throughput frontier from one round of training; 256-d dominates.
 \end{enumerate}
