@@ -68,7 +68,21 @@ Testing protocol: every candidate is layered on top of listwise (not standalone)
 #### 3.1b Diagnostic retest: reversed order (large → small)
 - **Script:** `run_matdistill_listwise_curriculum_rev_10k.py` — identical to 3.1 except the stage order is flipped: 4096 supervised first (all 40 epochs), 256 added last (only the final 8).
 - **Hypothesis being tested:** it's not "small-first helps," it's "whichever width trains *last* gets starved of epochs" — a structural property of curriculum scheduling on our shared-single-dense-layer encoder (no separable per-width weights to freeze, unlike SMEC's stacked adapters). If true: 4096 should recover to ~baseline (0.975) here, and 256 should now be the one that collapses.
-- **Status:** _running — results pending_
+- **Status: DONE — hypothesis confirmed.**
+
+**Result (Stage-1 base R@50), all three runs side by side:**
+
+| Dim | Baseline (joint) | Curriculum small→large | Curriculum large→small (this run) |
+|---|---|---|---|
+| 256 | 0.9715 | 0.9731 | **0.8783** (−9.3pp) |
+| 512 | 0.9734 | 0.9731 | **0.9338** (−4.0pp) |
+| 1024 | 0.9747 | 0.9680 | 0.9744 |
+| 2048 | 0.9751 | **0.8912** (−8.4pp) | 0.9751 |
+| 4096 | 0.9752 | **0.8699** (−10.5pp) | 0.9747 |
+
+Exactly mirrored between the two curriculum directions — whichever widths trained *first/longest* end up near baseline, whichever trained *last* collapse. **Confirms the mechanism is purely "total training exposure," not direction.** Since our encoder has no separable per-width parameters to freeze (unlike SMEC's stacked adapters), there is no ordering that avoids this trade-off — joint training (equal exposure for every width, the entire time) is structurally the better fit for this architecture.
+
+**Final verdict on candidate #1 (SMRL): rejected, with a clean mechanistic explanation, not just an inconclusive negative result.** Not escalating to 50K. SMEC's finding doesn't transplant to our shared-single-layer encoder; it would need genuinely separable per-width adapters (a bigger architecture change) to even be testable fairly, and isn't worth pursuing given the two lower-cost candidates remaining.
 
 ### 3.2 RKD angle-wise term (candidate #2)
 - **Status:** not started (queued behind 3.1's verdict)
