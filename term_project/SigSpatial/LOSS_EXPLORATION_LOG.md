@@ -91,7 +91,35 @@ Exactly mirrored between the two curriculum directions — whichever widths trai
 - **Script:** `run_matdistill_listwise_sxbm_10k.py`
 - **Change from baseline:** same architecture/data/40-epoch budget/listwise loss as `run_matdistill_listwise_10k.py`; each training step, the batch (~1024 ids) is augmented with up to 64 additional ids mined by true raw-WJ similarity from a 2048-id FIFO queue of recently-seen ids (queue is pushed with each step's own batch ids after use). Adapted from SMEC's S-XBM: they store stale embeddings from a frozen backbone and mine by embedding similarity (necessary since their corpus doesn't fit in memory); we mine by *exact* raw WJ instead, since our whole 10K corpus fits in GPU memory and exact similarity is cheap and strictly more reliable than embedding-based mining, especially early in training.
 - **Pre-flight check:** original chunk size (256) in the cross-similarity computation would have needed ~76GB per intermediate tensor and OOM'd; corrected to chunk=16, queue=2048 (~2.4GB/intermediate, verified). Timing-tested standalone: ~0.46s/mining call × ~10,360 total steps ≈ 79 min added overhead; total run time expected ~2.5–3h.
-- **Status:** _running — results pending_
+- **Status: DONE — null result (no measurable effect, positive or negative).**
+
+**Result (Stage-1 base, no rerank):**
+
+| Dim | Listwise (baseline) R@50 | + S-XBM R@50 | Δ | QPS (baseline → +S-XBM) |
+|---|---|---|---|---|
+| 256 | 0.9715 | 0.9715 | 0.0000 | 14,145 → 18,575 |
+| 512 | 0.9734 | 0.9734 | 0.0000 | 9,690 → 14,437 |
+| 1024 | 0.9747 | 0.9747 | 0.0000 | 4,562 → 5,588 |
+| 2048 | 0.9751 | 0.9751 | 0.0000 | 2,331 → 2,163 |
+| 4096 | 0.9752 | 0.9752 | 0.0000 | 1,339 → 994 |
+
+R@10 and R@50 match the baseline to 4 decimal places at every single width; R@500 differs only in the 4th decimal (noise). **Not a regression like SMRL — a completely flat result.** ~2 hours of extra training bought nothing measurable.
+
+**Why, most likely:** at 10K scale (8K corpus), 40 epochs × 259 steps/epoch means the training process already sees the corpus many times over — the static top-30-neighbour batch construction plus plain shuffling probably already saturates whatever cross-batch diversity a 2048-id memory queue could add. **This may not generalize to "S-XBM doesn't help" at 50K/187K** — SMEC's own motivation for the technique is specifically that a single batch is a vanishingly small fraction of a *large* corpus, which is far more true at 187K (46,754 queries) than at 10K (2,000). This is a real limitation of the "always test small first" protocol: it can't distinguish "this idea doesn't work" from "this idea's mechanism doesn't kick in until the corpus is much bigger than the batch." Worth flagging for a judgment call rather than auto-applying the "flat → drop it" rule here.
+
+**Verdict per protocol: flat result, don't auto-escalate — but this one has a specific, reasoned case for an exception** (see above) if there's appetite to spend one more 50K run confirming before fully closing the book on it.
+
+---
+
+## 4. Overall session verdict (all candidates tested)
+
+| Candidate | Verdict |
+|---|---|
+| SMRL (curriculum, both directions) | **Rejected** — structural mismatch with our architecture, clean mechanistic explanation, confirmed by symmetric evidence |
+| RKD angle-wise term | **Skipped** — reasoned to be redundant with existing full-matrix matching; not empirically tested |
+| S-XBM (cross-batch memory) | **Null result at 10K** — flat, not negative; scale-dependence caveat above |
+
+**None of the three candidates tested/considered beat plain joint-trained listwise at 10K.** Every SOTA-informed idea explored either made things worse (SMRL) or made no measurable difference (S-XBM), or wasn't likely to help for identifiable reasons (RKD angle-term). **Listwise itself remains the best method found across this entire exploration**, on top of already being established as the best across all three scales (10K/50K/187K) tested earlier. The practical implication: the original pending decision — promote listwise to the paper's primary method — now has even more support than before, since a genuine attempt to beat it with recent (2024–2025) literature-informed ideas came up empty. The one open thread (S-XBM at 50K, given the scale-dependence argument) is a candidate for a single follow-up run if there's appetite, not a blocker.
 
 ---
 
