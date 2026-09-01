@@ -339,13 +339,12 @@ penalises absolute error uniformly, giving no special credit for getting a row's
 use a \emph{listwise} objective~\cite{cao07}: turn each anchor row of $T$ and
 $\hat T$ into a probability distribution over the batch via a temperature-scaled
 softmax (self-pair masked out), and minimise the cross-entropy between them,
-\begin{equation}
-  p_{ij}=\frac{\exp(T_{ij}/\tau)}{\sum_{k\neq i}\exp(T_{ik}/\tau)},\quad
-  \mathcal{L}_{\mathrm{list}}=-\frac{1}{N}\sum_i\sum_{j\neq i}
-    p_{ij}\log\hat p_{ij},\quad \hat p_{ij}=\frac{\exp(\hat T_{ij}/\tau)}
-    {\sum_{k\neq i}\exp(\hat T_{ik}/\tau)},
+\begin{align}
+  p_{ij}&=\frac{\exp(T_{ij}/\tau)}{\sum_{k\neq i}\exp(T_{ik}/\tau)},\quad
+  \hat p_{ij}=\frac{\exp(\hat T_{ij}/\tau)}{\sum_{k\neq i}\exp(\hat T_{ik}/\tau)},\\
+  \mathcal{L}_{\mathrm{list}}&=-\frac{1}{N}\sum_i\sum_{j\neq i} p_{ij}\log\hat p_{ij},
   \label{eq:distill}
-\end{equation}
+\end{align}
 with $\tau=0.1$. Unlike a single hardest-negative margin (\S\ref{sec:contrastive}),
 $p_i$ is graded over the \emph{whole} row, so $\mathcal{L}_{\mathrm{list}}$ still
 supervises the full similarity structure Eq.~\eqref{eq:distill}'s MSE variant
