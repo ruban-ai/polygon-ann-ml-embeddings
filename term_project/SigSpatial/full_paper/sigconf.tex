@@ -321,24 +321,62 @@ applied to}, so the deployed output is not the network's best representation
 \label{sec:distill}
 We align the objective with the metric directly. For a batch of $N$ encodings we
 form the true WJ on the original $D$-dim vectors, $T_{ij}=WJ(\mathbf{x}_i,\mathbf{x}_j)$,
-and the embedding WJ, $\hat T_{ij}=WJ(f_\theta(\mathbf{x}_i),f_\theta(\mathbf{x}_j))$, and minimise
-\begin{equation}
-  \mathcal{L}_{\mathrm{dist}}=\frac{1}{N^2}\sum_{i,j}\big(\hat T_{ij}-T_{ij}\big)^2 .
-  \label{eq:distill}
-\end{equation}
+and the embedding WJ, $\hat T_{ij}=WJ(f_\theta(\mathbf{x}_i),f_\theta(\mathbf{x}_j))$.
 Each batch's $N$ rows are anchors and their top-30 WJ neighbours (mined once per
 corpus, \S\ref{sec:contrastive}), so $T$ spans both genuine near-neighbour pairs and
-the far more numerous low-similarity cross-pairs a random polygon pair would have:
-exactly the full range Eq.~\eqref{eq:distill} needs to regress, since, unlike the
-margin losses of \S\ref{sec:contrastive}, it must reproduce similarity
-\emph{values}, not just their order, to be interchangeable with exact WJ at query
-time. Figure~\ref{fig:batchdist} shows this empirically for one 10k training batch:
-the curated anchor--positive pairs concentrate at high similarity (mean
-$T{=}0.78$), while the remaining, uncurated cross-pairs are not degenerately
-concentrated at zero either (mean $0.19$, median $0.13$; only $10.5\%$ fall below
-$0.01$) -- MSE is not spending most of its gradient on trivial near-zero pairs, and
-retains the low-similarity signal that lets Eq.~\eqref{eq:distill} distinguish
-genuine non-matches from moderate partial overlap.
+the far more numerous low-similarity cross-pairs a random polygon pair would have.
+Figure~\ref{fig:batchdist} shows this empirically for one 10k training batch: the
+curated anchor--positive pairs concentrate at high similarity (mean $T{=}0.78$),
+while the remaining, uncurated cross-pairs are not degenerately concentrated at
+zero either (mean $0.19$, median $0.13$; only $10.5\%$ fall below $0.01$).
+
+The most direct way to align objective and metric is absolute value regression,
+minimising $\mathcal{L}_{\mathrm{MSE}}=\frac{1}{N^2}\sum_{i,j}(\hat T_{ij}-T_{ij})^2$.
+This is what we originally deployed, and it already beats every contrastive
+baseline (\S\ref{sec:contrastive}). But MSE treats every row independently and
+penalises absolute error uniformly, giving no special credit for getting a row's
+\emph{relative order} right, which is what recall actually measures. We instead
+use a \emph{listwise} objective~\cite{cao07}: turn each anchor row of $T$ and
+$\hat T$ into a probability distribution over the batch via a temperature-scaled
+softmax (self-pair masked out), and minimise the cross-entropy between them,
+\begin{equation}
+  p_{ij}=\frac{\exp(T_{ij}/\tau)}{\sum_{k\neq i}\exp(T_{ik}/\tau)},\quad
+  \mathcal{L}_{\mathrm{list}}=-\frac{1}{N}\sum_i\sum_{j\neq i}
+    p_{ij}\log\hat p_{ij},\quad \hat p_{ij}=\frac{\exp(\hat T_{ij}/\tau)}
+    {\sum_{k\neq i}\exp(\hat T_{ik}/\tau)},
+  \label{eq:distill}
+\end{equation}
+with $\tau=0.1$. Unlike a single hardest-negative margin (\S\ref{sec:contrastive}),
+$p_i$ is graded over the \emph{whole} row, so $\mathcal{L}_{\mathrm{list}}$ still
+supervises the full similarity structure Eq.~\eqref{eq:distill}'s MSE variant
+does, just through relative rather than absolute error. Controlled head-to-head
+comparisons (identical architecture, data, and epoch budget; only the loss
+differs) show $\mathcal{L}_{\mathrm{list}}$ beats $\mathcal{L}_{\mathrm{MSE}}$
+decisively at every scale we test: 10K/512-d Stage-1 R@50 $0.973$ vs.\ $0.930$;
+50K/256-d R@50 $0.921$ vs.\ $0.794$; 187K/256-d R@50 $0.906$ vs.\ $0.797$ (full
+numbers in Table~\ref{tab:lossablation}). We further tested five 2024--2025
+rank-aware and Matryoshka-training refinements layered on top of listwise
+(\S\ref{sec:related}); none improved on it, and three (an RKD-style angle
+term~\cite{park19rkd}, learnable dimension selection, and sequential Matryoshka
+training~\cite{smec25}) measurably hurt retrieval. $\mathcal{L}_{\mathrm{list}}$
+is therefore our method throughout the rest of the paper; we report MSE only as
+an ablation baseline (Table~\ref{tab:lossablation}).
+
+\begin{table}[t]\centering
+\caption{Loss-function ablation, Stage-1 R@50 (no rerank), identical
+architecture/data/epoch budget, only the loss differs. Listwise
+(Eq.~\ref{eq:distill}) beats MSE at every scale tested. $\ddagger$~=~ours.}
+\label{tab:lossablation}\small\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Scale (dim) & MSE R@50 & Listwise R@50$^\ddagger$ & $\Delta$ \\
+\midrule
+10K (512-d)  & 0.930 & \textbf{0.973} & $+4.3$\,pp \\
+50K (256-d)  & 0.794 & \textbf{0.921} & $+12.6$\,pp \\
+187K (256-d) & 0.797 & \textbf{0.906} & $+10.9$\,pp \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \begin{figure}[t]\centering
 \includegraphics[width=0.85\columnwidth]{fig_batch_wj_dist.png}
