@@ -141,19 +141,23 @@ codes needing brute-force or LSH-band search; learned hashing and metric
 learning~\cite{hashsurvey14,deephashsurvey22} target Hamming or cosine spaces;
 none produce WJ-compatible embeddings. Our contributions are as follows:
 \begin{enumerate}[leftmargin=1.2em,itemsep=1pt,topsep=1pt]
-  \item A \textbf{WJ-native simplex encoder}: a similarity-sensitive encoder whose
-    ReLU\,+\,$\ell_1$ output lies on the probability simplex, compressing
-    high-dimensional ShapeToVec encodings into compact embeddings indexable directly
-    under WJ, without post-processing.
-  \item A \textbf{shape-similarity distillation loss}: WJ-native distillation makes
-    the training objective the retrieval metric itself. We compare absolute value
-    regression (MSE) against a rank-aware \emph{listwise} objective and find the
-    latter wins decisively at every scale tested and against five further
-    2024--2025 rank-aware alternatives (\S\ref{sec:distill}); either variant is,
-    to our knowledge, the first learned WJ embedding to beat an untrained random
-    projection (\S\ref{sec:exp}).
-  \item \textbf{Matryoshka deployment}: a single trained model serves every
-    embedding width $\{256, 512, \dots,4096\}$, giving the full recall--throughput frontier from one round of training; 256-d dominates.
+  \item \textbf{Compression that improves accuracy, not just cost.} Reproducing
+    ShapeToVec's own method, uncompressed, directly on our benchmark shows that
+    approximate search over its native high-dimensional space is itself a bottleneck:
+    our $72\times$-smaller learned embedding beats the uncompressed baseline's recall
+    outright (\S\ref{sec:exp}), at several-fold higher throughput. Compression here is
+    not an accuracy-for-size trade; a well-shaped compact space is easier for
+    approximate nearest-neighbour search to navigate, not merely cheaper to store.
+  \item A \textbf{shape-similarity distillation loss} that makes this possible: WJ-native
+    distillation makes the training objective the retrieval metric itself. We compare
+    absolute value regression (MSE) against a rank-aware \emph{listwise} objective and
+    find the latter wins decisively at every scale tested and against five further
+    2024--2025 rank-aware alternatives (\S\ref{sec:distill}).
+  \item \textbf{Supporting design}: a WJ-native simplex encoder (ReLU\,+\,$\ell_1$
+    output on the probability simplex, indexable directly under WJ with no
+    post-processing) and \textbf{Matryoshka deployment}, a single trained model serving
+    every embedding width $\{256, 512, \dots,4096\}$ from one round of training; 256-d
+    dominates the recall--throughput frontier.
 \end{enumerate}
 
 %% ---------------- 2. Related Work ----------------
