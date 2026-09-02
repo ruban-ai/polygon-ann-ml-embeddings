@@ -142,11 +142,11 @@ none produce WJ-compatible embeddings. Our contributions are as follows:
 \begin{enumerate}[leftmargin=1.2em,itemsep=1pt,topsep=1pt]
   \item \textbf{Compression that nearly matches, then beats, ShapeToVec's own
     accuracy.} Against ShapeToVec's own published results~\cite{shape2vec} on the
-    identical Parks dataset, our $12$--$47\times$ smaller embeddings retain
-    $92$--$93\%$ of their recall without any reranking, at $4$--$14\times$ the
-    throughput, and exceed their best published recall entirely after a cheap
-    exact-WJ rerank pass, while remaining several-fold faster than their most
-    accurate configuration (\S\ref{sec:exp}).
+    identical Parks dataset, our $12$--$47\times$ smaller embeddings reach Recall@50
+    $=92$--$93\%$ without any reranking, close behind their $96$--$97\%$ at
+    $4$--$14\times$ the throughput, and exceed their best published recall entirely
+    after a cheap exact-WJ rerank pass, while remaining several-fold faster than
+    their most accurate configuration (\S\ref{sec:exp}).
   \item A \textbf{shape-similarity distillation loss} that makes this possible: WJ-native
     distillation makes the training objective the retrieval metric itself. We compare
     absolute value regression (MSE) against a rank-aware \emph{listwise} objective and
