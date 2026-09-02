@@ -492,6 +492,57 @@ each file, and the new section is byte-identical between both files (`diff` exit
 precompute, both now cached for reuse), MSE ~3.7h (reusing both caches). Combined
 overnight run: complete, no manual intervention needed at any point.**
 
+## 10. Closing out the remaining reviewer-critique items (2026-09-02)
+
+Three of the four still-open items from §1 fixed (seed variance deferred per explicit
+user instruction — "we will take care later").
+
+**Fix 1 — uncited "0.999 R@500" claim (critique point 8).** Traced the claim back to
+`paper/main_distill.tex` (an earlier draft, predating this session) — could not find
+the original computation/script that produced it anywhere in the current codebase, so
+it was unverifiable and uncitable as stated. Replaced with ShapeToVec's own actually-
+published validation numbers instead (Table II of their paper, read directly:
+"Quad tree-based ... RMSE @K=50=10.16%, @K=500=11.84%", stable across grid sizes
+6,004 and 18,220 — verified this is a real quote, not paraphrased). New sentence:
+"Ground truth is the exact geometric (shapely) Jaccard...; ShapeToVec's own validation
+shows the quadtree-vector WJ tracks this closely (RMSE 10.16% at K=50, 11.84% at
+K=500, stable across grid resolutions)~\cite{shape2vec}." Applied identically to both
+files, verified byte-identical after edit.
+
+**Fix 2 — duplicate table row (critique point 6).** Confirmed `tab:dim`'s "Distill 256"
+row (0.871/0.921/0.969/4,921) was byte-identical to `tab:full50k`'s "Listwise distill"
+Stage-1 row — genuine redundancy, not just similar numbers. Removed the row from
+`tab:dim`, added a caption note explaining why ("Listwise's 256-d row is identical to
+Table~\ref{tab:full50k} and omitted here to avoid repeating it"). **Caught and fixed a
+self-inflicted duplicate-row bug during this edit**: the IEEE file's `Edit` call left
+two copies of the 512-d row (old_string boundary didn't fully replace both files
+identically) — caught by a post-edit `diff` between the two tables' bodies, fixed
+immediately. Final state verified: both tables byte-identical (`diff` exit 0).
+
+**Fix 3 — never compiled, page count unknown.** Found a pre-existing `tectonic`
+binary (self-contained LaTeX engine, downloads its own package bundle, no texlive
+install needed) at `/tmp/boi-thesis-tex/bin/tectonic`, left over from the unrelated
+BOI thesis project. Used it read-only to compile both files for the first time all
+session:
+- **`IEEE/conference_101719.tex` — found and fixed a REAL, previously-undetected
+  compile-breaking bug**: `\url{}` (used in the code/data footnote) was undefined —
+  no `url` or `hyperref` package was loaded in the IEEEtran preamble (unlike acmart,
+  which auto-loads hyperref). Fixed by adding `\usepackage{url}`. This bug predates
+  this session's edits — it would have broken the very first Overleaf compile attempt.
+  After the fix: **compiles clean, 8 pages** (BSD's full-paper limit is 10pp — solid
+  headroom). Only cosmetic warnings remain (a few underfull/overfull hboxes, standard
+  and non-blocking).
+- **`full_paper/sigconf.tex` (ACM template, historical/reference)** — compiles clean
+  with no errors, **7 pages**. Some overfull-hbox warnings (ACM's Libertinus font
+  metrics are just tighter than IEEEtran's, normal for this template).
+- Both PDFs saved in place (`IEEE/conference_101719.pdf`, `full_paper/sigconf.pdf`)
+  for reference; not yet visually rendered page-by-page (no `poppler-utils` installed
+  locally, would need a system package install — offered to the user as optional,
+  not done unprompted since it's a system-affecting action).
+
+**Remaining open (deferred per explicit instruction): seed variance.** Every number in
+both files is still from a single training run. Not addressed this round.
+
 ---
 
 *Update this file as each in-progress item lands, before moving to the next one —
