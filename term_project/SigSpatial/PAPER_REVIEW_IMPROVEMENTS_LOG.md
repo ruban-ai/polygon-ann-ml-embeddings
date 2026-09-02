@@ -338,6 +338,63 @@ and everytting did we cite them properly. check"). Findings:
 `diff` exit 0) and independent per-file automated checks on the IEEE `.tex` (all clean,
 matching the full_paper results).
 
+## 9. Water-body FULL-SCALE run (overnight, 2026-09-02, in progress)
+
+**Motivation.** Water bodies were only ever tested at the 50K (40k corpus / 10k query)
+scale (`tab:wb50k`), while Parks has both 50K *and* the full 233K scaling check
+(`tab:full233`). This closes that gap: a genuine full-scale second-polygon-class result,
+not just a re-slice — user explicitly asked for this while going to sleep, chosen over
+the alternative (BOI 1M/5M/10M scalability work, a separate thesis project) since it's
+well-scoped, directly strengthens the current paper, and reuses an already-proven
+pipeline (`run_full187k_listwise.py` / `run_matdistill_fulleval_ddp.py` for Parks).
+
+**Scale.** Water-body source `/raid/ssEncodingData/encoding/papers-data/wb-real0.006/`:
+448,550 polygons total, D=12,013 quadtree dims. GT dir `wb-query-358840` (query ids
+start at 358,840) gives an exact 80/20 split: corpus = ids [0, 358840) (358,840 polygons),
+queries = ALL ids [358840, 448550) (89,710 polygons) — the same convention as Parks'
+187,019-corpus/46,754-query 80/20 split.
+
+**New scripts (all outputs to `/raid/ruban/hpmlproj/term_project/SigSpatial/`, never
+`/tmp`, per the standing durable-storage rule):**
+- `build_wbfull.py` — loads the full corpus+query rows, saves `qt_wbfull.npy` (~21.6GB),
+  `gt_wbfull.pkl`, `wbfull_meta.pkl`. Launched first (~30-50min estimated from the 50K
+  build's 3.6min scaled ~9x for row count).
+- `run_wbfull_listwise.py` — full-scale listwise, mirrors `run_full187k_listwise.py`
+  exactly (architecture, prefixes {256..4096}, tau=0.1, EPOCHS=5 — matching the
+  full-scale protocol, not the 50K protocol's 10 epochs, since one epoch here already
+  covers ~10.8M corpus-internal pairs). Trains only on corpus-internal neighbours (every
+  held-out query genuinely unseen), evaluates ALL 89,710 queries against the full
+  358,840 corpus. Computes+caches `corpus_knn_wbfull.npy` (self-kNN, MAX_POS=30,
+  distributed across 8 GPUs) if not already present — the expensive O(QS²) step,
+  estimated 1-4h based on scaling from the 40K case (no isolated timing available there
+  since that cache pre-existed; estimated from Parks-full's total pattern instead).
+  Logs to `logs_wbfull_listwise.log`, checkpoints to `best_wbfull_listwise.pt`, appends
+  rows to `NEW_RESULTS.csv` tagged `wbfull-listwise-d{dim}` / dataset `wbfull_allq`.
+- `run_wbfull_distill.py` — full-scale MSE distillation, the `tab:full233`-style
+  comparison point. Identical to the listwise script except the loss, and reuses the
+  `corpus_knn_wbfull.npy` cache written by whichever of the two scripts runs first (same
+  corpus, same MAX_POS) — avoids repeating the expensive kNN precompute a second time.
+  Logs to `logs_wbfull_distill.log`, checkpoint `best_wbfull_distill.pt`, CSV tag
+  `wbfull-distill-d{dim}`.
+
+**Launch order:** listwise first (our established best method — priority if only one
+finishes overnight), then MSE distillation second, reusing its kNN cache. Both run
+DDP across all 8×A100-80GB (checked free before starting: all 8 idle, 80-81GB free
+each; 1.2TB disk free; 2TB system RAM, 1.9TB available — comfortably sufficient for the
+~21.6GB `qt_wbfull.npy` loaded independently by all 8 DDP ranks).
+
+**Sanity check planned once results land:** expect a similar, modest generalization
+gap to Parks' 50K→233K pattern (listwise R@50 dropped 0.921→0.906, R@500 0.969→0.946
+going from 50K to full scale) — i.e. water-body full-scale numbers should land somewhat
+below the existing `wb50k-listwise-d256` numbers (R@50=0.9117, R@500=0.9653 base;
+0.9972/0.994 after rerank), not above them; a result that's *higher* than the 50K
+subset would be suspicious and worth double-checking before trusting.
+
+**Status: build running in background as of this entry (2026-09-02 ~22:32); training
+not yet started.** This section will be updated with final numbers, actual runtimes,
+and any issues hit, once both runs complete — self-monitoring in progress per explicit
+instruction, no paper-text changes will be made until the user reviews the results.
+
 ---
 
 *Update this file as each in-progress item lands, before moving to the next one —
