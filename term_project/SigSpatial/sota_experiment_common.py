@@ -47,7 +47,7 @@ def load_dataset_normalized(name):
     """Like load_dataset but also returns qt_norm (L1-simplex normalized qt).
     qt_norm is cached to /tmp/qt_norm_{name}.npy after first computation."""
     qt, gt, query_start, corpus_qt, query_qt, corpus_sums = load_dataset(name)
-    cache_path = f"/tmp/qt_norm_{name}.npy"
+    cache_path = f"/raid/ruban/hpmlproj/term_project/SigSpatial/qt_norm_{name}.npy"
     if Path(cache_path).exists():
         t0 = time.time()
         qt_norm = np.load(cache_path)
