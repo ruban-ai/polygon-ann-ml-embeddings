@@ -326,8 +326,8 @@ comparisons (identical architecture, data, and epoch budget; only the loss
 differs) show $\mathcal{L}_{\mathrm{list}}$ beats $\mathcal{L}_{\mathrm{MSE}}$
 decisively at every scale we test: 10K/512-d Stage-1 R@50 $0.973$ vs.\ $0.930$;
 50K/256-d R@50 $0.921$ vs.\ $0.794$; 233K/256-d R@50 $0.906$ vs.\ $0.797$ (full
-numbers in Table~\ref{tab:lossablation}). We further tested five 2024--2025
-rank-aware and Matryoshka-training refinements layered on top of listwise
+numbers in Table~\ref{tab:lossablation}). We further tested five rank-aware and
+Matryoshka-training refinements layered on top of listwise
 (\S\ref{sec:related}); none improved on it, and three (an RKD-style angle
 term~\cite{park19rkd}, learnable dimension selection, and sequential Matryoshka
 training~\cite{smec25}) measurably hurt retrieval. $\mathcal{L}_{\mathrm{list}}$
