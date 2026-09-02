@@ -376,6 +376,17 @@ apply Eq.~\eqref{eq:distill} on nested prefixes $\{256, 512, \dots,4096\}$
 to any width; the smallest %already
 dominates (\S\ref{sec:exp}).
 
+This joint multi-width training is not free. Comparing to encoders trained
+independently for a single width (identical architecture, data, and epoch budget, but
+one loss term instead of five), we measure a consistent $+1.1$--$1.2$pp Stage-1 R@50
+cost from serving all five widths jointly, at both the narrowest (256-d) and widest
+(4096-d) width we test. Since the widest case involves no truncation at all, this
+isolates the cost as a genuine joint-training effect (gradient interference across
+simultaneous per-width objectives), not a smaller-widths-are-starved effect; reranking
+closes the gap to noise. We consider $1$--$2$pp of Stage-1 recall a reasonable price
+for one trained model serving the full recall--throughput frontier, rather than five
+separately trained and deployed models.
+
 \subsection{Two-stage retrieval}
 \label{sec:twostage}
 Stage-1 builds an HNSW index ($M{=}20$, $\mathrm{ef}{=}200$)~\cite{hnsw20} under
