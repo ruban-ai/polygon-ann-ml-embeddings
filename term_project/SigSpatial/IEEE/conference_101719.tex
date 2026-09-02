@@ -628,6 +628,40 @@ MSE distill$^\ddagger$       & 2000 & 0.995 & 0.997 & 0.987 & 1{,}280 \\
 \end{tabular}
 \end{table}
 
+\textbf{The full water-body dataset (Table~\ref{tab:wbfull}).} To confirm the 50K
+water-body result is not a small-scale artifact, we repeat the full-scale protocol of
+Table~\ref{tab:full233} on the complete 448,550-polygon water-body collection
+(ShapeToVec's own reported size for this dataset~\cite{shape2vec}): corpus-trained on
+all 358,840 corpus polygons, evaluated on \emph{all} 89,710 held-out queries.
+Listwise reaches Stage-1 R@50 $=0.899$, R@500 $=0.944$, and R@500 $=0.992$ after
+reranking, versus MSE's R@50 $=0.815$, R@500 $=0.898$ at the same width -- the
+listwise-over-MSE margin holds at this scale and on this second polygon class too.
+Against ShapeToVec's own published water-body numbers on the identical dataset
+($96$--$97\%$ R@50 at $3$k--$12$k-d), our embeddings show a wider pre-rerank gap here
+than on Parks ($89.9$--$91.8\%$ R@50, $5$--$7$pp behind, versus Parks' $3$--$5$pp) and
+the throughput advantage is not uniform: our largest width ($4096$-d, $702$ QPS) is
+slower than their smallest ($3$k-d, $1{,}036$ QPS). The same cheap exact-WJ rerank
+pass again closes and exceeds the gap regardless: 256-d reaches R@50 $=99.5\%$ at
+$789$ QPS, still ${\sim}2.7\times$ faster than ShapeToVec's most accurate (12k-d)
+configuration. WJ-native distillation generalizes to this harder second polygon class
+with a real but bounded pre-rerank cost, fully recovered after reranking.
+
+\begin{table}[t]\centering
+\caption{The full 448,550-polygon water-body dataset: WJ-distillation (listwise) on
+\emph{all} 89,710 held-out queries (358,840-polygon corpus-trained), 256-d prefix.
+MSE row shown for comparison.}
+\label{tab:wbfull}\setlength{\tabcolsep}{4pt}\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Stage & R@10 & R@50 & R@500 & QPS \\
+\midrule
+Stage-1, MSE (no rerank)        & 0.745 & 0.815 & 0.898 & 1{,}654 \\
+Stage-1, listwise (no rerank)   & 0.855 & 0.899 & 0.944 & 2{,}039 \\
+\textbf{+ exact-WJ rerank (listwise)} & \textbf{0.993} & \textbf{0.995} & \textbf{0.992} & 789 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \textbf{Trade-off between dimension and throughput (Fig.~\ref{fig:dim}, Table~\ref{tab:dim}).}
 Because the encoder is Matryoshka, one model serves every width. Listwise
 distillation's recall is essentially flat from 256 to 4096 (R@500
