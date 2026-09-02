@@ -49,16 +49,48 @@ the same class of failure flagged in `feedback_nohup_master_log` memory). No re-
 comparison was possible without retraining.
 
 **Action taken:**
-- Patched `run_50k_ddp.py` to save checkpoints to the project directory instead of `/tmp`
-  (line ~184/187).
-- Retraining MSE at 50K from scratch (`torchrun --standalone --nproc_per_node=7
-  run_50k_ddp.py --method distill`, GPUs 1-7, log `logs_50k_mse_retrain.log`).
-- Plan once training completes: evaluate the fresh MSE checkpoint and the existing
-  listwise checkpoint (`best_50k_listwise.pt`) back-to-back on the same idle GPU, to get
-  a genuinely controlled QPS comparison. Result to be written up here and used to either
-  (a) confirm it's noise and re-measure the paper's QPS numbers cleanly, or (b) find a
-  real mechanistic explanation (e.g. embedding-value distribution differences affecting
-  HNSW graph traversal cost) and add one sentence to the paper.
+- Patched `run_50k_ddp.py` to save checkpoints to the project directory instead of `/tmp`.
+- Retrained MSE at 50K from scratch (`run_50k_ddp.py --method distill`, GPUs 1-7).
+- Immediately after, re-evaluated the *existing* listwise checkpoint (no retraining,
+  `eval_50k_listwise_recheck.py`) on an idle GPU, minutes after the MSE eval, for a
+  genuinely back-to-back comparison.
+
+**Result: DONE — the effect is real, but the "regression" framing was incomplete.**
+
+| Dim | MSE QPS (fresh) | Listwise QPS (fresh) | Listwise vs MSE |
+|---|---|---|---|
+| 256  | 6,799 | 5,599 | **−18%** |
+| 512  | 3,675 | 2,766 | **−25%** |
+| 1024 | 3,403 | 1,939 | **−43%** |
+| 2048 | 1,685 | 1,393 | **−17%** |
+| 4096 | 1,075 | 1,286 | **+20%** |
+
+Two findings:
+1. **The MSE-vs-listwise QPS gap is real, not measurement noise.** The fresh MSE numbers
+   landed close to the original logged ones (256-d: 6,799 vs 6,772, within 0.4%), and the
+   listwise-slower-at-small-dims pattern reproduced independently minutes later on a
+   different, idle GPU. Confirmed, not an artifact of a shared/contended node.
+2. **But "listwise is slower" is the wrong generalization — it's dimension-dependent, and
+   this was already visible in the original numbers, just not stated.** MSE's QPS falls
+   sharply with dimension (6,772→967 in the original log, 7x); listwise's falls much more
+   gently (4,921→1,493, 3.3x) — they cross over between 1024-d and 2048-d, and at 4096-d
+   listwise is *faster*. This is the same fact the paper's dim-tradeoff paragraph already
+   states in a different form ("listwise's recall is essentially flat across dimension
+   while QPS falls only ~3.3x") — it was never connected to the MSE comparison.
+
+**Interpretation:** MSE's HNSW search cost scales worse with nominal dimension than
+listwise's does. A plausible reading: listwise's graded-softmax objective only supervises
+*relative* order, not absolute magnitude, so it may pack useful signal into a lower
+*effective* dimensionality even at large nominal widths, making search cost grow more
+slowly with `d`; MSE's absolute-value regression has more pressure to use the full nominal
+width, so its search cost scales more steeply. Not independently verified beyond the
+reproducibility check (e.g. no direct effective-rank/intrinsic-dimensionality measurement
+was taken) — stated as a reasoned hypothesis, not a proven mechanism.
+
+**Action for the paper:** replace the "unexplained regression" framing with the correct,
+dimension-dependent one — state the crossover explicitly (listwise faster at 2048/4096-d,
+MSE faster at 256/512/1024-d) rather than letting the tables show an apparently
+inconsistent, unexplained pattern.
 
 ## 3. Contribution reframing — author's explicit direction
 
