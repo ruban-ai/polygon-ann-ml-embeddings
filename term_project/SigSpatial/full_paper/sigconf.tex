@@ -67,14 +67,17 @@ objectives, absolute value regression (MSE) and a rank-aware \emph{listwise}
 objective that matches each anchor's full similarity distribution rather than
 individual values; the listwise variant wins decisively at every scale we test
 (10K/50K/187K polygons) and against every 2024--2025 rank-aware alternative we
-tried (\S\ref{sec:distill}), so it is our primary method throughout. This is, to
-our knowledge, the first learned WJ embedding to surpass random projection on both
-the near- and wide-net recall--throughput frontiers: on a 50K benchmark it reaches
-Recall@500 $=0.969$ ($0.990$ after reranking) at just 256 dimensions ($72\times$
-compression), beating random projection at every dimension while running
-competitively fast. The same encoder, unchanged, generalises to a second,
-structurally different polygon class (water bodies), where its margin over random
-projection is if anything larger.
+tried (\S\ref{sec:distill}), so it is our primary method throughout. Compression here
+is not the usual accuracy-for-size trade: on a 50K benchmark, reproducing ShapeToVec's
+own method exactly, uncompressed ($D{=}18{,}382$), directly under nmslib's Weighted
+Jaccard HNSW space, reaches only Recall@50 $=0.699$ (Recall@500 $=0.817$); our
+$72\times$-smaller, 256-dimension embedding reaches Recall@50 $=0.921$ (Recall@500
+$=0.969$, $0.990$ after reranking) on the identical corpus, queries, and ground truth,
+at several-fold higher throughput. Approximate nearest-neighbour search degrades in
+ShapeToVec's native high-dimensional space; a well-shaped compact embedding is not
+merely cheaper to search, it is an easier space to search. The same encoder,
+unchanged, generalises to a second, structurally different polygon class (water
+bodies), where its margin over random projection is if anything larger.
 \end{abstract}
 
 \begin{CCSXML}
@@ -445,8 +448,8 @@ Matryoshka MLP~\cite{matryoshka22}      & 512  & 0.455 & 0.672 & 0.932 & 18{,}64
 MLP WJ-triplet$^\ddagger$               & 512  & 0.677 & 0.806 & 0.964 & 10{,}756 \\
 InfoNCE--WJ$^\ddagger$                  & 512  & 0.490 & 0.698 & 0.947 &  7{,}160 \\
 AE WJ-tri+recon$^\ddagger$              & 512  & 0.711 & 0.858 & 0.977 & 10{,}903 \\
-WJ-distill.\ (MSE)$^\ddagger$        & 512  & 0.844 & 0.930 & 0.994 & 14{,}552 \\
-\textbf{WJ-distill.\ (listwise)}$^\ddagger$ & \textbf{512} & \textbf{0.945} & \textbf{0.973} & \textbf{0.996} & \textbf{9{,}690} \\
+MSE distill$^\ddagger$        & 512  & 0.844 & 0.930 & 0.994 & 14{,}552 \\
+\textbf{Listwise distill}$^\ddagger$ & \textbf{512} & \textbf{0.945} & \textbf{0.973} & \textbf{0.996} & \textbf{9{,}690} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -540,15 +543,15 @@ Method & $K$ & R@10 & R@50 & R@500 & QPS \\
 Rand.\ Proj.~\cite{achlioptas03}    & --- & 0.616 & 0.659 & 0.766 & 3{,}890 \\
 triplet+recon$^\ddagger$            & --- & 0.494 & 0.600 & 0.725 & 3{,}810 \\
 InfoNCE--WJ$^\ddagger$              & --- & 0.459 & 0.560 & 0.720 & 7{,}128 \\
-WJ-distill.\ (MSE)$^\ddagger$       & --- & 0.692 & 0.794 & 0.924 & 6{,}772 \\
-\textbf{WJ-distill.\ (listwise)}$^\ddagger$ & --- & \textbf{0.871} & \textbf{0.921} & \textbf{0.969} & \textbf{4{,}921} \\
+MSE distill$^\ddagger$       & --- & 0.692 & 0.794 & 0.924 & 6{,}772 \\
+\textbf{Listwise distill}$^\ddagger$ & --- & \textbf{0.871} & \textbf{0.921} & \textbf{0.969} & \textbf{4{,}921} \\
 \midrule
 \multicolumn{6}{@{}l@{}}{\textit{Stage 2 — exact-WJ rerank}}\\[1pt]
 Rand.\ Proj.~\cite{achlioptas03}    & 2000 & 0.994 & 0.995 & 0.955 & 904 \\
 triplet+recon$^\ddagger$            & 2000 & 0.994 & 0.994 & 0.859 & 898 \\
 InfoNCE--WJ$^\ddagger$              & 2000 & 0.993 & 0.987 & 0.821 & 1{,}345 \\
-WJ-distill.\ (MSE)$^\ddagger$       & 2000 & 0.995 & 0.997 & 0.976 & 1{,}253 \\
-\textbf{WJ-distill.\ (listwise)}$^\ddagger$ & 2000 & \textbf{0.995} & \textbf{0.997} & \textbf{0.990} & \textbf{1{,}083} \\
+MSE distill$^\ddagger$       & 2000 & 0.995 & 0.997 & 0.976 & 1{,}253 \\
+\textbf{Listwise distill}$^\ddagger$ & 2000 & \textbf{0.995} & \textbf{0.997} & \textbf{0.990} & \textbf{1{,}083} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -595,13 +598,13 @@ Method & $K$ & R@10 & R@50 & R@500 & QPS \\
 \midrule
 \multicolumn{6}{@{}l@{}}{\textit{Stage 1 --- no rerank}}\\[1pt]
 Rand.\ Proj.~\cite{achlioptas03}    & --- & 0.563 & 0.632 & 0.763 & 2{,}652 \\
-WJ-distill.\ (MSE)$^\ddagger$       & --- & 0.722 & 0.815 & 0.930 & 4{,}632 \\
-\textbf{WJ-distill.\ (listwise)}$^\ddagger$ & --- & \textbf{0.858} & \textbf{0.912} & \textbf{0.965} & \textbf{6{,}293} \\
+MSE distill$^\ddagger$       & --- & 0.722 & 0.815 & 0.930 & 4{,}632 \\
+\textbf{Listwise distill}$^\ddagger$ & --- & \textbf{0.858} & \textbf{0.912} & \textbf{0.965} & \textbf{6{,}293} \\
 \midrule
 \multicolumn{6}{@{}l@{}}{\textit{Stage 2 --- exact-WJ rerank}}\\[1pt]
 Rand.\ Proj.~\cite{achlioptas03}    & 2000 & 0.994 & 0.994 & 0.958 & 362 \\
-WJ-distill.\ (MSE)$^\ddagger$       & 2000 & 0.995 & 0.997 & 0.987 & 1{,}280 \\
-\textbf{WJ-distill.\ (listwise)}$^\ddagger$ & 2000 & \textbf{0.995} & \textbf{0.997} & \textbf{0.994} & \textbf{1{,}300} \\
+MSE distill$^\ddagger$       & 2000 & 0.995 & 0.997 & 0.987 & 1{,}280 \\
+\textbf{Listwise distill}$^\ddagger$ & 2000 & \textbf{0.995} & \textbf{0.997} & \textbf{0.994} & \textbf{1{,}300} \\
 \bottomrule
 \end{tabular}
 \end{table}
