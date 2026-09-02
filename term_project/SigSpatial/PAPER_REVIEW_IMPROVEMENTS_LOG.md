@@ -188,6 +188,73 @@ left in place pointing to the new locations so every existing script's hardcoded
 checkpoints/outputs from this point on should be written directly to the project
 directory, never `/tmp`, per standing project convention.
 
+## 6. ShapeToVec comparison correction (2026-09-01) — self-reproduction was wrong, use published numbers
+
+The uncompressed-baseline claim in §3 above (our own reproduction of ShapeToVec's method
+at D=18,382, getting R@50=0.699) was **retracted**. User pointed out ShapeToVec's own
+paper reports very different numbers on the same Parks dataset (Table III: 96-97% R@50
+at 3k/6k/12k-dim, floating-point encoding) — our self-reproduction likely had a real
+methodology gap (unvalidated dimension, and/or `efSearch=200` copied from our own
+compressed-embedding pipeline without retuning for a much larger raw vector). Rather
+than debug our own reproduction further, switched to citing ShapeToVec's own published
+Table III numbers directly (`\cite{shape2vec}`) — more authoritative anyway, and avoids
+publishing an unverified/likely-wrong claim. Also corrected: the "3k/6k/12k" values are
+the paper's own **Table III row label ("Vector size")**, distinct from the "max capacity"
+quadtree-construction parameter described separately in their Methodology (IV.B.2) — user
+flagged a concern these might be the same thing; textual evidence in the paper favors
+"Vector size" meaning the resulting encoded dimension, but this is not independently
+verified beyond the paper's own labeling, and was surfaced to the user for judgment.
+
+**Corrected comparison used in the paper now** (full multi-dimension table in
+`tab:uncompressed`): our 256-4096-d embeddings reach R@50=92.1-92.9% without reranking
+(vs.\ ShapeToVec's 96-97% at their 3k-12k-d), at 4-14x the throughput; after a cheap
+exact-WJ rerank pass, our 256-d embedding reaches R@50=99.7%, exceeding ShapeToVec's
+best published number while remaining ~3x faster than their most accurate config.
+Compression ratio corrected from the invalid "72x" (vs.\ our own unverified 18,382-d
+reproduction) to "12-47x" (256-d vs.\ their 3k-12k-d range).
+
+## 7. Independent (non-Matryoshka) single-width training — the "Matryoshka tax" (2026-09-01)
+
+Triggered by a follow-up question: since all 5 Matryoshka widths come from one
+jointly-trained encoder (shared 4096-d bottleneck, smaller widths are prefix
+truncations), does independent single-width training recover higher recall? If so,
+by how much, and is the effect concentrated at small widths (truncation-specific) or
+uniform across widths (a general joint-training cost)?
+
+**Method:** two new scripts, same architecture/data/10-epoch budget/listwise
+loss/tau as `run_50k_listwise.py`, but each optimises only ONE width's loss term
+(no other prefixes in the loss):
+- `run_50k_listwise_independent4096.py` — same architecture (encoder already outputs
+  4096-d natively), single-term loss at m=4096. Isolates whether joint training costs
+  accuracy even with **no truncation at all**.
+- `run_50k_listwise_independent256.py` — genuinely smaller architecture (encoder's
+  final layer outputs 256-d natively, not a 4096-d truncation), single-term loss.
+  Tests our actual deployed operating point directly.
+
+Both ran DDP across 4 GPUs each (in parallel, ~46 min training + eval per job).
+
+**Result:**
+
+| Width | Matryoshka (existing) R@50 | Independent (new) R@50 | Δ | QPS (Matryoshka → independent) |
+|---|---|---|---|---|
+| 256-d  | 92.08% | **93.27%** | **+1.19pp** | 4,921 → 5,971 |
+| 4096-d | 92.91% | **94.04%** | **+1.13pp** | 1,493 → 1,108 |
+
+**Finding: the gap is real (~1.1-1.2pp R@50) and near-identical at both the narrowest
+and widest widths tested.** Because the 4096-d case has zero truncation, this isolates
+the effect cleanly: the cost is not "smaller widths get starved of capacity" (which
+would show a bigger gap at 256-d than 4096-d) but a fairly uniform tax from training all
+5 widths' loss terms jointly (gradient interference across simultaneous objectives),
+independent of which width is being read out. Rerank recovers most of the gap regardless
+(both land within noise of each other after reranking, ~R@500=0.99), so the practical
+cost is concentrated in the Stage-1/no-rerank operating point specifically.
+
+**Answers the "what's the point of Matryoshka if independent training is better"
+question directly, with a real number**: ~1.1-1.2pp R@50 is the actual, now-measured
+price of serving all 5 widths from one training run instead of five. Whether that's
+worth stating in the paper as an honest limitation/trade-off acknowledgment is a
+judgment call for the user — not yet added to the paper text.
+
 ---
 
 *Update this file as each in-progress item lands, before moving to the next one —
