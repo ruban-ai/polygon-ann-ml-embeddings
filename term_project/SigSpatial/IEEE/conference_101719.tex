@@ -53,8 +53,8 @@ polygon as a high-dimensional probability-simplex vector indexed directly under 
 HNSW, but that high dimensionality costs heavily in memory and query throughput. We
 introduce \emph{WJ-native distillation}: a simplex-constrained encoder trained via a
 rank-aware \emph{listwise} loss so the compact embedding's WJ directly reproduces the
-true WJ, beating absolute-value regression and five 2024--2025 rank-aware alternatives
-at every scale we test. Against ShapeToVec's own published results~\cite{shape2vec} on
+true WJ, beating absolute-value regression and five further rank-aware and
+Matryoshka-training alternatives at every scale we test. Against ShapeToVec's own published results~\cite{shape2vec} on
 the identical Parks dataset (233,773 polygons), our $12$--$47\times$ smaller embeddings
 reach within a few points of their best recall without reranking, at $4$--$14\times$ the
 throughput, and exceed it entirely after a cheap exact-WJ rerank pass while remaining
