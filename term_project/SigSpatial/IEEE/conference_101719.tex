@@ -634,7 +634,17 @@ Because the encoder is Matryoshka, one model serves every width. Listwise
 distillation's recall is essentially flat from 256 to 4096 (R@500
 $0.969\!\to\!0.973$) while QPS falls ${\sim}3.3\times$, so 256-d, a $72\times$
 compression, is the natural operating point. Baselines, by contrast, stay below
-distillation at \emph{every} width.
+distillation at \emph{every} width. This gentler QPS decay is also why listwise's
+throughput advantage over MSE distillation (Table~\ref{tab:lossablation}) is
+dimension-dependent rather than uniform: MSE's throughput falls ${\sim}7\times$ from
+256-d to 4096-d against listwise's ${\sim}3.3\times$, so MSE is faster at small widths
+(256--1024-d) but the two cross over by 2048-d, where listwise pulls ahead
+($1{,}631$ vs.\ $1{,}180$ QPS) and stays ahead at 4096-d ($1{,}493$ vs.\ $967$). Since
+listwise's loss supervises relative order rather than absolute magnitude, we conjecture
+it packs useful signal into a lower \emph{effective} dimensionality even at large
+nominal widths, letting its search cost grow more slowly with $d$; we have not verified
+this directly (e.g.\ via an effective-rank measurement) and note it as a plausible
+explanation rather than a demonstrated mechanism.
 
 \begin{figure}[t]\centering
 \includegraphics[width=0.86\columnwidth]{fig_dim_distill.png}
