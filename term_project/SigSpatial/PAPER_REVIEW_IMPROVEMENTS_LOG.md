@@ -255,6 +255,78 @@ price of serving all 5 widths from one training run instead of five. Whether tha
 worth stating in the paper as an honest limitation/trade-off acknowledgment is a
 judgment call for the user — not yet added to the paper text.
 
+## 8. 233K naming fix, abstract restore, and citation audit (2026-09-01)
+
+**233K naming fix.** The paper's own "50K"/"10K" scale-label convention names the
+*total* dataset size, but "187K" had been used the same way even though 187,019 is only
+the corpus subset (queries are a separate 46,754). True total = 233,773, matching
+ShapeToVec's own reported Parks dataset size exactly. Fixed via `sed -i 's/187K/233K/g;
+s/tab:full187/tab:full233/g'` plus two manual rewrites of corpus-specific sentences that
+needed to keep the corpus/query split legible (now read "the full 233k Parks dataset
+(187,019-polygon corpus / 46,754 queries)"). Applied identically to both
+`full_paper/sigconf.tex` and `IEEE/conference_101719.tex`.
+
+**Abstract shortened, then partially restored.** First pass over-trimmed and dropped the
+"extreme area variability" motivating context entirely, per author feedback ("i thnk we
+sharnk too much.. we remove extreme area vairablet and everyhtign which i thnk we shuold
+add back"). Final abstract (206 words) restores the motivation — uniform-grid encoding
+can't serve both very small and very large polygons, forcing ShapeToVec's adaptive
+quadtree — while keeping the length disciplined and leading with the corrected
+233,773-polygon, ShapeToVec-published-numbers comparison (12-47x smaller, within a few
+points of their recall pre-rerank, exceeds their best number post-rerank).
+
+**Citation audit** (explicit request: "did we cite all the things needed? the forumlas
+and everytting did we cite them properly. check"). Findings:
+
+- **Two zero-citation claims found and fixed:**
+  - The WJ formula itself (Eq.~\ref{eq:wj}) had no citation at its point of introduction
+    — added `\cite{rajaraman11}` (Rajaraman & Ullman, *Mining of Massive Datasets*),
+    the same source ShapeToVec's own paper cites for the identical formula.
+  - "product quantization" (Related Work, PQ dismissal) was uncited — added
+    `\cite{jegou10pq}` (Jégou, Douze, Schmid, IEEE TPAMI 2010), matching ShapeToVec's
+    own reference for PQ.
+- **Two bib entries had placeholder/wrong content, fixed via live source verification:**
+  - `smec25` — author field was a `% TODO(Ruban)` placeholder ("Anonymous"); replaced
+    with the real author list (Biao Zhang, Lixin Chen, Tong Liu, Bo Zheng) and corrected
+    title, verified via `WebFetch` of `aclanthology.org/2025.emnlp-main.1332`.
+  - `mipic25` → renamed `mipic26` throughout — author field was also a placeholder, and
+    the year was wrong: arXiv ID `2604.24374` decodes to **April 2026**, not 2025 (the
+    `YYMM.NNNNN` convention was checked directly). Fixed authors, title, and year via
+    `WebFetch` of `arxiv.org/abs/2604.24374`.
+- **Cascading fix: inaccurate "2024–2025" blanket year-claim.** The paper claimed "five
+  further 2024–2025 rank-aware alternatives" in 5 places, but one of the five (the RKD
+  angle-wise term) is only cited to its original 2019 paper — no actual 2024/2025
+  follow-up was ever added, so the blanket claim was unsupported for that item. Fixed by
+  rewriting the Related Work sentence to explicitly separate the 4 genuinely
+  2025–2026-sourced items (SMEC-based: sequential/curriculum Matryoshka training,
+  cross-batch hard-negative memory, learnable dimension selection; plus MIPIC) from the
+  1 older (2019) RKD-based one, and removing the specific year qualifier from the other
+  4 locations (abstract, intro contribution #2, Method section, Conclusion), replacing it
+  with neutral "five further rank-aware and Matryoshka-training alternatives" (no year
+  claim needed there).
+- **Spot-checked ~12 other citations for content accuracy** (achlioptas03=random
+  projection, jolliffe02=PCA, ioffe10=ICWS, hinton15=distillation, schroff15=FaceNet/
+  triplet, oord18=InfoNCE, burges05=RankNet, cao07=ListNet, hnsw20=HNSW,
+  boytsov13=NMSLIB, matryoshka22=Matryoshka, nmf99=NMF) — all correct, no changes needed.
+- **Automated verification** (both files): `\begin`/`\end` balance, every `\ref`/`\eqref`
+  resolves to an existing `\label`, every `\cite` key exists in `refs.bib` — all clean in
+  both `full_paper/sigconf.tex` and `IEEE/conference_101719.tex`.
+- **Open item, not yet resolved:** `refs.bib` has one unused entry, `osm` (OpenStreetMap
+  contributors, 2024) — defined but never cited anywhere in either file. Likely intended
+  for a data-provenance mention (SpatialHadoop's polygon datasets sometimes trace back to
+  OSM), but this isn't independently confirmed for *our specific* Parks/water-body data,
+  so it was left alone rather than guessed into a citation. Needs a decision: cite it
+  where the Parks/water-body data source is described, or delete it as unused.
+- **Open item, unresolved from earlier in this log:** whether ShapeToVec's "3k/6k/12k"
+  values are vector dimension or quadtree node-capacity (see §6) was never independently
+  confirmed beyond the paper's own "Vector size" table label — still resting on that
+  reading, flagged for the user's judgment if they have a clarifying source.
+
+**Sync status:** `full_paper/sigconf.tex`/`refs.bib` and `IEEE/conference_101719.tex`/
+`refs.bib` are fully synchronized as of this fix — verified via direct diff (refs.bib:
+`diff` exit 0) and independent per-file automated checks on the IEEE `.tex` (all clean,
+matching the full_paper results).
+
 ---
 
 *Update this file as each in-progress item lands, before moving to the next one —
