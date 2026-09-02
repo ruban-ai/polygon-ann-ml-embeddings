@@ -47,36 +47,19 @@ Similarity Search under Extreme Area Variation}
 
 \begin{abstract}
 Similarity search over polygonal datasets asks which polygons have similar \emph{shape}
-(area-weighted overlap, independent of location), and Weighted Jaccard (WJ) is the
-standard metric for it. The state-of-the-art ShapeToVec encodes each polygon with a
-quad-tree-based non-uniform grid that handles extreme area variation, then indexes the
-result with a Hierarchical Navigable Small World (HNSW) graph; however, its high
-dimensionality imposes a heavy memory and query-throughput cost. We first trained a
-simplex-constrained encoder with a WJ-native triplet loss, false-negative filtering, and
-decoder reconstruction: $36\times$ smaller 512-dimensional vectors that, on a 10k subset
-of the Parks dataset, reach Recall@50 $=0.858$ at 10{,}903 QPS ($78\times$ faster than
-brute-force Improved Consistent Weighted Sampling, ICWS) and Recall@10 $>0.996$ after
-exact-WJ reranking. On a larger benchmark, however, this and other ranking-style
-objectives no longer beat an untrained random projection: they optimize local separation
-rather than the global WJ ranking recall depends on, and the loss even damages the very
-layer it is deployed from. We close this gap with \emph{WJ-native distillation}:
-aligning the training objective with the retrieval metric directly, so the deployed
-embedding's WJ reproduces the true WJ, and yielding a single Matryoshka encoder
-deployable at any dimension. Within this framework we compare two distillation
-objectives, absolute value regression (MSE) and a rank-aware \emph{listwise}
-objective that matches each anchor's full similarity distribution rather than
-individual values; the listwise variant wins decisively at every scale we test
-(10K/50K/187K polygons) and against every 2024--2025 rank-aware alternative we
-tried (\S\ref{sec:distill}), so it is our primary method throughout. Against
-ShapeToVec's own published results~\cite{shape2vec} on the identical Parks dataset
-(233,773 polygons, same 80/20 corpus/query split), our 256-dimension embedding, $12$--
-$47\times$ smaller than their tested $3$k--$12$k-dimension resolutions, reaches
-Recall@50 $=92.1\%$ without reranking (vs.\ their $96$--$97\%$) at $4$--$14\times$ the
-throughput, and $99.7\%$ after a cheap exact-WJ rerank pass, exceeding their best
-published recall while still running several-fold faster than their most accurate
-configuration. The same encoder, unchanged, generalises to a second, structurally
-different polygon class (water bodies), where its margin over random projection is if
-anything larger.
+(area-weighted overlap, independent of location); Weighted Jaccard (WJ) is the standard
+metric. The state-of-the-art, ShapeToVec, encodes each polygon as a high-dimensional
+probability-simplex vector via an adaptive quadtree grid, indexed directly under WJ with
+HNSW, at heavy memory and query-throughput cost. We introduce \emph{WJ-native
+distillation}: a simplex-constrained encoder trained via a rank-aware \emph{listwise}
+loss so the compact embedding's WJ directly reproduces the true WJ, beating
+absolute-value regression and five 2024--2025 rank-aware alternatives at every scale we
+test. Against ShapeToVec's own published results~\cite{shape2vec} on the identical Parks
+dataset (233,773 polygons), our $12$--$47\times$ smaller embeddings reach within a few
+points of their best recall without reranking, at $4$--$14\times$ the throughput, and
+exceed it entirely after a cheap exact-WJ rerank pass while remaining several-fold
+faster than their most accurate configuration. The same encoder, unchanged, generalises
+to a second, structurally different polygon class, water bodies.
 \end{abstract}
 
 \begin{CCSXML}
