@@ -453,6 +453,47 @@ distillation's 256-d $0.990$. To our knowledge,
 this is the first learned WJ embedding to beat random projection on \emph{both} the
 near- and wide-net frontiers.
 
+\textbf{Compression versus the uncompressed baseline (Table~\ref{tab:uncompressed}).}
+Every comparison above is against \emph{other compressed} representations (random
+projection, contrastive baselines, MSE distillation); none test whether compression
+itself costs anything relative to ShapeToVec's own, uncompressed method. We reproduce
+that method exactly, the full $D{=}18{,}382$-dim probability-simplex vector
+(\S\ref{sec:embed}), indexed directly under nmslib's WeightedJaccard HNSW space with no
+learned compression, on the identical 50K corpus, queries, and ground truth used
+everywhere else in this paper. It reaches only R@50 $=0.699$ and R@500 $=0.817$ at
+$1{,}102$ QPS; our $72\times$-smaller 256-d embedding reaches R@50 $=0.921$ and R@500
+$=0.969$ at $4{,}921$ QPS -- a $+22.2$pp and $+15.2$pp recall margin, at $4.5\times$ the
+throughput. This is not the usual accuracy-for-size trade: compression \emph{improves}
+recall here. The WJ metric itself is not the bottleneck, since the quadtree encoding
+already approximates it near-exactly (\S\ref{sec:exp}); a brute-force sketch estimator,
+ICWS (Table~\ref{tab:results}), confirms this directly, reaching R@500 $=0.924$ at 50K,
+much closer to the exact ceiling than uncompressed HNSW's $0.817$, precisely because it
+ranks exhaustively rather than searching a graph. The bottleneck is specifically
+\emph{approximate search over a high-dimensional space}: HNSW navigates greedily via
+locally meaningful distance differences, and that signal weakens as dimension grows
+(distance concentration). A learned, lower-dimensional embedding is not merely cheaper
+to search, its geometry is easier for approximate search to get right, which is why our
+compressed pipeline beats \emph{both} the uncompressed HNSW baseline (on recall and
+speed) and the brute-force sketch estimator (at two orders of magnitude higher
+throughput, $4{,}921$ vs.\ $20$ QPS).
+
+\begin{table}[t]\centering
+\caption{Compression versus the uncompressed baseline (50K benchmark, Stage-1, no
+rerank). Uncompressed reproduces ShapeToVec's own method exactly: full $D{=}18{,}382$-dim
+simplex vectors, no learned compression, indexed directly under nmslib's WeightedJaccard
+HNSW space, on the identical corpus/queries/GT as every other 50K result in this paper.
+$\ddagger$~=~ours. \textbf{Bold}~=~best.}
+\label{tab:uncompressed}\setlength{\tabcolsep}{4pt}\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Method (dim) & R@10 & R@50 & R@500 & QPS \\
+\midrule
+Uncompressed, 18{,}382-d      & 0.649 & 0.699 & 0.817 & 1{,}102 \\
+\textbf{Listwise distill, 256-d}$^\ddagger$ & \textbf{0.871} & \textbf{0.921} & \textbf{0.969} & \textbf{4{,}921} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \textbf{Recall by polygon class (Table~\ref{tab:bucket}).} The paper's motivating
 claim is that extreme area variation is the hard case (\S\ref{sec:intro}), so we
 break the 50K benchmark's Stage-1 recall down by query-polygon area quartile (Q1 =
