@@ -421,14 +421,58 @@ rerank R@500 0.9924 vs 0.994) — the same direction and rough magnitude as Park
 50K→233K generalization gap (R@50 0.921→0.906, R@500 0.969→0.946). Nothing anomalous;
 no result is higher than its 50K counterpart, which would have been the red flag.
 
-**Status update 2 (2026-09-02 ~00:36): MSE distillation launched**, reusing the
-now-cached `qt_norm_wbfull.npy` and `corpus_knn_wbfull.npy` — should skip straight to
-training (no repeat of the ~40min normalize or ~20min kNN precompute), so expected
-total time is close to just the ~97min training + eval, i.e. ~1.5-2h. Still running as
-of this entry; will update with final numbers once complete.
+**Status update 2 — DONE, both runs complete and clean.** MSE distillation reused the
+cached `qt_norm_wbfull.npy`/`corpus_knn_wbfull.npy` as expected (skipped straight to
+training, confirmed in log: "qt_norm loaded from cache" / "corpus kNN (358840, 30)"
+with no recompute). **30/30 rows total now in `NEW_RESULTS.csv`** (15 listwise + 15
+MSE), both checkpoints saved (`best_wbfull_listwise.pt`, `best_wbfull_distill.pt`), no
+NaNs, no crashes, no restarts needed.
 
-**Not yet done:** drafting the actual `tab:wbfull`-style paper table/paragraph is
-deferred until the user reviews these numbers — no paper-text changes made yet.
+**MSE training took notably longer per epoch than listwise: 204.3min for 5 epochs
+(~40.9min/epoch) vs listwise's 96.7min (~19.3min/epoch), despite identical
+architecture/data/batch size — a ~2.1x gap.** Not investigated further (out of scope
+for tonight, and doesn't affect the results' validity — same architecture/data/eval
+protocol either way, just wall-clock cost) but flagged here in case it's worth a look:
+possibly the `F.mse_loss` full-matrix reduction vs listwise's `log_softmax`/masked-CE
+having different kernel efficiency at this batch size, or scheduler/kernel warmup
+variance between the two runs. Eval phase was similarly long for both (~119min
+listwise, ~105min MSE) — HNSW build + rerank-corpus preload/release across 5 dims × 3
+configs (base + 2 rerank K's) over a 358,840-row corpus is just an inherently heavy
+eval loop at this scale; consistent between both runs, not a bug.
+
+**Results (MSE distillation, full-scale water body):**
+
+| Dim | R@10 base | R@50 base | R@500 base | QPS base | R@500 rerank(K=2000) | e2eQPS rerank |
+|---|---|---|---|---|---|---|
+| 256  | 0.7449 | 0.8145 | 0.8978 | 1,654 | 0.9859 | 820 |
+| 512  | 0.7550 | 0.8230 | 0.9029 | 1,264 | 0.9863 | 792 |
+| 1024 | 0.7606 | 0.8278 | 0.9059 | 1,206 | 0.9867 | 697 |
+| 2048 | 0.7630 | 0.8297 | 0.9070 | 1,020 | 0.9868 | 607 |
+| 4096 | 0.7605 | 0.8279 | 0.9059 | 820   | 0.9865 | 535 |
+
+**The listwise-over-MSE margin established at 10K/50K/233K-Parks holds at full-scale
+water body too** (256-d: listwise R@50=0.8992 vs MSE's 0.8145, +8.5pp; R@500=0.9436
+vs 0.8978, +4.6pp) — consistent with every other scale/dataset combination tested in
+this paper. No surprises, no exceptions.
+
+**Full `tab:full233`-style headline comparison, ready for the paper (256-d, ALL 89,710
+held-out queries vs the full 358,840-polygon water-body corpus):**
+
+| Stage | R@10 | R@50 | R@500 | QPS |
+|---|---|---|---|---|
+| Stage-1, MSE (no rerank) | 0.7449 | 0.8145 | 0.8978 | 1,654 |
+| Stage-1, listwise (no rerank) | 0.8551 | 0.8992 | 0.9436 | 2,039 |
+| **+ exact-WJ rerank (listwise, K=2000)** | **0.9927** | **0.9951** | **0.9924** | 789 |
+
+This is a direct structural mirror of `tab:full233` (the Parks full-scale table) — same
+columns, same stages, same 256-d prefix, same "ALL held-out queries" protocol. Ready to
+drop into the paper as `tab:wbfull` alongside a paragraph analogous to the existing
+"The full Parks dataset" paragraph, whenever the user wants it added — **no paper-text
+changes made yet, this is staged for review.**
+
+**Total wall time: listwise ~5.0h (incl. one-time 40min normalize-cache + 20.1min kNN
+precompute, both now cached for reuse), MSE ~3.7h (reusing both caches). Combined
+overnight run: complete, no manual intervention needed at any point.**
 
 ---
 
