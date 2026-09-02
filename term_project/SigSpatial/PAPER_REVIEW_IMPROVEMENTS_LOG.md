@@ -311,16 +311,27 @@ and everytting did we cite them properly. check"). Findings:
 - **Automated verification** (both files): `\begin`/`\end` balance, every `\ref`/`\eqref`
   resolves to an existing `\label`, every `\cite` key exists in `refs.bib` — all clean in
   both `full_paper/sigconf.tex` and `IEEE/conference_101719.tex`.
-- **Open item, not yet resolved:** `refs.bib` has one unused entry, `osm` (OpenStreetMap
-  contributors, 2024) — defined but never cited anywhere in either file. Likely intended
-  for a data-provenance mention (SpatialHadoop's polygon datasets sometimes trace back to
-  OSM), but this isn't independently confirmed for *our specific* Parks/water-body data,
-  so it was left alone rather than guessed into a citation. Needs a decision: cite it
-  where the Parks/water-body data source is described, or delete it as unused.
-- **Open item, unresolved from earlier in this log:** whether ShapeToVec's "3k/6k/12k"
-  values are vector dimension or quadtree node-capacity (see §6) was never independently
-  confirmed beyond the paper's own "Vector size" table label — still resting on that
-  reading, flagged for the user's judgment if they have a clarifying source.
+- **Resolved (background pass, 2026-09-02): `osm` bib entry was not unused, it was a
+  dropped citation.** Earlier drafts (`paper/main.tex`, `paper/main_distill_verbose_backup.tex`)
+  explicitly wrote "OSM Parks polygons~\cite{osm,shape2vec}" when introducing the dataset;
+  that citation was lost during a later rewrite that switched to "polygons from the
+  SpatialHadoop GIS benchmark~\cite{eldawy15}" only. Verified independently (not just
+  trusting the old draft) via `WebFetch` of SpatialHadoop's own dataset page
+  (`spatialhadoop.cs.umn.edu/datasets.html`), which states directly: "This dataset is
+  extracted from OpenStreetMap and represents map features for the whole world" — this
+  applies to Parks, Buildings, Lakes, and Roads alike. Fixed in both files: the
+  Experiments section's dataset description now reads "the Parks polygons (233,773;
+  originally OpenStreetMap~\cite{osm} data, distributed via the SpatialHadoop
+  benchmark~\cite{eldawy15})". Re-ran the unused/missing-citation check: zero unused bib
+  entries, zero missing citations, in both files.
+- **Resolved (background pass, 2026-09-02): "3k/6k/12k" is vector dimension, not node
+  capacity.** Re-read ShapeToVec's Table III directly — its row header literally reads
+  "Vector size: 3k / 6k / 12k", and the surrounding text says "Table III shows...varying
+  grid resolutions (3k, 6k, and 12k)...over HNSW indexing." This is explicitly a
+  *different* parameter from "node capacity" / "max capacity" (Section IV.B.2, and
+  Fig. 5's caption "node capacity is 3"), which controls how many polygon vertices sit in
+  a quadtree leaf before it subdivides, not the resulting encoded vector length. No paper
+  text needed to change — the existing "3k/6k/12k-dimension" framing was already correct.
 
 **Sync status:** `full_paper/sigconf.tex`/`refs.bib` and `IEEE/conference_101719.tex`/
 `refs.bib` are fully synchronized as of this fix — verified via direct diff (refs.bib:
