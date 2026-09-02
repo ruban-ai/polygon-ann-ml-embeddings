@@ -419,7 +419,8 @@ contain the true top-$k$ neighbours; the compact embedding's job is to make a
 \label{sec:exp}
 We use the publicly released ShapeToVec dataset~\cite{shapetovec-data}: quadtree
 encodings and shape-similarity ground truth for the Parks polygons (233{,}773;
-sourced from SpatialHadoop~\cite{eldawy15}), at its highest-fidelity resolution
+originally OpenStreetMap~\cite{osm} data, distributed via the SpatialHadoop
+benchmark~\cite{eldawy15}), at its highest-fidelity resolution
 ($D{=}18{,}382$ dimensions for the 50K benchmark, ${\sim}18.2$--$18.5$k across
 subsets), the finest, costliest-to-index resolution and so the most valuable to
 compress. The main benchmark is a 50K set partitioned into a 40k-polygon \emph{corpus}
