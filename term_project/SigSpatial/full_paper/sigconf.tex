@@ -723,17 +723,17 @@ AE  & ---    & recon.\ only  & 0.665 & 0.745 \\
 
 %% ---------------- 5. Conclusion ----------------
 \section{Conclusion}
-We compress ShapeToVec WJ vectors up to $72\times$ with a WJ-native simplex embedding,
-and compression here is not a trade against accuracy: on our 50K benchmark the compact
-embedding beats ShapeToVec's own uncompressed method, reproduced exactly on the same
-corpus, queries, and ground truth, by $+22.2$pp R@50, at several-fold higher throughput,
-because approximate search itself degrades in ShapeToVec's native high-dimensional
-space. Contrastive objectives work at moderate scale but collapse to random-projection
-level at 50K, since they optimise separation rather than the WJ ranking recall needs.
-WJ-native distillation removes this misalignment, and a rank-aware \emph{listwise}
-formulation of it beats absolute-value regression decisively at every scale we test
-(10K/50K/187K) and against five further 2024--2025 rank-aware alternatives: a single
-Matryoshka encoder beats random projection, ShapeToVec's own uncompressed method, and a
+We compress ShapeToVec WJ vectors up to $47\times$ with a WJ-native simplex embedding.
+Against ShapeToVec's own published results on the identical Parks dataset, our
+compact embeddings reach within a few points of their best recall without any
+reranking, at several-fold higher throughput, and exceed it entirely after a cheap
+exact-WJ rerank pass, while remaining several-fold faster than their most accurate
+configuration. Contrastive objectives work at moderate scale but collapse to
+random-projection level at 50K, since they optimise separation rather than the WJ
+ranking recall needs. WJ-native distillation removes this misalignment, and a
+rank-aware \emph{listwise} formulation of it beats absolute-value regression
+decisively at every scale we test (10K/50K/187K) and against five further 2024--2025
+rank-aware alternatives: a single Matryoshka encoder beats random projection and a
 brute-force sketch estimator at both near- and wide-net recall, confirmed up to 187k
 polygons and on a second polygon class. Future work targets billion-scale corpora and
 other simplex-embeddable set metrics.
