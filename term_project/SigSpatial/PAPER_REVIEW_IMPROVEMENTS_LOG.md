@@ -465,10 +465,28 @@ held-out queries vs the full 358,840-polygon water-body corpus):**
 | **+ exact-WJ rerank (listwise, K=2000)** | **0.9927** | **0.9951** | **0.9924** | 789 |
 
 This is a direct structural mirror of `tab:full233` (the Parks full-scale table) — same
-columns, same stages, same 256-d prefix, same "ALL held-out queries" protocol. Ready to
-drop into the paper as `tab:wbfull` alongside a paragraph analogous to the existing
-"The full Parks dataset" paragraph, whenever the user wants it added — **no paper-text
-changes made yet, this is staged for review.**
+columns, same stages, same 256-d prefix, same "ALL held-out queries" protocol.
+
+**Added to the paper (2026-09-02).** New `tab:wbfull` table + paragraph inserted into
+both `full_paper/sigconf.tex` and `IEEE/conference_101719.tex`, right after the existing
+`tab:wb50k` water-body section, before "Trade-off between dimension and throughput".
+Also folded in the ShapeToVec-published comparison (from ShapeToVec's own Table III,
+water-body column, same 448,550-polygon dataset) directly into the same paragraph,
+**framed honestly rather than reusing the Parks framing verbatim** — user asked
+"how is this in comparison with shape2vec?" first, and the two datasets are NOT equally
+favorable for us:
+- Recall gap pre-rerank is wider on water bodies (5–7pp behind ShapeToVec's 96–97%)
+  than on Parks (3–5pp behind).
+- Throughput advantage is not uniform: our largest width (4096-d, 702 QPS) is actually
+  *slower* than ShapeToVec's smallest (3k-d, 1,036 QPS) — unlike Parks, where every one
+  of our configs beat every one of theirs. So no blanket "4–14× throughput" claim here.
+- Post-rerank, the story is just as strong as Parks: 256-d reaches R@50=99.5% at 789
+  QPS, still ~2.7× faster than ShapeToVec's best (12k-d, 290 QPS) config.
+
+Verified after edit: `\begin`/`\end` balance (35/35 full_paper, 34/34 IEEE — different
+counts expected, ACM vs IEEE template wrappers differ), zero refs without labels, zero
+cites missing from bib, zero unused bib entries, `tab:wbfull` labeled exactly once in
+each file, and the new section is byte-identical between both files (`diff` exit 0).
 
 **Total wall time: listwise ~5.0h (incl. one-time 40min normalize-cache + 20.1min kNN
 precompute, both now cached for reuse), MSE ~3.7h (reusing both caches). Combined
