@@ -390,10 +390,45 @@ below the existing `wb50k-listwise-d256` numbers (R@50=0.9117, R@500=0.9653 base
 0.9972/0.994 after rerank), not above them; a result that's *higher* than the 50K
 subset would be suspicious and worth double-checking before trusting.
 
-**Status: build running in background as of this entry (2026-09-02 ~22:32); training
-not yet started.** This section will be updated with final numbers, actual runtimes,
-and any issues hit, once both runs complete — self-monitoring in progress per explicit
-instruction, no paper-text changes will be made until the user reviews the results.
+**Status update 1 (2026-09-02 ~00:35): listwise run complete, clean.**
+- Data build: 22.8min (corpus 358,840 rows in 14.7min, queries 89,710 rows in
+  18.0min-cumulative, GT parse: 82,558/89,710 queries have >=1 in-corpus neighbour).
+- `qt_norm_wbfull.npy` (L1-simplex cache) took ~40min to compute — slower than
+  expected because every one of the 8 DDP ranks redundantly recomputes it on CPU (a
+  pre-existing inefficiency in this script pattern, harmless but noted for next time:
+  should compute once on rank 0 and broadcast/barrier-then-load, not recompute ×8).
+- Corpus self-kNN precompute (MAX_POS=30, distributed cdist+topk): **20.1min**, clean.
+- Training: 5 epochs, **96.7min** total (~19.3min/epoch), loss monotonically decreasing
+  (5.562→5.555), no NaNs/instability.
+- Eval on ALL 89,710 held-out queries vs the 358,840 corpus, all 5 Matryoshka widths,
+  base + rerank K∈{1000,2000}: **15/15 rows appended cleanly to `NEW_RESULTS.csv`**
+  (tag `wbfull-listwise-d{dim}`, dataset `wbfull_allq`).
+- **Total wall time: ~2.7h** (build + normalize-cache + kNN + train + eval).
+
+**Results (listwise, full-scale water body):**
+
+| Dim | R@10 base | R@50 base | R@500 base | QPS base | R@500 rerank(K=2000) | e2eQPS rerank |
+|---|---|---|---|---|---|---|
+| 256  | 0.8551 | 0.8992 | 0.9436 | 2,039 | 0.9924 | 789 |
+| 512  | 0.8669 | 0.9084 | 0.9489 | 1,073 | 0.9926 | 710 |
+| 1024 | 0.8734 | 0.9133 | 0.9519 | 1,043 | 0.9928 | 635 |
+| 2048 | 0.8774 | 0.9162 | 0.9535 | 888   | 0.9929 | 580 |
+| 4096 | 0.8794 | 0.9176 | 0.9543 | 702   | 0.9929 | 503 |
+
+**Sanity check: PASSED.** As predicted, full-scale numbers land modestly below the
+50K-subset numbers (256-d base R@50 0.8992 vs wb50k's 0.9117, R@500 0.9436 vs 0.9653;
+rerank R@500 0.9924 vs 0.994) — the same direction and rough magnitude as Parks'
+50K→233K generalization gap (R@50 0.921→0.906, R@500 0.969→0.946). Nothing anomalous;
+no result is higher than its 50K counterpart, which would have been the red flag.
+
+**Status update 2 (2026-09-02 ~00:36): MSE distillation launched**, reusing the
+now-cached `qt_norm_wbfull.npy` and `corpus_knn_wbfull.npy` — should skip straight to
+training (no repeat of the ~40min normalize or ~20min kNN precompute), so expected
+total time is close to just the ~97min training + eval, i.e. ~1.5-2h. Still running as
+of this entry; will update with final numbers once complete.
+
+**Not yet done:** drafting the actual `tab:wbfull`-style paper table/paragraph is
+deferred until the user reviews these numbers — no paper-text changes made yet.
 
 ---
 
