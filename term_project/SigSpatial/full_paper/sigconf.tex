@@ -140,13 +140,13 @@ codes needing brute-force or LSH-band search; learned hashing and metric
 learning~\cite{hashsurvey14,deephashsurvey22} target Hamming or cosine spaces;
 none produce WJ-compatible embeddings. Our contributions are as follows:
 \begin{enumerate}[leftmargin=1.2em,itemsep=1pt,topsep=1pt]
-  \item \textbf{Compression that improves accuracy, not just cost.} Reproducing
-    ShapeToVec's own method, uncompressed, directly on our benchmark shows that
-    approximate search over its native high-dimensional space is itself a bottleneck:
-    our $72\times$-smaller learned embedding beats the uncompressed baseline's recall
-    outright (\S\ref{sec:exp}), at several-fold higher throughput. Compression here is
-    not an accuracy-for-size trade; a well-shaped compact space is easier for
-    approximate nearest-neighbour search to navigate, not merely cheaper to store.
+  \item \textbf{Compression that nearly matches, then beats, ShapeToVec's own
+    accuracy.} Against ShapeToVec's own published results~\cite{shape2vec} on the
+    identical Parks dataset, our $12$--$47\times$ smaller embeddings retain
+    $92$--$93\%$ of their recall without any reranking, at $4$--$14\times$ the
+    throughput, and exceed their best published recall entirely after a cheap
+    exact-WJ rerank pass, while remaining several-fold faster than their most
+    accurate configuration (\S\ref{sec:exp}).
   \item A \textbf{shape-similarity distillation loss} that makes this possible: WJ-native
     distillation makes the training objective the retrieval metric itself. We compare
     absolute value regression (MSE) against a rank-aware \emph{listwise} objective and
