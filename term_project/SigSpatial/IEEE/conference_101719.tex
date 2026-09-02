@@ -63,14 +63,17 @@ objectives, absolute value regression (MSE) and a rank-aware \emph{listwise}
 objective that matches each anchor's full similarity distribution rather than
 individual values; the listwise variant wins decisively at every scale we test
 (10K/50K/187K polygons) and against every 2024--2025 rank-aware alternative we
-tried (\S\ref{sec:distill}), so it is our primary method throughout. This is, to
-our knowledge, the first learned WJ embedding to surpass random projection on both
-the near- and wide-net recall--throughput frontiers: on a 50K benchmark it reaches
-Recall@500 $=0.969$ ($0.990$ after reranking) at just 256 dimensions ($72\times$
-compression), beating random projection at every dimension while running
-competitively fast. The same encoder, unchanged, generalises to a second,
-structurally different polygon class (water bodies), where its margin over random
-projection is if anything larger.
+tried (\S\ref{sec:distill}), so it is our primary method throughout. Compression here
+is not the usual accuracy-for-size trade: on a 50K benchmark, reproducing ShapeToVec's
+own method exactly, uncompressed ($D{=}18{,}382$), directly under nmslib's Weighted
+Jaccard HNSW space, reaches only Recall@50 $=0.699$ (Recall@500 $=0.817$); our
+$72\times$-smaller, 256-dimension embedding reaches Recall@50 $=0.921$ (Recall@500
+$=0.969$, $0.990$ after reranking) on the identical corpus, queries, and ground truth,
+at several-fold higher throughput. Approximate nearest-neighbour search degrades in
+ShapeToVec's native high-dimensional space; a well-shaped compact embedding is not
+merely cheaper to search, it is an easier space to search. The same encoder,
+unchanged, generalises to a second, structurally different polygon class (water
+bodies), where its margin over random projection is if anything larger.
 \end{abstract}
 
 \begin{IEEEkeywords}
