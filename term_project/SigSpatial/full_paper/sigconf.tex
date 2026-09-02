@@ -57,8 +57,8 @@ polygon as a high-dimensional probability-simplex vector indexed directly under 
 HNSW, but that high dimensionality costs heavily in memory and query throughput. We
 introduce \emph{WJ-native distillation}: a simplex-constrained encoder trained via a
 rank-aware \emph{listwise} loss so the compact embedding's WJ directly reproduces the
-true WJ, beating absolute-value regression and five 2024--2025 rank-aware alternatives
-at every scale we test. Against ShapeToVec's own published results~\cite{shape2vec} on
+true WJ, beating absolute-value regression and five further rank-aware and
+Matryoshka-training alternatives at every scale we test. Against ShapeToVec's own published results~\cite{shape2vec} on
 the identical Parks dataset (233,773 polygons), our $12$--$47\times$ smaller embeddings
 reach within a few points of their best recall without reranking, at $4$--$14\times$ the
 throughput, and exceed it entirely after a cheap exact-WJ rerank pass while remaining
@@ -195,7 +195,7 @@ the ranking recall depends on. We additionally implemented and tested five furth
 literature (sequential/curriculum Matryoshka training~\cite{smec25}, an RKD-style
 angle-wise geometric term~\cite{park19rkd}, cross-batch hard-negative
 memory~\cite{smec25}, learnable dimension selection~\cite{smec25}, and
-cross-dimension self-distillation~\cite{mipic25}); none improved on plain listwise,
+cross-dimension self-distillation~\cite{mipic26}); none improved on plain listwise,
 and three actively hurt retrieval quality (full results and mechanistic analysis in
 our released code and logs, \S\ref{sec:exp}). We report this not to claim
 listwise is unimprovable, but because a compact WJ embedding's loss function
