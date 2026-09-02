@@ -156,7 +156,8 @@ distance it adds to NMSLIB~\cite{boytsov13} lets HNSW index these vectors direct
 reaching $97\%$ R@50 (versus $67\%$ for its binary bit-vector variant). That accuracy,
 however, rests on tens of thousands of dimensions: ShapeToVec itself notes that such
 vectors strain HNSW memory as datasets grow, and that generic compression
-(e.g.\ product quantization) shrinks the footprint only by \emph{degrading} accuracy.
+(e.g.\ product quantization~\cite{jegou10pq}) shrinks the footprint only by
+\emph{degrading} accuracy.
 We fill this gap with a learned, WJ-native compression, up to $72\times$ smaller than
 the raw $D{\approx}18{,}382$ input, that comes within a few points of ShapeToVec's own
 reported accuracy uncompressed, and exceeds it after a cheap exact-WJ rerank pass
