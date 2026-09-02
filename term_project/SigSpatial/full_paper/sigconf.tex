@@ -176,7 +176,7 @@ up on matching the deployed metric the way pure value regression does. We test
 this directly (\S\ref{sec:distill}): a ListNet-style listwise objective, applied to
 our WJ-native setting, beats absolute-value MSE regression by a wide, consistent
 margin at every scale (10K/512-d R@50 $0.973$ vs.\ $0.930$; 50K/256-d R@50 $0.921$
-vs.\ $0.794$; 187K/256-d R@50 $0.906$ vs.\ $0.797$), unlike the pairwise/margin
+vs.\ $0.794$; 233K/256-d R@50 $0.906$ vs.\ $0.797$), unlike the pairwise/margin
 losses of \S\ref{sec:contrastive}, which do collapse at scale. The distinguishing
 factor is not ``ranking vs.\ value'' as a category: it is whether the training
 target is \emph{graded} (proportional to true similarity, as both MSE and listwise
@@ -341,7 +341,7 @@ does, just through relative rather than absolute error. Controlled head-to-head
 comparisons (identical architecture, data, and epoch budget; only the loss
 differs) show $\mathcal{L}_{\mathrm{list}}$ beats $\mathcal{L}_{\mathrm{MSE}}$
 decisively at every scale we test: 10K/512-d Stage-1 R@50 $0.973$ vs.\ $0.930$;
-50K/256-d R@50 $0.921$ vs.\ $0.794$; 187K/256-d R@50 $0.906$ vs.\ $0.797$ (full
+50K/256-d R@50 $0.921$ vs.\ $0.794$; 233K/256-d R@50 $0.906$ vs.\ $0.797$ (full
 numbers in Table~\ref{tab:lossablation}). We further tested five 2024--2025
 rank-aware and Matryoshka-training refinements layered on top of listwise
 (\S\ref{sec:related}); none improved on it, and three (an RKD-style angle
@@ -361,7 +361,7 @@ Scale (dim) & MSE R@50 & Listwise R@50$^\ddagger$ & $\Delta$ \\
 \midrule
 10K (512-d)  & 0.930 & \textbf{0.973} & $+4.3$\,pp \\
 50K (256-d)  & 0.794 & \textbf{0.921} & $+12.6$\,pp \\
-187K (256-d) & 0.797 & \textbf{0.906} & $+10.9$\,pp \\
+233K (256-d) & 0.797 & \textbf{0.906} & $+10.9$\,pp \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -417,8 +417,8 @@ subsets), the finest, costliest-to-index resolution and so the most valuable to
 compress. The main benchmark is a 50K set partitioned into a 40k-polygon \emph{corpus}
 (the indexed database that queries are searched against) and 10k held-out query
 polygons; we also use a 10k subset (8k corpus / 2k queries) for the moderate-scale
-study and the full 187k Parks corpus (46{,}754 queries) for a scaling check. At 50k
-and 187k, learned methods are \emph{corpus-trained}: trained only on
+study and the full 233k Parks dataset (187,019-polygon corpus / 46{,}754 queries) for
+a scaling check. At 50k and 233k, learned methods are \emph{corpus-trained}: trained only on
 corpus-internal neighbour pairs, so every query is held out and the numbers measure
 generalization to unseen queries; at 10k they are trained on the 2k-query set. Ground
 truth is the exact \emph{geometric} (shapely) Jaccard on the polygon geometry, which
@@ -558,7 +558,7 @@ projection, while an untouched intermediate layer is best.}
 \label{fig:layer}
 \end{figure}
 
-\textbf{The full Parks corpus (Table~\ref{tab:full187}).}
+\textbf{The full Parks corpus (Table~\ref{tab:full233}).}
 Our WJ-distillation encoder, with identical architecture, loss, and 256-d prefix as on
 the 50K benchmark, scales unchanged to the full 187k Parks corpus: trained only on
 corpus neighbours and evaluated on \emph{all} 46{,}754 held-out queries, listwise
@@ -595,7 +595,7 @@ MSE distill$^\ddagger$       & 2000 & 0.995 & 0.997 & 0.976 & 1{,}253 \\
 \caption{The full 187k Parks corpus: WJ-distillation (listwise) on \emph{all}
 46{,}754 held-out queries (corpus-trained), 256-d prefix. MSE row shown for
 comparison (Table~\ref{tab:lossablation}).} %$\ddagger$~=~ours.}
-\label{tab:full187}\setlength{\tabcolsep}{4pt}\small
+\label{tab:full233}\setlength{\tabcolsep}{4pt}\small
 \begin{tabular}{@{}lrrrr@{}}
 \toprule
 Stage & R@10 & R@50 & R@500 & QPS \\
@@ -726,7 +726,7 @@ configuration. Contrastive objectives work at moderate scale but collapse to
 random-projection level at 50K, since they optimise separation rather than the WJ
 ranking recall needs. WJ-native distillation removes this misalignment, and a
 rank-aware \emph{listwise} formulation of it beats absolute-value regression
-decisively at every scale we test (10K/50K/187K) and against five further 2024--2025
+decisively at every scale we test (10K/50K/233K) and against five further 2024--2025
 rank-aware alternatives: a single Matryoshka encoder beats random projection and a
 brute-force sketch estimator at both near- and wide-net recall, confirmed up to 187k
 polygons and on a second polygon class. Future work targets billion-scale corpora and
