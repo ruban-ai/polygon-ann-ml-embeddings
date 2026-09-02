@@ -116,7 +116,7 @@ none produce WJ-compatible embeddings. Our contributions are as follows:
     distillation makes the training objective the retrieval metric itself. We compare
     absolute value regression (MSE) against a rank-aware \emph{listwise} objective and
     find the latter wins decisively at every scale tested and against five further
-    2024--2025 rank-aware alternatives (\S\ref{sec:distill}).
+    rank-aware and Matryoshka-training alternatives (\S\ref{sec:distill}).
   \item \textbf{Supporting design}: a WJ-native simplex encoder (ReLU\,+\,$\ell_1$
     output on the probability simplex, indexable directly under WJ with no
     post-processing) and \textbf{Matryoshka deployment}, a single trained model serving
