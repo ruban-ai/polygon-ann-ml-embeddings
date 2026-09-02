@@ -405,8 +405,10 @@ study and the full 233k Parks dataset (187,019-polygon corpus / 46{,}754 queries
 a scaling check. At 50k and 233k, learned methods are \emph{corpus-trained}: trained only on
 corpus-internal neighbour pairs, so every query is held out and the numbers measure
 generalization to unseen queries; at 10k they are trained on the 2k-query set. Ground
-truth is the exact \emph{geometric} (shapely) Jaccard on the polygon geometry, which
-the quadtree-vector WJ approximates to within $0.999$ R@500. We report R@$k$ ($k\in\{10,50,500\}$) and QPS (PyTorch~\cite{paszke19},
+truth is the exact \emph{geometric} (shapely) Jaccard on the polygon geometry;
+ShapeToVec's own validation shows the quadtree-vector WJ tracks this closely (RMSE
+$10.16\%$ at $K{=}50$, $11.84\%$ at $K{=}500$, stable across grid
+resolutions)~\cite{shape2vec}. We report R@$k$ ($k\in\{10,50,500\}$) and QPS (PyTorch~\cite{paszke19},
 AdamW~\cite{loshchilov19}, cosine annealing~\cite{loshchilov17}). All runs use an
 NVIDIA DGX~A100 (8$\times$ A100-SXM4 80\,GB GPUs, dual 64-core AMD EPYC~7742 CPUs,
 2\,TB RAM); QPS is measured on a single GPU. \footnote{Code, trained models, and
