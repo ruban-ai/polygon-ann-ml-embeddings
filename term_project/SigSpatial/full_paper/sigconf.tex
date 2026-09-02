@@ -734,8 +734,8 @@ configuration. Contrastive objectives work at moderate scale but collapse to
 random-projection level at 50K, since they optimise separation rather than the WJ
 ranking recall needs. WJ-native distillation removes this misalignment, and a
 rank-aware \emph{listwise} formulation of it beats absolute-value regression
-decisively at every scale we test (10K/50K/233K) and against five further 2024--2025
-rank-aware alternatives: a single Matryoshka encoder beats random projection and a
+decisively at every scale we test (10K/50K/233K) and against five further rank-aware
+and Matryoshka-training alternatives: a single Matryoshka encoder beats random projection and a
 brute-force sketch estimator at both near- and wide-net recall, confirmed up to 233k
 polygons and on a second polygon class. Future work targets billion-scale corpora and
 other simplex-embeddable set metrics.
