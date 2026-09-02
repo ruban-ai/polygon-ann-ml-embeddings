@@ -191,12 +191,13 @@ targets are here) or \emph{binary} (positive/negative, as our earlier triplet an
 InfoNCE targets are) -- a graded softmax target lets listwise both match the
 deployed metric's full similarity structure per anchor \emph{and} directly optimise
 the ranking recall depends on. We additionally implemented and tested five further
-2024--2025 rank-aware and Matryoshka-training refinements sourced from recent
-literature (sequential/curriculum Matryoshka training~\cite{smec25}, an RKD-style
-angle-wise geometric term~\cite{park19rkd}, cross-batch hard-negative
-memory~\cite{smec25}, learnable dimension selection~\cite{smec25}, and
-cross-dimension self-distillation~\cite{mipic26}); none improved on plain listwise,
-and three actively hurt retrieval quality (full results and mechanistic analysis in
+rank-aware and Matryoshka-training refinements: four sourced from 2025--2026
+literature (sequential/curriculum Matryoshka training, cross-batch hard-negative
+memory, and learnable dimension selection, all from~\cite{smec25}; cross-dimension
+self-distillation~\cite{mipic26}), and a fifth, an angle-wise geometric relational
+term, drawing on the older (2019) RKD formulation~\cite{park19rkd} rather than a new
+one; none improved on plain listwise, and three actively hurt retrieval quality (full
+results and mechanistic analysis in
 our released code and logs, \S\ref{sec:exp}). We report this not to claim
 listwise is unimprovable, but because a compact WJ embedding's loss function
 deserves a justified choice rather than an assumed one, given how many rank-aware
