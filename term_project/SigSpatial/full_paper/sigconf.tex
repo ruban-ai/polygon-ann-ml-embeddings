@@ -717,7 +717,9 @@ sweet spot.}
 \begin{table}[t]\centering
 \caption{50K Stage-1 recall vs.\ dimension (40k corpus, 10k held-out queries).
 Distillation is one Matryoshka model truncated per row; baselines shown for
-contrast (256\,/\,4096). $\ddagger$~=~ours.}
+contrast (256\,/\,4096). Listwise's 256-d row is identical to
+Table~\ref{tab:full50k} and omitted here to avoid repeating it.
+$\ddagger$~=~ours.}
 \label{tab:dim}\setlength{\tabcolsep}{3pt}\footnotesize
 \begin{tabular}{@{}lrrrr@{}}
 \toprule
@@ -728,7 +730,6 @@ InfoNCE$^\ddagger$       & 0.459\,/\,0.464 & 0.560\,/\,0.563 & 0.720\,/\,0.720 &
 Rand.\ Proj.             & 0.616\,/\,0.705 & 0.659\,/\,0.749 & 0.766\,/\,0.841 & 3890\,/\,704 \\
 Distill (MSE)$^\ddagger$ & 0.692\,/\,0.693 & 0.794\,/\,0.796 & 0.924\,/\,0.925 & 6772\,/\,967 \\
 \addlinespace[2pt]
-\textbf{Distill} 256$^\ddagger$ & \textbf{0.871} & \textbf{0.921} & \textbf{0.969} & 4{,}921 \\
 \textbf{Distill} 512$^\ddagger$ & 0.877 & 0.925 & 0.971 & 2{,}682 \\
 \textbf{Distill} 1024$^\ddagger$ & 0.880 & 0.928 & 0.972 & 1{,}958 \\
 \textbf{Distill} 2048$^\ddagger$ & 0.881 & 0.929 & 0.973 & 1{,}631 \\
