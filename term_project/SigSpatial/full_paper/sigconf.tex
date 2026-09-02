@@ -48,18 +48,22 @@ Similarity Search under Extreme Area Variation}
 \begin{abstract}
 Similarity search over polygonal datasets asks which polygons have similar \emph{shape}
 (area-weighted overlap, independent of location); Weighted Jaccard (WJ) is the standard
-metric. The state-of-the-art, ShapeToVec, encodes each polygon as a high-dimensional
-probability-simplex vector via an adaptive quadtree grid, indexed directly under WJ with
-HNSW, at heavy memory and query-throughput cost. We introduce \emph{WJ-native
-distillation}: a simplex-constrained encoder trained via a rank-aware \emph{listwise}
-loss so the compact embedding's WJ directly reproduces the true WJ, beating
-absolute-value regression and five 2024--2025 rank-aware alternatives at every scale we
-test. Against ShapeToVec's own published results~\cite{shape2vec} on the identical Parks
-dataset (233,773 polygons), our $12$--$47\times$ smaller embeddings reach within a few
-points of their best recall without reranking, at $4$--$14\times$ the throughput, and
-exceed it entirely after a cheap exact-WJ rerank pass while remaining several-fold
-faster than their most accurate configuration. The same encoder, unchanged, generalises
-to a second, structurally different polygon class, water bodies.
+metric. Real-world polygon areas vary by many orders of magnitude, and a uniform
+encoding grid cannot serve both regimes: fine enough to resolve small polygons and it
+explodes in dimension for large ones, coarse enough to be tractable and small polygons
+collapse into near-empty, uninformative vectors. The state-of-the-art, ShapeToVec,
+resolves this extreme area variability with an adaptive quadtree grid, encoding each
+polygon as a high-dimensional probability-simplex vector indexed directly under WJ with
+HNSW, but that high dimensionality costs heavily in memory and query throughput. We
+introduce \emph{WJ-native distillation}: a simplex-constrained encoder trained via a
+rank-aware \emph{listwise} loss so the compact embedding's WJ directly reproduces the
+true WJ, beating absolute-value regression and five 2024--2025 rank-aware alternatives
+at every scale we test. Against ShapeToVec's own published results~\cite{shape2vec} on
+the identical Parks dataset (233,773 polygons), our $12$--$47\times$ smaller embeddings
+reach within a few points of their best recall without reranking, at $4$--$14\times$ the
+throughput, and exceed it entirely after a cheap exact-WJ rerank pass while remaining
+several-fold faster than their most accurate configuration. The same encoder,
+unchanged, generalises to a second, structurally different polygon class, water bodies.
 \end{abstract}
 
 \begin{CCSXML}
