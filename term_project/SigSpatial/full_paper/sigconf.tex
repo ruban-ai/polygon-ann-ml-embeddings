@@ -650,7 +650,7 @@ MSE distill$^\ddagger$       & 2000 & 0.995 & 0.997 & 0.987 & 1{,}280 \\
 Because the encoder is Matryoshka, one model serves every width. Listwise
 distillation's recall is essentially flat from 256 to 4096 (R@500
 $0.969\!\to\!0.973$) while QPS falls ${\sim}3.3\times$, so 256-d, a $72\times$
-compression, is the natural operating point. Baselines, by contrast, stay below
+compression versus the raw input, is the natural operating point. Baselines, by contrast, stay below
 distillation at \emph{every} width. This gentler QPS decay is also why listwise's
 throughput advantage over MSE distillation (Table~\ref{tab:lossablation}) is
 dimension-dependent rather than uniform: MSE's throughput falls ${\sim}7\times$ from
