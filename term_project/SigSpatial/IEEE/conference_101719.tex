@@ -695,7 +695,12 @@ Stage-1, listwise (no rerank)   & 0.855 & 0.899 & 0.944 & 2{,}039 \\
 Because the encoder is Matryoshka, one model serves every width. Listwise
 distillation's recall is essentially flat from 256 to 4096 (R@500
 $0.969\!\to\!0.973$) while QPS falls ${\sim}3.3\times$, so 256-d, a $72\times$
-compression versus the raw input, is the natural operating point. Baselines, by contrast, stay below
+compression versus the raw input, is the natural operating point: it is the narrowest
+width we test at which recall is still statistically indistinguishable from the
+widest, so there is no accuracy reason to deploy anything larger, and it is where we
+stop testing narrower widths too -- the width range is a training-time configuration
+rather than an architectural limit (\S\ref{sec:intro}), so a floor below 256-d is a
+natural next experiment, not something this curve rules out. Baselines, by contrast, stay below
 distillation at \emph{every} width. This gentler QPS decay is also why listwise's
 throughput advantage over MSE distillation (Table~\ref{tab:lossablation}) is
 dimension-dependent rather than uniform: MSE's throughput falls ${\sim}7\times$ from
