@@ -134,13 +134,16 @@ none produce WJ-compatible embeddings. We deliberately keep the index itself
 unchanged -- ShapeToVec's HNSW pipeline, not a hashing-based ANN scheme -- and
 compress only the vector representation searched within it. Our contributions are as follows:
 \begin{enumerate}[leftmargin=1.2em,itemsep=1pt,topsep=1pt]
-  \item \textbf{Compression that nearly matches, then beats, ShapeToVec's own
-    accuracy.} Against ShapeToVec's own published results~\cite{shape2vec} on the
-    identical Parks dataset, our $12$--$47\times$ smaller embeddings reach Recall@50
-    $=92$--$93\%$ without any reranking, close behind their $96$--$97\%$ at
-    $4$--$14\times$ the throughput, and exceed their best published recall entirely
-    after a cheap exact-WJ rerank pass, while remaining several-fold faster than
-    their most accurate configuration (\S\ref{sec:exp}).
+  \item \textbf{The first learned, shape-aware compression for WJ polygon retrieval.}
+    Unlike ShapeToVec, ShapeToVec+~\cite{shapetovecplus26}, and other exact-computation
+    geometry signatures, our encoder is \emph{trained} on the ground-truth shape
+    similarity structure, learning what makes two polygons look alike rather than
+    encoding them by a fixed rule. Against ShapeToVec's own published
+    results~\cite{shape2vec} on the identical Parks dataset, our embeddings, up to
+    $47\times$ smaller, reach Recall@50 $=92$--$93\%$ without any reranking, close
+    behind their $96$--$97\%$ at up to $14\times$ the throughput, and exceed their best
+    published recall entirely after a cheap exact-WJ rerank pass, while remaining
+    several-fold faster than their most accurate configuration (\S\ref{sec:exp}).
   \item A \textbf{shape-similarity distillation loss} that makes this possible: WJ-native
     distillation makes the training objective the retrieval metric itself. We compare
     absolute value regression (MSE) against a rank-aware \emph{listwise} objective and
@@ -150,7 +153,10 @@ compress only the vector representation searched within it. Our contributions ar
     output on the probability simplex, indexable directly under WJ with no
     post-processing) and \textbf{Matryoshka deployment}, a single trained model serving
     every embedding width $\{256, 512, \dots,4096\}$ from one round of training; 256-d
-    dominates the recall--throughput frontier.
+    dominates the recall--throughput frontier. The width range itself is a
+    training-time configuration, not a fixed architectural choice: serving a different
+    range, e.g.\ narrower than 256-d, needs no redesign, only retraining with that
+    range.
 \end{enumerate}
 
 %% ---------------- 2. Related Work ----------------
