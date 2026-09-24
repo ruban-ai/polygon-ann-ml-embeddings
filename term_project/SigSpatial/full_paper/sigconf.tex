@@ -156,6 +156,15 @@ compress only the vector representation searched within it. Our contributions ar
 %% ---------------- 2. Related Work ----------------
 \section{Related Work}
 \label{sec:related}
+For two polygons encoded as non-negative vectors $\mathbf{a},\mathbf{b}\in\mathbb{R}^D_{\ge0}$
+over a shared partition of $D$ spatial cells, where $a_i$ is polygon $\mathbf{a}$'s
+area-weighted occupancy of cell $i$, Weighted Jaccard is
+\begin{equation}
+  WJ(\mathbf{a},\mathbf{b}) = \frac{\sum_i \min(a_i,b_i)}{\sum_i \max(a_i,b_i)},
+  \quad \mathbf{a},\mathbf{b} \ge \mathbf{0}.
+  \label{eq:wj}
+\end{equation}
+
 \textbf{ShapeToVec and its gap.} ShapeToVec~\cite{shape2vec} is the state of the art
 for WJ polygon retrieval: its adaptive quadtree grid encodes each polygon as a
 high-dimensional floating-point simplex vector, and a custom Weighted Jaccard
