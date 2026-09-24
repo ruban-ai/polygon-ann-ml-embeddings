@@ -77,21 +77,19 @@ polygon similarity search, weighted Jaccard, listwise ranking loss, metric disti
 \section{Introduction}
 \label{sec:intro}
 Finding similar shapes in large polygon datasets is a fundamental geospatial
-operation, for deduplication, conflation, and map integration. We study
+operation, for deduplication, conflation, and map integration; concretely, tracking
+how a lake shrinks or an ice shelf fragments over time requires matching each new
+observation to its closest-shaped counterpart in a large historical
+archive~\cite{shape2vec}. We study
 polygons from the SpatialHadoop GIS benchmark~\cite{eldawy15}, primarily its
 Parks collection (\S\ref{sec:exp}), and confirm our method is not
 collection-specific with a second, structurally different polygon class, water
 bodies (\S\ref{sec:exp}); a sports-field collection from the same benchmark is a
 natural further extension (\S5). Quantifying
-shape overlap calls for an area-aware metric; Weighted Jaccard (WJ)~\cite{rajaraman11},
-\begin{equation}
-  WJ(\mathbf{a},\mathbf{b}) = \frac{\sum_i \min(a_i,b_i)}{\sum_i \max(a_i,b_i)},
-  \quad \mathbf{a},\mathbf{b} \ge \mathbf{0},
-  \label{eq:wj}
-\end{equation}
-is the standard choice, where $\mathbf{a},\mathbf{b}\in\mathbb{R}^D_{\ge0}$ are two
-polygons' vector encodings over a shared partition of $D$ spatial cells and $a_i$ is
-polygon $\mathbf{a}$'s area-weighted occupancy of cell $i$. The core difficulty is
+shape overlap calls for an area-aware metric; Weighted Jaccard (WJ)~\cite{rajaraman11}
+-- the ratio between a pair of polygons' overlapping and combined area, computed cell
+by cell over a shared spatial grid (formalised as Eq.~\ref{eq:wj}, \S\ref{sec:related})
+-- is the standard choice. The core difficulty is
 \emph{extreme area variability}: polygon areas span several orders of magnitude
 (e.g.\ a neighbourhood park versus a national forest), and a single uniform grid
 cannot serve both regimes: a grid fine enough to resolve small polygons explodes in
