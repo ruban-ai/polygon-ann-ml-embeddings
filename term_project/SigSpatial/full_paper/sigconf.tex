@@ -49,7 +49,8 @@ Similarity Search under Extreme Area Variation}
 Finding polygons with similar shape in large geospatial datasets underlies map
 conflation, land-use change detection, and geospatial intelligence. Shape similarity
 here means area-weighted overlap independent of location, for which Weighted Jaccard
-(WJ) is the standard metric. Real-world polygon areas vary by many orders of magnitude,
+(WJ) -- the ratio between overlapping and combined area -- is the standard metric.
+Real-world polygon areas vary by many orders of magnitude,
 and a uniform encoding grid cannot serve both regimes: fine enough to resolve small
 polygons and it explodes in dimension for large ones, coarse enough to be tractable and
 small polygons collapse into near-empty, uninformative vectors. The state-of-the-art,
