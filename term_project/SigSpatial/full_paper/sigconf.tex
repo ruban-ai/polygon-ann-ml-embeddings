@@ -57,9 +57,14 @@ ShapeToVec, resolves this extreme area variability with an adaptive quadtree gri
 encoding each polygon as a high-dimensional probability-simplex vector indexed directly
 under WJ with HNSW, but that high dimensionality costs heavily in memory and query
 throughput. We introduce \emph{WJ-native distillation}: a simplex-constrained encoder
-trained via a rank-aware \emph{listwise} loss so the compact embedding's WJ directly
-reproduces the true WJ, beating absolute-value regression and five further rank-aware
-and Matryoshka-training alternatives at every scale we test. Against ShapeToVec's own
+that maps each polygon's raw vector onto a compact probability simplex. It is trained
+with a rank-aware \emph{listwise} loss: each anchor's row of true WJ similarities is
+turned into a target distribution, and the compressed embedding's own WJ row is trained
+to match it, supervising the full ranking structure rather than individual values. This
+beats absolute-value regression and five further rank-aware and Matryoshka-training
+alternatives at every scale we test. A single trained encoder serves every deployed
+width via Matryoshka-style truncation, so one training run covers every operating point
+from 256 to 4096 dimensions. Against ShapeToVec's own
 published results~\cite{shape2vec} on the identical Parks dataset (233,773 polygons),
 our embeddings, up to $47\times$ smaller, reach within a few points of their best
 recall without reranking, at up to $14\times$ the throughput, and exceed it entirely
