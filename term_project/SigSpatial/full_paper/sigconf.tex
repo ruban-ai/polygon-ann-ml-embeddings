@@ -57,9 +57,10 @@ small polygons collapse into near-empty, uninformative vectors. The state-of-the
 ShapeToVec, resolves this extreme area variability with an adaptive quadtree grid,
 encoding each polygon as a high-dimensional floating-point vector indexed directly
 under WJ with HNSW, but that high dimensionality costs heavily in memory and query
-throughput. ShapeToVec+ compresses these into compact bit-signatures, up to
-$32\times$ smaller, but at real accuracy cost at its most aggressive settings (recall
-falling from $96\%$ to $76\%$ on the identical dataset). Both rely on
+throughput. ShapeToVec+~\cite{shapetovecplus26} compresses these into compact
+bit-signatures, up to $32\times$ smaller, but at real accuracy cost at its most
+aggressive settings (recall falling from $96\%$ to $76\%$ on the identical dataset).
+Both rely on
 \emph{designed} signatures: exact, hand-engineered encodings with no learned
 component. We instead introduce \emph{learned} signatures via \emph{WJ-native
 distillation}: a simplex-constrained encoder that maps each polygon's raw vector onto
