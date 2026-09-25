@@ -58,8 +58,7 @@ ShapeToVec, resolves this extreme area variability with an adaptive quadtree gri
 encoding each polygon as a high-dimensional floating-point vector
 \ba{ShapeToVec does not use simplex vectors. The best performing vectors in that work
 are floating-point encodings. Be mindful when using technical terms, as this was a
-complaint before.}\rs{Done -- changed to ``floating-point vector'' here;
-\emph{simplex} is now used only for our own embedding, below.} indexed directly
+complaint before.}\rs{Done -- fixed.} indexed directly
 under WJ with HNSW, but that high dimensionality costs heavily in memory and query
 throughput.
 \ba{You can also mention the bit vectors used and write about the compression
