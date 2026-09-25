@@ -52,17 +52,20 @@ and a uniform encoding grid cannot serve both regimes: fine enough to resolve sm
 polygons and it explodes in dimension for large ones, coarse enough to be tractable and
 small polygons collapse into near-empty, uninformative vectors. The state-of-the-art,
 ShapeToVec, resolves this extreme area variability with an adaptive quadtree grid,
-encoding each polygon as a high-dimensional probability-simplex vector indexed directly
+encoding each polygon as a high-dimensional floating-point vector indexed directly
 under WJ with HNSW, but that high dimensionality costs heavily in memory and query
-throughput. We introduce \emph{WJ-native distillation}: a simplex-constrained encoder
-that maps each polygon's raw vector onto a compact probability simplex. It is trained
-with a rank-aware \emph{listwise} loss: each anchor's row of true WJ similarities is
-turned into a target distribution, and the compressed embedding's own WJ row is trained
-to match it, supervising the full ranking structure rather than individual values. This
-beats absolute-value regression and five further rank-aware and Matryoshka-training
-alternatives at every scale we test. A single trained encoder serves every deployed
-width via Matryoshka-style truncation, so one training run covers every operating point
-from 256 to 4096 dimensions. Against ShapeToVec's own
+throughput. ShapeToVec+ compresses these into compact bit-signatures, up to
+$32\times$ smaller, but at real accuracy cost at its most aggressive settings (recall
+falling from $96\%$ to $76\%$ on the identical dataset). Both rely on
+\emph{designed} signatures: exact, hand-engineered encodings with no learned
+component. We instead introduce \emph{learned} signatures via \emph{WJ-native
+distillation}: a simplex-constrained encoder that maps each polygon's raw vector onto
+a compact probability simplex. It is trained with a rank-aware \emph{listwise} loss:
+each anchor's true, exact-WJ-ranked neighbours guide training, supervising the full
+ranking structure rather than individual values. This beats several alternative
+training objectives we test, at every scale. A single trained encoder serves every
+deployed width via Matryoshka-style truncation; one training run therefore covers
+every operating point from 256 to 4096 dimensions. Against ShapeToVec's own
 published results~\cite{shape2vec} on the identical Parks dataset (233,773 polygons),
 our embeddings, up to $47\times$ smaller, reach within a few points of their best
 recall without reranking, at up to $14\times$ the throughput, and exceed it entirely
