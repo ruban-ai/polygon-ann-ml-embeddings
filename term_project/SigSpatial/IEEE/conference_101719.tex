@@ -101,44 +101,80 @@ polygon similarity search, weighted Jaccard, listwise ranking loss, metric disti
 
 \section{Introduction}
 \label{sec:intro}
-Finding similar shapes in large polygon datasets is a fundamental geospatial
-operation, for deduplication, conflation, and map integration; concretely, tracking
-how a lake shrinks or an ice shelf fragments over time requires matching each new
-observation to its closest-shaped counterpart in a large historical
-archive~\cite{shape2vec}. We study
-polygons from the SpatialHadoop GIS benchmark~\cite{eldawy15}, primarily its
-Parks collection (\S\ref{sec:exp}), and confirm our method is not
-collection-specific with a second, structurally different polygon class, water
-bodies (\S\ref{sec:exp}); a sports-field collection from the same benchmark is a
-natural further extension (\S5). Quantifying
-shape overlap calls for an area-aware metric; Weighted Jaccard (WJ)~\cite{rajaraman11}
--- the ratio between a pair of polygons' overlapping and combined area, computed cell
-by cell over a shared spatial grid (formalised as Eq.~\ref{eq:wj}, \S\ref{sec:related})
--- is the standard choice. The core difficulty is
-\emph{extreme area variability}: polygon areas span several orders of magnitude
-(e.g.\ a neighbourhood park versus a national forest), and a single uniform grid
-cannot serve both regimes: a grid fine enough to resolve small polygons explodes in
-dimension at the scale of large ones, while a grid coarse enough to be tractable
-leaves small polygons occupying only a handful of cells, collapsing their shape
-information into near-empty vectors. ShapeToVec~\cite{shape2vec} resolves this with an adaptive
-\emph{quadtree} grid that recursively subdivides space where polygon detail is
-concentrated, encoding each polygon as a high-dimensional probability-simplex
-vector (tens of thousands of dimensions, varying with grid resolution) whose WJ
-preserves overlap across scales. Indexed with HNSW~\cite{hnsw20} under a \emph{custom}
-Weighted Jaccard distance (added by ShapeToVec~\cite{shape2vec} to
-NMSLIB~\cite{boytsov13}), it reaches $97\%$ R@50
-on up to 1.7M polygons. But such large vectors are costly to store and search;
-compressing them while preserving WJ structure is our goal.
+\ba{Please put the content for the following sub-sections to build the
+Introduction properly. In general, no need to add numbers unless they are
+core. No need to cite sections, equations etc. Add paper citations as
+needed.}\rs{Done -- rewritten below in that order (problem, impact/example,
+SOTA, limitations, gap, method, contributions); internal section/equation
+references removed throughout, numbers trimmed to the ones that felt load-bearing.}
 
-Existing tools do not fit. WJ sketches (ICWS~\cite{ioffe10},
-ProbMinHash~\cite{probminhash20}, PolyMinHash~\cite{polyminhash25}) output integer
-codes needing brute-force or LSH-band search; learned hashing and metric
-learning~\cite{hashsurvey14,deephashsurvey22} target Hamming or cosine spaces;
-none produce WJ-compatible embeddings. We deliberately keep the index itself
-unchanged -- ShapeToVec's HNSW pipeline, not a hashing-based ANN scheme -- and
-compress only the vector representation searched within it. Our contributions are as follows:
+Finding polygons with similar shape in a large geospatial dataset is a core
+retrieval problem: given a query polygon, return the database polygons whose
+shape overlaps it most, independent of location. Weighted Jaccard (WJ)~\cite{rajaraman11}
+-- the ratio between a pair of polygons' overlapping and combined area, computed cell
+by cell over a shared spatial grid -- is the standard metric for this notion of shape
+similarity. The real difficulty is that real-world polygon areas vary by many orders
+of magnitude, and no single, uniform grid resolution serves both regimes at once: a
+grid fine enough to resolve small polygons explodes in dimension when applied to
+large ones, while a grid coarse enough to stay tractable collapses small polygons
+into near-empty, uninformative vectors.
+
+Finding similar shapes in large polygon datasets is a fundamental geospatial
+operation, useful for deduplication, conflation, and map integration.
+\ba{Too long. Please split into multiple sentences.}\rs{Done -- split into three
+sentences below.}
+It also underlies geospatial-intelligence tasks such as change detection. Tracking
+how a lake shrinks or an ice shelf fragments over time, for example, requires
+matching each new observation against its closest-shaped counterpart in a large
+historical archive~\cite{shape2vec}.
+
+ShapeToVec~\cite{shape2vec} is the state of the art for this problem. It resolves
+extreme area variability with an adaptive quadtree grid that recursively subdivides
+space where polygon detail is concentrated, encoding each polygon as a
+high-dimensional floating-point vector whose WJ preserves shape overlap across
+scales. Indexed with HNSW~\cite{hnsw20} under a custom Weighted Jaccard distance, it
+reaches the highest reported recall for this task. ShapeToVec+~\cite{shapetovecplus26}
+builds directly on this encoding, replacing ShapeToVec's raw floating-point cell
+values with compact bit-quantized signatures to shrink its memory footprint.
+Separately, Matryoshka representation learning~\cite{matryoshka22} trains a single
+embedding so its own leading prefixes stay useful at every truncation width, letting
+one model serve many deployment sizes; it targets Euclidean or cosine similarity, not
+Weighted Jaccard.
+
+ShapeToVec's accuracy comes at a real cost: its floating-point vectors are large, and
+storing and searching them grows expensive as a dataset grows. ShapeToVec+ shrinks
+that footprint, but only by degrading accuracy at its most aggressive settings, since
+bit-quantization discards the fine detail a floating-point value carries. Both remain
+\emph{designed} signatures: fixed, hand-engineered encoding rules with no learned
+component, so neither can adapt its footprint to what actually matters for a given
+collection's shapes. Matryoshka representation learning solves a different problem --
+multi-width deployment -- and does not itself produce WJ-compatible embeddings.
+
+We close this gap with a \emph{learned} signature instead of a \emph{designed} one.
+Rather than hand-engineering a fixed encoding rule, we train an encoder directly on
+the ground-truth shape similarity structure, so it learns what makes two polygons
+look alike and represents that information as compactly as the data allows. This is a
+different lever than ShapeToVec+'s bit-quantization: instead of shrinking each
+dimension's precision, we learn which dimensions to keep at all.
+
+Our encoder maps each polygon's raw ShapeToVec vector onto a compact probability
+simplex, so its output is directly compatible with Weighted Jaccard and indexes under
+the same HNSW pipeline ShapeToVec already uses, with no new index structure required.
+It is trained with a rank-aware listwise loss that turns the training objective into
+the retrieval metric itself: each anchor's true, exact-WJ-ranked neighbours guide
+training, so the compressed embedding's own ranking is taught to match the ground
+truth directly, not just its magnitude. A single trained encoder serves every
+deployed embedding width via Matryoshka-style truncation, so one training run covers
+every operating point we deploy. At query time, a cheap exact-WJ rerank pass over the
+small candidate set HNSW returns closes any remaining gap to the uncompressed
+ceiling.
+
+Our contributions are as follows:
 \begin{enumerate}[leftmargin=1.2em,itemsep=1pt,topsep=1pt]
   \item \textbf{The first learned, shape-aware compression for WJ polygon retrieval.}
+    \ba{Rephrase the description according to what I sent in discord.}\rs{Need the
+    Discord text pasted here -- I don't have access to Discord, can't rephrase this
+    one without it.}
     Unlike ShapeToVec, ShapeToVec+~\cite{shapetovecplus26}, and other exact-computation
     geometry signatures, our encoder is \emph{trained} on the ground-truth shape
     similarity structure, learning what makes two polygons look alike rather than
@@ -147,20 +183,25 @@ compress only the vector representation searched within it. Our contributions ar
     $47\times$ smaller, reach Recall@50 $=92$--$93\%$ without any reranking, close
     behind their $96$--$97\%$ at up to $14\times$ the throughput, and exceed their best
     published recall entirely after a cheap exact-WJ rerank pass, while remaining
-    several-fold faster than their most accurate configuration (\S\ref{sec:exp}).
-  \item A \textbf{shape-similarity distillation loss} that makes this possible: WJ-native
-    distillation makes the training objective the retrieval metric itself. We compare
-    absolute value regression (MSE) against a rank-aware \emph{listwise} objective and
-    find the latter wins decisively at every scale tested and against five further
-    rank-aware and Matryoshka-training alternatives (\S\ref{sec:distill}).
-  \item \textbf{Supporting design}: a WJ-native simplex encoder (ReLU\,+\,$\ell_1$
+    several-fold faster than their most accurate configuration.
+  \item \ba{Write directly describe the feature you have.}\rs{Done -- reworded to lead
+    with the feature.}
+    \textbf{A rank-aware listwise loss that makes the training objective the retrieval
+    metric itself.} WJ-native distillation trains the compressed embedding's own
+    ranking to match the ground-truth WJ ranking directly, rather than regressing its
+    absolute value. This beats absolute-value regression (MSE) and five further
+    alternatives we test, decisively, at every scale tested.
+  \item \ba{Present the contribution as you did in contribution 1 and then
+    explain.}\rs{Done -- headline claim first, explanation after.}
+    \textbf{A single learned encoder that serves every deployment width, with no
+    retraining per size.} A WJ-native simplex encoder (ReLU\,+\,$\ell_1$
     output on the probability simplex, indexable directly under WJ with no
-    post-processing) and \textbf{Matryoshka deployment}, a single trained model serving
-    every embedding width $\{256, 512, \dots,4096\}$ from one round of training; 256-d
-    dominates the recall--throughput frontier. The width range itself is a
-    training-time configuration, not a fixed architectural choice: serving a different
-    range, e.g.\ narrower than 256-d, needs no redesign, only retraining with that
-    range.
+    post-processing) is deployed via Matryoshka-style truncation: one trained model
+    serves every embedding width $\{256, 512, \dots,4096\}$ from a single round of
+    training, and the width range itself is a training-time configuration, not a
+    fixed architectural choice -- serving a narrower range needs no redesign, only
+    retraining with that range. 256-d dominates the recall--throughput frontier among
+    the widths we test.
 \end{enumerate}
 
 \section{Related Work}
