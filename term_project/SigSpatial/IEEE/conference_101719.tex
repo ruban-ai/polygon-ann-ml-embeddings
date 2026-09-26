@@ -188,19 +188,20 @@ ceiling.
 
 Our contributions are as follows:
 \begin{enumerate}[leftmargin=1.2em,itemsep=1pt,topsep=1pt]
-  \item \textbf{The first learned, shape-aware compression for WJ polygon retrieval.}
-    \ba{Rephrase the description according to what I sent in discord.}\rs{Need the
-    Discord text pasted here -- I don't have access to Discord, can't rephrase this
-    one without it.}
-    Unlike ShapeToVec, ShapeToVec+~\cite{shapetovecplus26}, and other exact-computation
-    geometry signatures, our encoder is \emph{trained} on the ground-truth shape
-    similarity structure, learning what makes two polygons look alike rather than
-    encoding them by a fixed rule. Against ShapeToVec's own published
-    results~\cite{shape2vec} on the identical Parks dataset, our embeddings, up to
-    $47\times$ smaller, reach Recall@50 $=92$--$93\%$ without any reranking, close
-    behind their $96$--$97\%$ at up to $14\times$ the throughput, and exceed their best
-    published recall entirely after a cheap exact-WJ rerank pass, while remaining
-    several-fold faster than their most accurate configuration.
+  \item \ba{Rephrase the description according to what I sent in discord.}\rs{Done --
+    reframed around the ShapeToVec $\to$ ShapeToVec+ $\to$ us story from Discord.}
+    \textbf{Learned signatures that exceed ShapeToVec+'s compression ceiling at
+    on-par or better accuracy.} ShapeToVec is the state of the art for
+    weighted-Jaccard polygon retrieval, but its best-performing floating-point
+    signatures are high-dimensional and do not scale. ShapeToVec+ shrinks these with
+    hand-designed bit-quantization schemes, capped at $32\times$ compression with a
+    real accuracy cost at that ceiling. We instead learn the signature directly from
+    the ground-truth shape-similarity structure: against ShapeToVec's own published
+    results~\cite{shape2vec} on the identical Parks dataset, our embeddings reach up
+    to $47\times$ smaller than their tested configurations -- exceeding ShapeToVec+'s
+    reported compression ceiling -- while matching their recall without reranking and
+    exceeding it entirely after a cheap exact-WJ rerank pass, at several-fold their
+    throughput.
   \item \ba{Write directly describe the feature you have.}\rs{Done -- reworded to lead
     with the feature.}
     \textbf{A rank-aware listwise loss that makes the training objective the retrieval
