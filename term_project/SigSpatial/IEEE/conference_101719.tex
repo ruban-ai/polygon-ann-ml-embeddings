@@ -217,16 +217,18 @@ area-weighted occupancy of cell $i$, Weighted Jaccard is
 
 \textbf{ShapeToVec and its gap.} ShapeToVec~\cite{shape2vec} is the state of the art
 for WJ polygon retrieval: its adaptive quadtree grid encodes each polygon as a
-high-dimensional floating-point simplex vector, and a custom Weighted Jaccard
+high-dimensional floating-point vector, and a custom Weighted Jaccard
 distance it adds to NMSLIB~\cite{boytsov13} lets HNSW index these vectors directly,
 reaching $97\%$ R@50 (versus $67\%$ for its binary bit-vector variant). That accuracy,
 however, rests on tens of thousands of dimensions: ShapeToVec itself notes that such
 vectors strain HNSW memory as datasets grow, and that generic compression
 (e.g.\ product quantization~\cite{jegou10pq}) shrinks the footprint only by
 \emph{degrading} accuracy. A follow-up, ShapeToVec+~\cite{shapetovecplus26}, targets
-this directly with bit-quantized signatures spanning $1$--$8$ bits per dimension: the
-8-bit configuration is lossless, while 1-bit trades accuracy for the smallest
-footprint. Both remain \emph{exact} computations over the same quadtree encoding, with
+this directly with two encoding families: 8-bit integer signatures that match
+float32 accuracy at $4\times$ compression, and 1--4-bit signatures that reach
+$8\times$--$32\times$ compression at a real accuracy cost, down to $76\%$ recall at
+their most aggressive ($32\times$) setting versus float32's $96\%$ on the identical
+dataset. Both remain \emph{exact} computations over the same quadtree encoding, with
 no learned component.
 We fill this gap with a learned, WJ-native compression, up to $72\times$ smaller than
 the raw $D{\approx}18{,}382$ input, that comes within a few points of ShapeToVec's own
