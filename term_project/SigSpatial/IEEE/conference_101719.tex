@@ -149,6 +149,8 @@ embedding so its own leading prefixes stay useful at every truncation width, let
 one model serve many deployment sizes; it targets Euclidean or cosine similarity, not
 Weighted Jaccard.
 
+\subsection{Limitations of the SOTA methods}
+
 ShapeToVec's accuracy comes at a real cost: its floating-point vectors are large, and
 storing and searching them grows expensive as a dataset grows. ShapeToVec+ shrinks
 that footprint, but only by degrading accuracy at its most aggressive settings, since
