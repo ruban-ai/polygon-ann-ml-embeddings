@@ -220,15 +220,11 @@ Our contributions are as follows:
     reframed around the ShapeToVec $\to$ ShapeToVec+ $\to$ us story from Discord.}
     \textbf{Learned signatures that exceed ShapeToVec+'s compression ceiling at
     on-par or better accuracy.} To our knowledge, these are the first learned,
-    shape-aware signatures for WJ polygon retrieval. ShapeToVec is the state of the
-    art for this task, but its best-performing floating-point signatures are
-    high-dimensional and do not scale. ShapeToVec+ shrinks these with hand-designed
-    bit-quantization schemes, capped at $32\times$ compression with a substantial
-    accuracy cost at that ceiling. We instead learn the signature directly from the
-    ground-truth shape-similarity structure. Against ShapeToVec's own published
-    results~\cite{shape2vec} on the identical Parks dataset, our embeddings are up to
-    $47\times$ smaller than their tested configurations, exceeding ShapeToVec+'s
-    reported compression ceiling. Without reranking, they stay within a few points of
+    shape-aware signatures for WJ polygon retrieval, and they move past the
+    $32\times$ ceiling of ShapeToVec+'s designed signatures. Against ShapeToVec's own
+    published results~\cite{shape2vec} on the identical Parks dataset, our embeddings
+    are up to $47\times$ smaller than their tested configurations. Without
+    reranking, they stay within a few points of
     ShapeToVec's recall and well above ShapeToVec+'s at its $32\times$ setting; with a
     lightweight exact reranking step, they exceed ShapeToVec's recall at several-fold
     its throughput.
