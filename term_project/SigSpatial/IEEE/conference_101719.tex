@@ -178,10 +178,10 @@ embeddings.
 signatures, leading to improved scalability and efficiency. We should not say we
 just tried learned and it worked.}\rs{Done -- opens by naming the compression
 ceiling designed signatures hit, then frames learned signatures as removing it.}
-The limitation we close is a ceiling on compression: a designed signature can only
-shrink a fixed encoding rule so far before accuracy degrades, since the rule has no
-way to tell which dimensions actually matter for a given collection's shapes. A
-learned signature removes this ceiling. Rather than hand-engineering a fixed encoding
+The limitation we close is a ceiling on compression. A designed signature compresses
+every cell by the same fixed rule, regardless of how much that cell helps
+distinguish shapes in a given collection, and accuracy therefore drops once
+compression is pushed far. A learned signature removes this ceiling. Rather than hand-engineering a fixed encoding
 rule, we train an encoder directly on the ground-truth shape similarity structure,
 letting it learn what makes two polygons look alike and represent that information
 as compactly as the data allows, improving scalability and query efficiency beyond
