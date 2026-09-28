@@ -105,9 +105,9 @@ search fits in memory at all.
 
 \subsection{Problem Statement}
 
-Finding polygons with similar shape in a large geospatial dataset is a core
-retrieval problem: given a query polygon, return the database polygons whose
-shape overlaps it most, independent of location. The Jaccard index, the ratio of
+Formally, the task is shape-similarity retrieval: given a query polygon, return the
+database polygons most similar to it in shape, independent of location. The Jaccard
+index, the ratio of
 intersection to union area between two polygons, is the standard measure of this
 similarity. Because computing it exactly requires expensive geometric intersection
 against every candidate, practical systems instead encode each polygon as a vector
