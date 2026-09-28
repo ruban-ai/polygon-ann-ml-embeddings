@@ -195,21 +195,20 @@ smaller set of new dimensions that jointly preserve the similarity ranking.
 and states explicitly that the network itself is standard; what is new is the
 training objective.}
 Our encoder is a compact neural network, a two-layer multilayer perceptron, that
-maps each polygon's raw ShapeToVec vector onto a lower-dimensional probability
-simplex: a ReLU activation enforces non-negativity and an $\ell_1$-normalisation step
-scales the output to sum to one, so it is directly compatible with Weighted Jaccard
-and indexes under the same HNSW pipeline ShapeToVec already uses, with no new index
-structure required. What is new is not the network itself, a standard architecture,
-but training it to reproduce the exact WJ ranking directly, rather than any generic
-embedding objective. It is trained with a rank-aware listwise loss that turns the
-training objective into
-the retrieval metric itself: each anchor's true, exact-WJ-ranked neighbours guide
-training, so the compressed embedding's own ranking is taught to match the ground
-truth directly, not just its magnitude. A single trained encoder serves every
-deployed embedding width via Matryoshka-style truncation, so one training run covers
-every operating point we deploy. At query time, a cheap exact-WJ rerank pass over the
-small candidate set HNSW returns closes any remaining gap to the uncompressed
-ceiling.
+maps each polygon's ShapeToVec vector to a much shorter vector. A final
+normalization makes every output entry nonnegative and the entries sum to one,
+placing the output on the probability simplex. This makes the compact vectors
+directly comparable under Weighted Jaccard, and they are searched with the same HNSW
+index ShapeToVec uses; we neither replace the index nor turn to hashing-based search.
+What is new is not the network itself, a standard architecture, but how it is
+trained: we \emph{distill} ShapeToVec's exact WJ similarities into the encoder, using
+a listwise ranking loss that supervises each polygon's exact top-$k$ most similar
+shapes rather than individual similarity values. The compact signatures thus learn
+to reproduce the ranking that retrieval depends on. Trained Matryoshka-style, a
+single encoder serves every embedding width by truncation, and one training run
+covers every operating point. At query time, a lightweight exact reranking step over
+the small candidate set returned by HNSW closes the remaining gap to the
+uncompressed accuracy.
 
 \subsection{Contributions}
 
