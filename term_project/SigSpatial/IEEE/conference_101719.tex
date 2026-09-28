@@ -152,29 +152,27 @@ from a large one, and accuracy degrades substantially. Both methods remain
 \emph{designed} signatures: fixed, hand-engineered encoding rules with no learned
 component, and therefore neither can adapt its footprint to what actually matters
 for a given collection's shapes.
+\ba{On the paragraph above: Bring the 'designed' nature of this work at the
+beginning. Emphasize its ability to decouple cell area into a lookup table and
+encoding to only indicate cell area overlap level.}\rs{Done -- opens with
+``designed'' now and explains the lookup-table decoupling mechanism.}
 
+Outside the geospatial setting, Matryoshka representation
+learning~\cite{matryoshka22} is a widely adopted technique for multi-width
+embeddings under Euclidean and cosine similarity. It trains a single embedding whose
+leading prefixes stay useful at every truncation width, letting one model serve many
+deployment sizes. It has not been applied to polygon geometries or to WJ. We mention
+it because our own deployment reuses its truncation idea, even though the
+representation itself does not produce WJ-compatible embeddings.
 \ba{'so' is not suitable for technical writing. Explain related building dataset
 papers with autoencoders and Fourier Transformers and mention they did not work
 well with this data and explain briefly why. Why do you mention this
 representation specifically, as it has not been used with geometries before? Is
 this SOTA for the distances mentioned? Please specify why you mention this.}\rs{Done
--- added Fourier/autoencoder prior art with evidence for why they fail; Matryoshka
-is now described as the widely adopted multi-width technique for Euclidean/cosine
-retrieval, never applied to geometries, and mentioned because we reuse its
-truncation idea.}
-Prior polygon-encoding attempts, including Fourier
-descriptors~\cite{ai13fourier} and graph convolutional
-autoencoders~\cite{yan21gcae}, target building datasets with narrow, comparable
-shape categories. On collections like ours, where polygon areas span many orders of
-magnitude, they retrieve similar shapes poorly~\cite{shape2vec}, since neither
-representation was designed to preserve that scale of area variation. Separately,
-Matryoshka representation learning~\cite{matryoshka22}, a widely adopted technique
-for multi-width embeddings under Euclidean and cosine similarity, trains a single
-embedding whose leading prefixes stay useful at every truncation width, letting one
-model serve many deployment sizes. It has not been applied to polygon geometries or
-to WJ. We mention it because our own deployment reuses its truncation
-idea, even though the representation itself does not produce WJ-compatible
-embeddings.
+-- Fourier/autoencoder prior art moved to the start of this subsection, with
+evidence for why they fail; Matryoshka now has its own paragraph, described as the
+widely adopted multi-width technique for Euclidean/cosine retrieval, never applied
+to geometries, and mentioned because we reuse its truncation idea.}
 
 \subsection{Closing the Gap}
 
