@@ -198,8 +198,8 @@ Our encoder is a compact neural network, a two-layer multilayer perceptron, that
 maps each polygon's ShapeToVec vector to a much shorter vector. A final
 normalization makes every output entry nonnegative and the entries sum to one,
 placing the output on the probability simplex. This makes the compact vectors
-directly comparable under Weighted Jaccard, and they are searched with the same HNSW
-index ShapeToVec uses; we neither replace the index nor turn to hashing-based search.
+directly comparable under WJ, and they are searched with the same HNSW index
+ShapeToVec uses; we neither replace the index nor turn to hashing-based search.
 What is new is not the network itself, a standard architecture, but how it is
 trained: we \emph{distill} ShapeToVec's exact WJ similarities into the encoder, using
 a listwise ranking loss that supervises each polygon's exact top-$k$ most similar
