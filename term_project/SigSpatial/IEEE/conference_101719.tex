@@ -154,20 +154,23 @@ papers with autoencoders and Fourier Transformers and mention they did not work
 well with this data and explain briefly why. Why do you mention this
 representation specifically, as it has not been used with geometries before? Is
 this SOTA for the distances mentioned? Please specify why you mention this.}\rs{Done
--- added Fourier/autoencoder prior art with why they fail, and explained why
-Matryoshka is mentioned despite never being applied to geometries.}
+-- added Fourier/autoencoder prior art with evidence for why they fail; Matryoshka
+is now described as the widely adopted multi-width technique for Euclidean/cosine
+retrieval, never applied to geometries, and mentioned because we reuse its
+truncation idea.}
 Prior polygon-encoding attempts, including Fourier
 descriptors~\cite{ai13fourier} and graph convolutional
 autoencoders~\cite{yan21gcae}, target building datasets with narrow, comparable
-shape categories; they perform poorly on collections like ours, where polygon areas
-span many orders of magnitude, since neither representation was designed to preserve
-that scale of area variation. Separately, Matryoshka representation
-learning~\cite{matryoshka22} trains a single embedding whose own leading prefixes
-stay useful at every truncation width, letting one model serve many deployment
-sizes. It has not itself been applied to polygon geometries, and it targets
-Euclidean or cosine similarity, not Weighted Jaccard; we mention it here because our
-own deployment reuses its truncation idea, even though the representation itself
-does not produce WJ-compatible embeddings.
+shape categories. On collections like ours, where polygon areas span many orders of
+magnitude, they retrieve similar shapes poorly~\cite{shape2vec}, since neither
+representation was designed to preserve that scale of area variation. Separately,
+Matryoshka representation learning~\cite{matryoshka22}, a widely adopted technique
+for multi-width embeddings under Euclidean and cosine similarity, trains a single
+embedding whose leading prefixes stay useful at every truncation width, letting one
+model serve many deployment sizes. It has not been applied to polygon geometries or
+to Weighted Jaccard. We mention it because our own deployment reuses its truncation
+idea, even though the representation itself does not produce WJ-compatible
+embeddings.
 
 \subsection{Closing the Gap}
 
