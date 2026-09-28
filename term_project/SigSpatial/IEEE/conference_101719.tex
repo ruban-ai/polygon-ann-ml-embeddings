@@ -89,6 +89,17 @@ section/equation references removed throughout, numbers trimmed to the ones that
 felt load-bearing. Titles left in for this review pass, to strip later per your
 note.}
 
+\subsection{Motivation}
+
+Finding similar shapes in large polygon datasets is a fundamental geospatial
+operation, useful for deduplication, conflation, and map integration.
+\ba{Too long. Please split into multiple sentences.}\rs{Done -- split into three
+sentences below.}
+It also underlies geospatial-intelligence tasks such as change detection. Tracking
+how a lake shrinks or an ice shelf fragments over time, for example, requires
+matching each new observation against its closest-shaped counterpart in a large
+historical archive~\cite{shape2vec}.
+
 \subsection{Problem Statement}
 
 Finding polygons with similar shape in a large geospatial dataset is a core
@@ -102,42 +113,30 @@ grid fine enough to resolve small polygons explodes in dimension when applied to
 large ones, while a grid coarse enough to stay tractable collapses small polygons
 into near-empty, uninformative vectors.
 
-\subsection{Motivation}
-
-Finding similar shapes in large polygon datasets is a fundamental geospatial
-operation, useful for deduplication, conflation, and map integration.
-\ba{Too long. Please split into multiple sentences.}\rs{Done -- split into three
-sentences below.}
-It also underlies geospatial-intelligence tasks such as change detection. Tracking
-how a lake shrinks or an ice shelf fragments over time, for example, requires
-matching each new observation against its closest-shaped counterpart in a large
-historical archive~\cite{shape2vec}.
-
-\subsection{State of the Art}
+\subsection{State of the Art and Limitations}
 
 ShapeToVec~\cite{shape2vec} is the state of the art for this problem. It resolves
 extreme area variability with an adaptive quadtree grid that recursively subdivides
 space where polygon detail is concentrated, encoding each polygon as a
 high-dimensional floating-point vector whose WJ preserves shape overlap across
 scales. Indexed with HNSW~\cite{hnsw20} under a custom Weighted Jaccard distance, it
-reaches the highest reported recall for this task. ShapeToVec+~\cite{shapetovecplus26}
-builds directly on this encoding, replacing ShapeToVec's raw floating-point cell
-values with compact bit-quantized signatures to shrink its memory footprint.
-Separately, Matryoshka representation learning~\cite{matryoshka22} trains a single
-embedding so its own leading prefixes stay useful at every truncation width, letting
-one model serve many deployment sizes; it targets Euclidean or cosine similarity, not
-Weighted Jaccard.
+reaches the highest reported recall for this task, but that accuracy comes at a real
+cost: its floating-point vectors are large, and storing and searching them grows
+expensive as a dataset grows.
 
-\subsection{Limitations}
-
-ShapeToVec's accuracy comes at a real cost: its floating-point vectors are large, and
-storing and searching them grows expensive as a dataset grows. ShapeToVec+ shrinks
-that footprint, but only by degrading accuracy at its most aggressive settings, since
-bit-quantization discards the fine detail a floating-point value carries. Both remain
+ShapeToVec+~\cite{shapetovecplus26} builds directly on this encoding, replacing
+ShapeToVec's raw floating-point cell values with compact bit-quantized signatures to
+shrink its memory footprint. That footprint reduction comes at its own cost: at its
+most aggressive settings, bit-quantization discards the fine detail a floating-point
+value carries, degrading accuracy substantially. Both methods remain
 \emph{designed} signatures: fixed, hand-engineered encoding rules with no learned
 component, so neither can adapt its footprint to what actually matters for a given
-collection's shapes. Matryoshka representation learning solves a different problem --
-multi-width deployment -- and does not itself produce WJ-compatible embeddings.
+collection's shapes.
+
+Separately, Matryoshka representation learning~\cite{matryoshka22} trains a single
+embedding so its own leading prefixes stay useful at every truncation width, letting
+one model serve many deployment sizes; it targets Euclidean or cosine similarity,
+though, not Weighted Jaccard, so it does not itself produce WJ-compatible embeddings.
 
 \subsection{Closing the Gap}
 
