@@ -181,10 +181,18 @@ all.
 
 \subsection{Proposed Approach}
 
-Our encoder maps each polygon's raw ShapeToVec vector onto a compact probability
-simplex, so its output is directly compatible with Weighted Jaccard and indexes under
-the same HNSW pipeline ShapeToVec already uses, with no new index structure required.
-It is trained with a rank-aware listwise loss that turns the training objective into
+\ba{Explain encoder briefly. What is new here?}\rs{Done -- names the architecture
+and states explicitly that the network itself is standard; what is new is the
+training objective.}
+Our encoder is a compact neural network, a two-layer multilayer perceptron, that
+maps each polygon's raw ShapeToVec vector onto a lower-dimensional probability
+simplex: a ReLU activation enforces non-negativity and an $\ell_1$-normalisation step
+scales the output to sum to one, so it is directly compatible with Weighted Jaccard
+and indexes under the same HNSW pipeline ShapeToVec already uses, with no new index
+structure required. What is new is not the network itself, a standard architecture,
+but training it to reproduce the exact WJ ranking directly, rather than any generic
+embedding objective. It is trained with a rank-aware listwise loss that turns the
+training objective into
 the retrieval metric itself: each anchor's true, exact-WJ-ranked neighbours guide
 training, so the compressed embedding's own ranking is taught to match the ground
 truth directly, not just its magnitude. A single trained encoder serves every
