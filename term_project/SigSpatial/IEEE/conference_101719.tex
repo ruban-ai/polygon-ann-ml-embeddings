@@ -164,12 +164,20 @@ does not produce WJ-compatible embeddings.
 
 \subsection{Closing the Gap}
 
-We close this gap with a \emph{learned} signature instead of a \emph{designed} one.
-Rather than hand-engineering a fixed encoding rule, we train an encoder directly on
-the ground-truth shape similarity structure, so it learns what makes two polygons
-look alike and represents that information as compactly as the data allows. This is a
-different lever than ShapeToVec+'s bit-quantization: instead of shrinking each
-dimension's precision, we learn which dimensions to keep at all.
+\ba{The limitation that we fill is to achieve aggressive compression through learned
+signatures, leading to improved scalability and efficiency. We should not say we
+just tried learned and it worked.}\rs{Done -- opens by naming the compression
+ceiling designed signatures hit, then frames learned signatures as removing it.}
+The limitation we close is a ceiling on compression: a designed signature can only
+shrink a fixed encoding rule so far before accuracy degrades, since the rule has no
+way to tell which dimensions actually matter for a given collection's shapes. A
+learned signature removes this ceiling. Rather than hand-engineering a fixed encoding
+rule, we train an encoder directly on the ground-truth shape similarity structure, so
+it learns what makes two polygons look alike and represents that information as
+compactly as the data allows, improving scalability and query efficiency beyond what
+a fixed rule permits. This is a different lever than ShapeToVec+'s bit-quantization:
+instead of shrinking each dimension's precision, we learn which dimensions to keep at
+all.
 
 \subsection{Proposed Approach}
 
