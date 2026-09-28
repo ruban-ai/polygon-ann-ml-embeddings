@@ -238,14 +238,13 @@ Our contributions are as follows:
   \item \ba{Present the contribution as you did in contribution 1 and then
     explain.}\rs{Done -- headline claim first, explanation after.}
     \textbf{A single learned encoder that serves every deployment width, with no
-    retraining per size.} A WJ-native simplex encoder (ReLU\,+\,$\ell_1$
-    output on the probability simplex, indexable directly under WJ with no
-    post-processing) is deployed via Matryoshka-style truncation: one trained model
-    serves every embedding width $\{256, 512, \dots,4096\}$ from a single round of
-    training, and the width range itself is a training-time configuration, not a
-    fixed architectural choice -- serving a narrower range needs no redesign, only
-    retraining with that range. 256-d dominates the recall--throughput frontier among
-    the widths we test.
+    retraining per size.} The encoder's outputs lie on the probability simplex and
+    are indexed directly under WJ with no post-processing. Trained Matryoshka-style,
+    one model serves every embedding width $\{256, 512, \dots,4096\}$ from a single
+    round of training. The width range itself is a training-time configuration, not a
+    fixed architectural choice: serving a narrower range needs no redesign, only
+    retraining with that range. Among the widths we test, 256 dimensions gives the
+    best recall--throughput trade-off.
 \end{enumerate}
 
 \section{Related Work}
