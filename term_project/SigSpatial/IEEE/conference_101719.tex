@@ -124,8 +124,15 @@ makes search at scale costly.
 
 \subsection{State of the Art and Limitations}
 
-ShapeToVec~\cite{shape2vec} is the state of the art for this problem. It resolves
-extreme area variability with an adaptive quadtree grid that recursively subdivides
+Early polygon-encoding approaches, including Fourier
+descriptors~\cite{ai13fourier} and graph convolutional
+autoencoders~\cite{yan21gcae}, target building datasets with narrow, comparable
+shape categories. On collections like ours, where polygon areas span many orders of
+magnitude, they retrieve similar shapes poorly~\cite{shape2vec}, since neither
+representation was designed to preserve that scale of area variation.
+
+ShapeToVec~\cite{shape2vec} addresses this variability and is the state of the art
+for this problem. It uses an adaptive quadtree grid that recursively subdivides
 space where polygon detail is concentrated, encoding each polygon as a
 high-dimensional floating-point vector whose WJ approximates the Jaccard index across
 polygon scales. Indexed with a Hierarchical Navigable Small World (HNSW)
@@ -133,10 +140,6 @@ graph~\cite{hnsw20} under a custom WJ distance, it reaches the highest reported
 recall for this task. That accuracy has a cost: its floating-point vectors are
 large, and storing and searching them grows expensive as a dataset grows.
 
-\ba{On the paragraph above: Bring the 'designed' nature of this work at the
-beginning. Emphasize its ability to decouple cell area into a lookup table and
-encoding to only indicate cell area overlap level.}\rs{Done -- opens with
-``designed'' now and explains the lookup-table decoupling mechanism.}
 ShapeToVec+~\cite{shapetovecplus26} takes a \emph{designed}-signature approach to
 this cost: rather than storing each cell's true area directly, it decouples area
 from occupancy, storing only a compact, bit-quantized occupancy level per cell and
