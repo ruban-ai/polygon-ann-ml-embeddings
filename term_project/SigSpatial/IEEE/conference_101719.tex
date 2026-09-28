@@ -125,11 +125,19 @@ reaches the highest reported recall for this task, but that accuracy comes at a 
 cost: its floating-point vectors are large, and storing and searching them grows
 expensive as a dataset grows.
 
-ShapeToVec+~\cite{shapetovecplus26} builds directly on this encoding, replacing
-ShapeToVec's raw floating-point cell values with compact bit-quantized signatures to
-shrink its memory footprint. That footprint reduction comes at its own cost: at its
-most aggressive settings, bit-quantization discards the fine detail a floating-point
-value carries, degrading accuracy substantially. Both methods remain
+\ba{On the paragraph above: Bring the 'designed' nature of this work at the
+beginning. Emphasize its ability to decouple cell area into a lookup table and
+encoding to only indicate cell area overlap level.}\rs{Done -- opens with
+``designed'' now and explains the lookup-table decoupling mechanism.}
+ShapeToVec+~\cite{shapetovecplus26} takes a \emph{designed}-signature approach to
+this cost: rather than storing each cell's true area directly, it decouples area
+from occupancy, storing only a compact, bit-quantized occupancy level per cell and
+recovering the true area at query time from a pre-built lookup table shared across
+the whole collection. This lets it shrink ShapeToVec's raw floating-point cell values
+into far smaller signatures while still weighting distances by the real cell areas.
+That footprint reduction comes at its own cost, though: at its most aggressive
+settings, the occupancy signature is too coarse to distinguish a small overlap from a
+large one, degrading accuracy substantially. Both methods remain
 \emph{designed} signatures: fixed, hand-engineered encoding rules with no learned
 component, so neither can adapt its footprint to what actually matters for a given
 collection's shapes.
