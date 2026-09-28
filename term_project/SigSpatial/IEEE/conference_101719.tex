@@ -107,14 +107,19 @@ search fits in memory at all.
 
 Finding polygons with similar shape in a large geospatial dataset is a core
 retrieval problem: given a query polygon, return the database polygons whose
-shape overlaps it most, independent of location. Weighted Jaccard (WJ)~\cite{rajaraman11}
--- the ratio of intersection to union area between a pair of polygons, computed cell
-by cell over a shared spatial grid -- is the standard metric for this notion of shape
-similarity. The real difficulty is that real-world polygon areas vary by many orders
-of magnitude, and no single, uniform grid resolution serves both regimes at once: a
-grid fine enough to resolve small polygons explodes in dimension when applied to
-large ones, while a grid coarse enough to stay tractable collapses small polygons
-into near-empty, uninformative vectors.
+shape overlaps it most, independent of location. The Jaccard index, the ratio of
+intersection to union area between two polygons, is the standard measure of this
+similarity. Because computing it exactly requires expensive geometric intersection
+against every candidate, practical systems instead encode each polygon as a vector
+over a shared spatial grid and compare vectors with Weighted Jaccard
+(WJ)~\cite{rajaraman11}, the generalization of Jaccard to nonnegative vectors, which
+approximates the polygons' Jaccard index. The central difficulty is that real-world
+polygon areas vary by many orders of magnitude, and no single, uniform grid
+resolution serves both regimes at once: a grid fine enough to resolve small polygons
+explodes in dimension when applied to large ones, while a grid coarse enough to stay
+tractable collapses small polygons into near-empty, uninformative vectors. Serving
+both regimes accurately therefore pushes encodings to high dimension, which is what
+makes search at scale costly.
 
 \subsection{State of the Art and Limitations}
 
