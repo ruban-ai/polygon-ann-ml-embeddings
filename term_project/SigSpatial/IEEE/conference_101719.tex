@@ -182,12 +182,12 @@ The limitation we close is a ceiling on compression: a designed signature can on
 shrink a fixed encoding rule so far before accuracy degrades, since the rule has no
 way to tell which dimensions actually matter for a given collection's shapes. A
 learned signature removes this ceiling. Rather than hand-engineering a fixed encoding
-rule, we train an encoder directly on the ground-truth shape similarity structure, so
-it learns what makes two polygons look alike and represents that information as
-compactly as the data allows, improving scalability and query efficiency beyond what
-a fixed rule permits. This is a different lever than ShapeToVec+'s bit-quantization:
-instead of shrinking each dimension's precision, we learn which dimensions to keep at
-all.
+rule, we train an encoder directly on the ground-truth shape similarity structure,
+letting it learn what makes two polygons look alike and represent that information
+as compactly as the data allows, improving scalability and query efficiency beyond
+what a fixed rule permits. This is a different lever than ShapeToVec+'s
+bit-quantization: instead of shrinking each dimension's precision, we learn a much
+smaller set of new dimensions that jointly preserve the similarity ranking.
 
 \subsection{Proposed Approach}
 
