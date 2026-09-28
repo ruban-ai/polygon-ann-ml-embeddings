@@ -142,10 +142,25 @@ large one, degrading accuracy substantially. Both methods remain
 component, so neither can adapt its footprint to what actually matters for a given
 collection's shapes.
 
-Separately, Matryoshka representation learning~\cite{matryoshka22} trains a single
-embedding so its own leading prefixes stay useful at every truncation width, letting
-one model serve many deployment sizes; it targets Euclidean or cosine similarity,
-though, not Weighted Jaccard, so it does not itself produce WJ-compatible embeddings.
+\ba{'so' is not suitable for technical writing. Explain related building dataset
+papers with autoencoders and Fourier Transformers and mention they did not work
+well with this data and explain briefly why. Why do you mention this
+representation specifically, as it has not been used with geometries before? Is
+this SOTA for the distances mentioned? Please specify why you mention this.}\rs{Done
+-- added Fourier/autoencoder prior art with why they fail, and explained why
+Matryoshka is mentioned despite never being applied to geometries.}
+Prior polygon-encoding attempts, including Fourier
+descriptors~\cite{ai13fourier} and graph convolutional
+autoencoders~\cite{yan21gcae}, target building datasets with narrow, comparable
+shape categories; they perform poorly on collections like ours, where polygon areas
+span many orders of magnitude, since neither representation was designed to preserve
+that scale of area variation. Separately, Matryoshka representation
+learning~\cite{matryoshka22} trains a single embedding whose own leading prefixes
+stay useful at every truncation width, letting one model serve many deployment
+sizes. It has not itself been applied to polygon geometries, and it targets
+Euclidean or cosine similarity, not Weighted Jaccard; we mention it here because our
+own deployment reuses its truncation idea, even though the representation itself
+does not produce WJ-compatible embeddings.
 
 \subsection{Closing the Gap}
 
