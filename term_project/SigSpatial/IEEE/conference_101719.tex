@@ -225,9 +225,9 @@ Our contributions are as follows:
     the ground-truth shape-similarity structure: against ShapeToVec's own published
     results~\cite{shape2vec} on the identical Parks dataset, our embeddings reach up
     to $47\times$ smaller than their tested configurations -- exceeding ShapeToVec+'s
-    reported compression ceiling -- while matching their recall without reranking and
-    exceeding it entirely after a cheap exact-WJ rerank pass, at several-fold their
-    throughput.
+    reported compression ceiling -- while staying within a few points of their recall
+    without reranking and exceeding it after a lightweight exact reranking step, at
+    several-fold their throughput.
   \item \ba{Write directly describe the feature you have.}\rs{Done -- reworded to lead
     with the feature.}
     \textbf{A rank-aware listwise loss that makes the training objective the retrieval
