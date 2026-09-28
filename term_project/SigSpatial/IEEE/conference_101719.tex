@@ -239,14 +239,14 @@ Our contributions are as follows:
     alternative objectives at every scale we test.
   \item \ba{Present the contribution as you did in contribution 1 and then
     explain.}\rs{Done -- headline claim first, explanation after.}
-    \textbf{A single learned encoder that serves every deployment width, with no
-    retraining per size.} The encoder's outputs lie on the probability simplex and
-    are indexed directly under WJ with no post-processing. Trained Matryoshka-style,
-    one model serves every embedding width $\{256, 512, \dots,4096\}$ from a single
-    round of training. The width range itself is a training-time configuration, not a
-    fixed architectural choice: serving a narrower range needs no redesign, only
-    retraining with that range. Among the widths we test, 256 dimensions gives the
-    best recall--throughput trade-off.
+    \textbf{A single learned encoder that serves every width in its trained range.}
+    The encoder's outputs lie on the probability simplex and are indexed directly
+    under WJ with no post-processing. Trained Matryoshka-style, one model serves every
+    embedding width from 256 to 4096 dimensions by truncation, with no retraining per
+    width. The range itself is a training-time configuration, not a fixed
+    architectural choice: a different range, such as widths below 256, needs no
+    redesign, only a new training run over that range. Among the widths we test, 256
+    dimensions gives the best recall--throughput trade-off.
 \end{enumerate}
 
 \section{Related Work}
