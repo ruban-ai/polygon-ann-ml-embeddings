@@ -105,7 +105,7 @@ historical archive~\cite{shape2vec}.
 Finding polygons with similar shape in a large geospatial dataset is a core
 retrieval problem: given a query polygon, return the database polygons whose
 shape overlaps it most, independent of location. Weighted Jaccard (WJ)~\cite{rajaraman11}
--- the ratio between a pair of polygons' overlapping and combined area, computed cell
+-- the ratio of intersection to union area between a pair of polygons, computed cell
 by cell over a shared spatial grid -- is the standard metric for this notion of shape
 similarity. The real difficulty is that real-world polygon areas vary by many orders
 of magnitude, and no single, uniform grid resolution serves both regimes at once: a
