@@ -207,8 +207,8 @@ shapes rather than individual similarity values. The compact signatures thus lea
 to reproduce the ranking that retrieval depends on. Trained Matryoshka-style, a
 single encoder serves every embedding width by truncation, and one training run
 covers every operating point. At query time, a lightweight exact reranking step over
-the small candidate set returned by HNSW closes the remaining gap to the
-uncompressed accuracy.
+the small candidate set returned by HNSW recovers, and then exceeds, ShapeToVec's
+uncompressed recall.
 
 \subsection{Contributions}
 
