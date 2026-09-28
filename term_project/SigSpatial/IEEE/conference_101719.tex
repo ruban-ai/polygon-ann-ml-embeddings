@@ -126,11 +126,11 @@ makes search at scale costly.
 ShapeToVec~\cite{shape2vec} is the state of the art for this problem. It resolves
 extreme area variability with an adaptive quadtree grid that recursively subdivides
 space where polygon detail is concentrated, encoding each polygon as a
-high-dimensional floating-point vector whose WJ preserves shape overlap across
-scales. Indexed with HNSW~\cite{hnsw20} under a custom Weighted Jaccard distance, it
-reaches the highest reported recall for this task, but that accuracy comes at a real
-cost: its floating-point vectors are large, and storing and searching them grows
-expensive as a dataset grows.
+high-dimensional floating-point vector whose WJ approximates the Jaccard index across
+polygon scales. Indexed with a Hierarchical Navigable Small World (HNSW)
+graph~\cite{hnsw20} under a custom WJ distance, it reaches the highest reported
+recall for this task. That accuracy has a cost: its floating-point vectors are
+large, and storing and searching them grows expensive as a dataset grows.
 
 \ba{On the paragraph above: Bring the 'designed' nature of this work at the
 beginning. Emphasize its ability to decouple cell area into a lookup table and
