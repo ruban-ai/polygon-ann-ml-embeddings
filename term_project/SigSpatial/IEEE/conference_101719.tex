@@ -605,9 +605,13 @@ on the Parks dataset (233,773 polygons, the same 80/20 corpus/query split we use
 throughout), giving a genuine same-dataset reference point. At their best (12k-d),
 floating-point ShapeToVec vectors indexed under HNSW reach Recall@50 $=97\%$ at $359$
 QPS; at their smallest tested (3k-d), $96\%$ at $1{,}263$ QPS. Our Matryoshka encoder, at
-every width we test ($256$--$4096$-d, all at or below their tested range), reaches
-Recall@50 $=92.1$--$92.9\%$ without any reranking, within $3$--$5$pp of their best
-published recall, at $4$--$14\times$ the throughput. A single, cheap exact-WJ rerank
+every width we test ($256$--$4096$-d, all at or below their largest tested
+resolution), reaches Recall@50 $=92.1$--$92.9\%$ without any reranking, within
+$3$--$5$pp of their best published recall, at $4$--$14\times$ the throughput. Our
+256-d embedding is $47\times$ smaller than their 12k-d vectors and ${\sim}12\times$
+smaller than their 3k-d vectors; the ``up to $47\times$'' figure quoted elsewhere is
+this best-case comparison against their highest-resolution configuration. A single,
+cheap exact-WJ rerank
 pass over the retrieved candidates closes and exceeds that gap: our 256-d embedding
 reaches Recall@50 $=99.7\%$ after reranking, exceeding ShapeToVec's own best published
 number, while remaining ${\sim}3\times$ faster than their most accurate (12k-d)
