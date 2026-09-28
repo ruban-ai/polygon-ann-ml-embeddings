@@ -91,15 +91,17 @@ note.}
 
 \subsection{Motivation}
 
-\ba{Too long. Please split into multiple sentences.}\rs{Done -- split into three
-sentences below.}
-\ba{The above paragraph does not read well. Please check}\rs{Done -- rewritten as
-two sentences with a smoother transition instead of three choppy ones.}
+\ba{Too long. Please split into multiple sentences.}\rs{Done -- split up.}
+\ba{The above paragraph does not read well. Please check}\rs{Done -- rewritten with
+smoother transitions; added why compactness matters at today's dataset sizes.}
 Finding similar shapes in large polygon datasets is a fundamental geospatial
 operation, supporting tasks from deduplication and map conflation to geospatial
 intelligence. In environmental monitoring, for instance, tracking how a lake shrinks
 or an ice shelf fragments over time requires matching each new observation against
-its closest-shaped counterpart in a large historical archive~\cite{shape2vec}.
+its closest-shaped counterpart in a large historical archive~\cite{shape2vec}. These
+collections now reach hundreds of millions of polygons~\cite{shapetovecplus26}. At
+that scale, how compactly each polygon is represented decides whether similarity
+search fits in memory at all.
 
 \subsection{Problem Statement}
 
