@@ -142,9 +142,9 @@ from occupancy, storing only a compact, bit-quantized occupancy level per cell a
 recovering the true area at query time from a pre-built lookup table shared across
 the whole collection. This lets it shrink ShapeToVec's raw floating-point cell values
 into signatures up to $32\times$ smaller while still weighting distances by the real
-cell areas. That footprint reduction comes at its own cost, though: at its most
-aggressive settings, the occupancy signature is too coarse to distinguish a small
-overlap from a large one, degrading accuracy substantially. Both methods remain
+cell areas. The smaller footprint has its own cost. At the most aggressive
+settings, the occupancy signature is too coarse to distinguish a small intersection
+from a large one, and accuracy degrades substantially. Both methods remain
 \emph{designed} signatures: fixed, hand-engineered encoding rules with no learned
 component, and therefore neither can adapt its footprint to what actually matters
 for a given collection's shapes.
