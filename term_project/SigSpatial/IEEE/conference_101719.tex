@@ -21,8 +21,16 @@
 
 \begin{document}
 
-\title{Weighted-Jaccard-Native Distillation for Compact Polygon
-Similarity Search under Extreme Area Variation}
+\title{Beyond Designed Signatures: Learning Compact Polygon Signatures for
+Weighted Jaccard Similarity Search}
+% Alternative titles for review:
+% (1) Learned Signatures for Compact Polygon Shape-Similarity Search
+% (3) Learning Compact Shape Signatures for Large-Scale Polygon Similarity Search
+%     via Weighted Jaccard Distillation
+% (4) Small Learned Signatures for Large Polygon Collections: Distilling Weighted
+%     Jaccard Similarity
+% (previous) Weighted-Jaccard-Native Distillation for Compact Polygon Similarity
+%     Search under Extreme Area Variation
 
 \author{\IEEEauthorblockN{1\textsuperscript{st} Ruban Sampath}
 \IEEEauthorblockA{\textit{Department of Computer Science} \\
@@ -50,23 +58,26 @@ Finding polygons with similar shapes in large geospatial datasets underlies map
 conflation, land-use change detection, and geospatial intelligence. Here, shape
 similarity is defined as area intersection independent of location, for which the Jaccard
 index, the ratio of intersection to union area, is the standard metric. The
-state-of-the-art, ShapeToVec~\cite{shape2vec}, handles datasets consisting of polygon
+state-of-the-art, ShapeToVec, handles datasets consisting of polygon
 areas spanning many orders of magnitude by encoding each polygon on an adaptive
 quadtree grid as a high-dimensional floating-point vector. The Weighted Jaccard (WJ)
 similarity between these vectors, the generalization of Jaccard to nonnegative
 vectors, approximates the polygons' Jaccard index and can be searched directly using
 an index. This accuracy comes at a high cost in memory and query throughput.
-ShapeToVec+~\cite{shapetovecplus26} compresses these vectors into bit signatures up
+ShapeToVec+ compresses these vectors into bit signatures up
 to $32\times$ smaller, but loses substantial accuracy at its most aggressive
 settings, with recall@50 falling from $96\%$ to $76\%$. Both methods rely on
 \emph{designed} signatures: hand-engineered encodings with no learned component. We
 introduce \emph{learned} signatures, obtained by distilling ShapeToVec vectors into a
 compact encoder whose outputs lie on the probability simplex and are compared
-directly under WJ. The encoder is trained with a listwise ranking loss that
+directly under WJ. \ba{Add one explaining the architecture in one line as it is listed as a contribution.}
+It is a two-layer multilayer perceptron whose final normalization makes every
+output entry nonnegative and sum to one.
+\rs{Done} The encoder is trained with a listwise ranking loss that
 supervises each polygon's exact top-$k$ most similar shapes rather than individual
 similarity values, and it outperforms alternative training objectives at every width
-we test. Trained Matryoshka-style, a single encoder serves every width from 256 to
-4096 dimensions by truncation, where one training run covers all operating points. On
+we test. Because it is trained Matryoshka-style, a single training run yields one
+encoder that serves every width from 256 to 4096 dimensions by simple truncation. \ba{Above sentence does not read well.}\rs{Done} On
 the Parks dataset with 233K polygons, our signatures are up to $47\times$ smaller
 than ShapeToVec vectors, exceeding ShapeToVec+'s compression, while reaching $92\%$
 recall@50 without reranking, within $5$ points of ShapeToVec's best and well above
@@ -81,19 +92,19 @@ polygon similarity search, weighted Jaccard, listwise ranking loss, metric disti
 
 \section{Introduction}
 \label{sec:intro}
-\ba{Please put the content for the following sub-sections to build the
-Introduction properly. In general, no need to add numbers unless they are
-core. No need to cite sections, equations etc. Add paper citations as
-needed.}\rs{Done -- content added below under each subsection; internal
-section/equation references removed throughout, numbers trimmed to the ones that
-felt load-bearing. Titles left in for this review pass, to strip later per your
-note.}
+% \ba{Please put the content for the following sub-sections to build the
+% Introduction properly. In general, no need to add numbers unless they are
+% core. No need to cite sections, equations etc. Add paper citations as
+% needed.}\rs{Done -- content added below under each subsection; internal
+% section/equation references removed throughout, numbers trimmed to the ones that
+% felt load-bearing. Titles left in for this review pass, to strip later per your
+% note.}
 
-\subsection{Motivation}
+% \subsection{Motivation}
 
-\ba{Too long. Please split into multiple sentences.}\rs{Done -- split up.}
-\ba{The above paragraph does not read well. Please check}\rs{Done -- rewritten with
-smoother transitions; added why compactness matters at today's dataset sizes.}
+% \ba{Too long. Please split into multiple sentences.}\rs{Done -- split up.}
+% \ba{The above paragraph does not read well. Please check}\rs{Done -- rewritten with
+% smoother transitions; added why compactness matters at today's dataset sizes.}
 Finding similar shapes in large polygon datasets is a fundamental geospatial
 operation, supporting tasks from deduplication and map conflation to geospatial
 intelligence. In environmental monitoring, for instance, tracking how a lake shrinks
@@ -101,20 +112,19 @@ or an ice shelf fragments over time requires matching each new observation again
 its closest-shaped counterpart in a large historical archive~\cite{shape2vec}. These
 collections now reach hundreds of millions of polygons~\cite{shapetovecplus26}. At
 that scale, how compactly each polygon is represented decides whether similarity
-search fits in memory at all: floating-point encodings of 90 million polygons already
+search fits in memory at all. For instance,  floating-point encodings of 90 million polygons already
 exceed a terabyte of memory~\cite{shapetovecplus26}.
 
-\subsection{Problem Statement}
+% \subsection{Problem Statement}
 
-Formally, the task is shape-similarity retrieval: given a query polygon, return the
-database polygons most similar to it in shape, independent of location. The Jaccard
-index, the ratio of
+Shape-similarity retrieval is defined as: given a query polygon, return the
+polygons that are most similar to its shape, independent of the location in a large database of polygons. The Jaccard
+similarity, the ratio of
 intersection to union area between two polygons, is the standard measure of this
-similarity. Because computing it exactly requires expensive geometric intersection
-against every candidate, practical systems instead encode each polygon as a vector
-over a shared spatial grid and compare vectors with Weighted Jaccard
-(WJ)~\cite{rajaraman11}, the generalization of Jaccard to nonnegative vectors, which
-approximates the polygons' Jaccard index. The central difficulty is that real-world
+similarity. Computing this similarity score requires expensive geometric intersection
+against every candidate, where practical systems instead encode each polygon as a vector
+over a shared spatial grid and compare the vectors employing Weighted Jaccard
+(WJ) metric~\cite{rajaraman11}. A core challenge in solving this problem is that real-world
 polygon areas vary by many orders of magnitude, and no single, uniform grid
 resolution serves both regimes at once: a grid fine enough to resolve small polygons
 explodes in dimension when applied to large ones, while a grid coarse enough to stay
@@ -122,103 +132,93 @@ tractable collapses small polygons into near-empty, uninformative vectors. Servi
 both regimes accurately therefore pushes encodings to high dimension, which is what
 makes search at scale costly.
 
-\subsection{State of the Art and Limitations}
+% \subsection{State of the Art and Limitations}
 
 Early polygon-encoding approaches, including Fourier
 descriptors~\cite{ai13fourier} and graph convolutional
 autoencoders~\cite{yan21gcae}, target building datasets with narrow, comparable
-shape categories. On collections like ours, where polygon areas span many orders of
+shape categories. However, over real-world datasets, where polygon areas span many orders of
 magnitude, they retrieve similar shapes poorly~\cite{shape2vec}, since neither
 representation was designed to preserve that scale of area variation.
 
-ShapeToVec~\cite{shape2vec} addresses this variability and is the state of the art
-for this problem. It uses an adaptive quadtree grid that recursively subdivides
+ShapeToVec~\cite{shape2vec} addresses this gap by employing an adaptive quadtree grid that recursively subdivides
 space where polygon detail is concentrated, encoding each polygon as a
-high-dimensional floating-point vector whose WJ approximates the Jaccard index across
-polygon scales. Indexed with a Hierarchical Navigable Small World (HNSW)
-graph~\cite{hnsw20} under a custom WJ distance, it reaches the highest reported
-recall for this task. That accuracy has a cost: its floating-point vectors are
-large, and storing and searching them grows expensive as a dataset grows.
+high-dimensional floating-point feature vector. Subsequently, a Hierarchical Navigable Small World (HNSW)
+graph~\cite{hnsw20} is constructed over the polygon encodings under a custom WJ distance, maintaining high accuracy. However, its high-dimensional floating-point vectors do not scale well, as storing and searching them grows expensive as a dataset grows.
 
-ShapeToVec+~\cite{shapetovecplus26} takes a \emph{designed}-signature approach to
-this cost: rather than storing each cell's true area directly, it decouples area
-from occupancy, storing only a compact, bit-quantized occupancy level per cell and
-recovering the true area at query time from a pre-built lookup table shared across
-the whole collection. This lets it shrink ShapeToVec's raw floating-point cell values
-into signatures up to $32\times$ smaller while still weighting distances by the real
-cell areas. The smaller footprint has its own cost. At the most aggressive
-settings, the occupancy signature is too coarse to distinguish a small intersection
-from a large one, and accuracy degrades substantially. Both methods remain
-\emph{designed} signatures: fixed, hand-engineered encoding rules with no learned
-component, and therefore neither can adapt its footprint to what actually matters
-for a given collection's shapes.
-\ba{On the paragraph above: Bring the 'designed' nature of this work at the
-beginning. Emphasize its ability to decouple cell area into a lookup table and
-encoding to only indicate cell area overlap level.}\rs{Done -- opens with
-``designed'' now and explains the lookup-table decoupling mechanism.}
+ShapeToVec+~\cite{shapetovecplus26} improves scalability while maintaining high accuracy. This is achieved by decoupling the true area values from the feature vectors into an occupancy level. The produced small signatures, which only track the occupancy level, recover the true area at query time from a pre-built lookup table which stores individual cell area values of the quadtree nodes. This allows ShapeToVec's raw floating-point cell values
+into signatures up to $32\times$ smaller. However, with the bit encoding, which is the most aggressive
+setting, the occupancy signature is too coarse to distinguish between small and large occupancy levels, leading to substantially degraded accuracy. 
+% Both methods remain
+% \emph{designed} signatures: fixed, hand-engineered encoding rules with no learned
+% component, and therefore neither can adapt its footprint to what actually matters
+% for a given collection's shapes.
+% \ba{On the paragraph above: Bring the 'designed' nature of this work at the
+% beginning. Emphasize its ability to decouple cell area into a lookup table and
+% encoding to only indicate cell area overlap level.}\rs{Done -- opens with
+% ``designed'' now and explains the lookup-table decoupling mechanism.}
 
-Outside the geospatial setting, Matryoshka representation
+Matryoshka representation
 learning~\cite{matryoshka22} is a widely adopted technique for multi-width
 embeddings under Euclidean and cosine similarity. It trains a single embedding whose
 leading prefixes stay useful at every truncation width, letting one model serve many
-deployment sizes. It has not been applied to polygon geometries or to WJ. We mention
-it because our own deployment reuses its truncation idea, even though the
+deployment sizes. It has not been applied to polygon geometries or to WJ. We adopt its truncation method, even though the
 representation itself does not produce WJ-compatible embeddings.
-\ba{'so' is not suitable for technical writing. Explain related building dataset
-papers with autoencoders and Fourier Transformers and mention they did not work
-well with this data and explain briefly why. Why do you mention this
-representation specifically, as it has not been used with geometries before? Is
-this SOTA for the distances mentioned? Please specify why you mention this.}\rs{Done
--- Fourier/autoencoder prior art moved to the start of this subsection, with
-evidence for why they fail; Matryoshka now has its own paragraph, described as the
-widely adopted multi-width technique for Euclidean/cosine retrieval, never applied
-to geometries, and mentioned because we reuse its truncation idea.}
+% \ba{'so' is not suitable for technical writing. Explain related building dataset
+% papers with autoencoders and Fourier Transformers and mention they did not work
+% well with this data and explain briefly why. Why do you mention this
+% representation specifically, as it has not been used with geometries before? Is
+% this SOTA for the distances mentioned? Please specify why you mention this.}\rs{Done
+% -- Fourier/autoencoder prior art moved to the start of this subsection, with
+% evidence for why they fail; Matryoshka now has its own paragraph, described as the
+% widely adopted multi-width technique for Euclidean/cosine retrieval, never applied
+% to geometries, and mentioned because we reuse its truncation idea.}
 
-\subsection{Closing the Gap}
+% \subsection{Closing the Gap}
 
-\ba{The limitation that we fill is to achieve aggressive compression through learned
-signatures, leading to improved scalability and efficiency. We should not say we
-just tried learned and it worked.}\rs{Done -- opens by naming the compression
-ceiling designed signatures hit, then frames learned signatures as removing it.}
-The limitation we close is a ceiling on compression. A designed signature compresses
+% \ba{The limitation that we fill is to achieve aggressive compression through learned
+% signatures, leading to improved scalability and efficiency. We should not say we
+% just tried learned and it worked.}\rs{Done -- opens by naming the compression
+% ceiling designed signatures hit, then frames learned signatures as removing it.}
+A designed signature compresses
 every cell by the same fixed rule, regardless of how much that cell helps
 distinguish shapes in a given collection, and accuracy therefore drops once
 compression is pushed far. A learned signature removes this ceiling. Rather than hand-engineering a fixed encoding
 rule, we train an encoder directly on the ground-truth shape similarity structure,
-letting it learn what makes two polygons look alike and represent that information
-as compactly as the data allows, improving scalability and query efficiency beyond
-what a fixed rule permits. This is a different lever than ShapeToVec+'s
-bit-quantization: instead of shrinking each dimension's precision, we learn a much
+allowing it to capture what makes two polygons similar in shape and represent that information
+as compactly, improving scalability and query efficiency beyond
+what designed signatures permit. Instead of shrinking each dimension's precision, we learn a much
 smaller set of new dimensions that jointly preserve the similarity ranking.
 
-\subsection{Proposed Approach}
+% \subsection{Proposed Approach}
 
-\ba{Explain encoder briefly. What is new here?}\rs{Done -- names the architecture
-and states explicitly that the network itself is standard; what is new is the
-training objective.}
+% \ba{Explain encoder briefly. What is new here?}\rs{Done -- names the architecture
+% and states explicitly that the network itself is standard; what is new is the
+% training objective.}
 Our encoder is a compact neural network, a two-layer multilayer perceptron, that
-maps each polygon's ShapeToVec vector to a much shorter vector. A final
+maps each feature vector to a smaller vector representation. A final
 normalization makes every output entry nonnegative and the entries sum to one,
 placing the output on the probability simplex. This makes the compact vectors
-directly comparable under WJ, and they are searched with the same HNSW index
-ShapeToVec uses; we neither replace the index nor turn to hashing-based search.
-What is new is not the network itself, a standard architecture, but how it is
-trained: we \emph{distill} ShapeToVec's exact WJ similarities into the encoder, using
+directly comparable under WJ metric, and they are searched with the same HNSW index
+ShapeToVec uses.
+Our encoder follows a standard architecture, but our
+training employs
 a listwise ranking loss that supervises each polygon's exact top-$k$ most similar
 shapes rather than individual similarity values. The compact signatures thus learn
-to reproduce the ranking that retrieval depends on. Trained Matryoshka-style, a
-single encoder serves every embedding width by truncation, and one training run
-covers every operating point. At query time, a lightweight exact reranking step over
-the small candidate set returned by HNSW recovers, and then exceeds, ShapeToVec's
-uncompressed recall.
+to reproduce the ranking that retrieval depends on. The same training run also
+covers every embedding width: applying the loss to nested prefixes of the output,
+Matryoshka-style, lets one encoder serve any width by truncation. \ba{The above sentence does not look to fit here.}\rs{Done} At query time, a lightweight exact reranking step over
+the candidate set returned by HNSW, and then exceeds, ShapeToVec's
+uncompressed recall. \ba{For comparison, we should also do reranking in ShapeToVec and see?}
 
-\subsection{Contributions}
+% \subsection{Contributions}
 
 Our contributions are as follows:
-\begin{enumerate}[leftmargin=1.2em,itemsep=1pt,topsep=1pt]
-  \item \ba{Rephrase the description according to what I sent in discord.}\rs{Done --
-    reframed around the ShapeToVec $\to$ ShapeToVec+ $\to$ us story from Discord.}
-    \textbf{Learned signatures that exceed ShapeToVec+'s compression ceiling at
+\begin{itemize}
+  \item 
+  % \ba{Rephrase the description according to what I sent in discord.}\rs{Done --
+  %   reframed around the ShapeToVec $\to$ ShapeToVec+ $\to$ us story from Discord.}
+    \textbf{Learned signatures that exceed current compression ceiling at
     on-par or better accuracy.} To our knowledge, these are the first learned,
     shape-aware signatures for WJ polygon retrieval, and they move past the
     $32\times$ ceiling of ShapeToVec+'s designed signatures. Against ShapeToVec's own
@@ -228,15 +228,17 @@ Our contributions are as follows:
     ShapeToVec's recall and well above ShapeToVec+'s at its $32\times$ setting; with a
     lightweight exact reranking step, they exceed ShapeToVec's recall at several-fold
     its throughput.
-  \item \ba{Write directly describe the feature you have.}\rs{Done -- reworded to lead
-    with the feature.}
+  \item 
+  % \ba{Write directly describe the feature you have.}\rs{Done -- reworded to lead
+  %   with the feature.}
     \textbf{A rank-aware listwise loss that makes the training objective the retrieval
     metric itself.} WJ-native distillation trains the compressed embedding's own
     ranking to match the ground-truth WJ ranking directly, rather than regressing its
     absolute value. It outperforms absolute-value regression (MSE) and five further
     alternative objectives at every scale we test.
-  \item \ba{Present the contribution as you did in contribution 1 and then
-    explain.}\rs{Done -- headline claim first, explanation after.}
+  \item 
+  % \ba{Present the contribution as you did in contribution 1 and then
+  %   explain.}\rs{Done -- headline claim first, explanation after.}
     \textbf{A single learned encoder that serves every width in its trained range.}
     One model serves every embedding width from 256 to 4096 dimensions by
     truncation, with no retraining per width. The range itself is a training-time
@@ -244,7 +246,7 @@ Our contributions are as follows:
     architectural choice: a different range, such as widths below 256, needs no
     redesign, only a new training run over that range. Among the widths we test, 256
     dimensions gives the best recall--throughput trade-off.
-\end{enumerate}
+\end{itemize}
 
 \section{Related Work}
 \label{sec:related}
@@ -318,9 +320,18 @@ deserves a justified choice rather than an assumed one, given how many rank-awar
 alternatives the recent literature now offers.
 
 \section{Method}
-Given ShapeToVec vectors $\mathbf{x}\in\Delta^{D}$ ($D$ in the tens of thousands) and ground-truth
-WJ neighbour pairs, we learn $f_\theta:\Delta^{D}\!\to\!\Delta^{d}$ ($d\le512$)
-preserving WJ for fast HNSW retrieval (Fig.~\ref{fig:pipeline}).
+\label{sec:method}
+\ba{Above is already mentioned in the abstract and intro. Not see the value for stating again.}\rs{Done.}
+Our method has two
+phases (Fig.~\ref{fig:pipeline}).
+\ba{Replace 'parts' with 'phases' throughout the paper.}\rs{Done.}
+An encoder maps each vector to a compact embedding
+that can be searched directly under WJ distance.
+\ba{It has to be WJ distance throughout the paper.}\rs{Done.}
+A listwise distillation loss trains the
+encoder to reproduce the neighbor ranking given by exact WJ on the original vectors,
+at several embedding widths at once.
+\ba{I think this paragraph can explain the overview of the encoder and training process can be excluded from here.}\rs{Done.}
 
 \begin{figure}[t]\centering
 \resizebox{\columnwidth}{!}{%
@@ -329,152 +340,139 @@ preserving WJ for fast HNSW retrieval (Fig.~\ref{fig:pipeline}).
   box/.style={draw=black!55,rounded corners=2pt,fill=black!4,
               minimum height=9mm,align=center,inner sep=3pt},
   tbox/.style={box,fill=blue!8,draw=blue!45}]
- \node[box] (x) {ShapeToVec\\$\mathbf{x}\!\in\!\Delta^{D}$};
- \node[box,right=of x] (e) {Encoder $f_\theta$\\{\scriptsize MLP/BN/ReLU/$\ell_1$}};
- \node[box,right=of e] (z) {Embedding\\$\mathbf{z}\!\in\!\Delta^{d}$};
- \node[tbox,above=5mm of z] (t) {exact WJ teacher\\{\scriptsize ($D$-dim)}};
- \node[box,right=of z] (h) {HNSW\\{\scriptsize Stage-1}};
- \node[box,right=of h] (r) {exact-WJ\\{\scriptsize Stage-2}};
+ \node[box] (x) {ShapeToVec\\vector $\mathbf{x}$\\{\scriptsize ($D$-dim)}};
+ \node[box,right=of x] (e) {Encoder $f_\theta$\\{\scriptsize two-layer MLP}};
+ \node[box,right=of e] (z) {Compact\\embedding $\mathbf{z}$\\{\scriptsize ($d$-dim)}};
+ \node[tbox,above=5mm of z] (t) {Teacher: exact\\WJ on $\mathbf{x}$};
+ \node[box,right=of z] (h) {HNSW\\search\\{\scriptsize $K$ candidates}};
+ \node[box,right=of h] (r) {Exact-WJ\\rerank\\{\scriptsize on $\mathbf{x}$}};
  \draw[->](x)--(e); \draw[->](e)--(z);
- \draw[<->,dashed,blue!55](z)--node[right=0.4mm]{$\mathcal{L}_{\mathrm{dist}}$}(t);
+ \draw[<->,dashed,blue!55](z)--node[right=0.4mm]{\scriptsize listwise loss}(t);
  \draw[->](z)--(h); \draw[->](h)--(r);
 \end{tikzpicture}}
-\caption{WJ-native pipeline. The encoder maps a quadtree vector onto the
-probability simplex; training distills the exact $D$-dim WJ (teacher) into the
-embedding's WJ; retrieval is HNSW Stage-1 then exact-WJ rerank.
-}
+\caption{Overview. The encoder maps a polygon's float32 vector to a compact
+embedding whose entries are nonnegative and sum to one. During training (dashed), a
+listwise loss aligns the embedding's WJ ranking with the exact WJ ranking of the
+original vectors. At query time, HNSW retrieves $K$ candidates using the compact
+embeddings, and exact WJ on the original vectors re-sorts them. \ba{As mentioned before, you can call float32 vectors or something instead ShapeToVec vec}\rs{Done.}}
 \label{fig:pipeline}
 \end{figure}
 
-\subsection{Encoder Architecture}
+\subsection{Problem Setup}
+\label{sec:setup}
+Each polygon is represented by its ShapeToVec vector
+$\mathbf{x}\in\mathbb{R}^{D}_{\ge0}$. Entry $x_i$ is the polygon's area-weighted
+occupancy of cell $i$ in ShapeToVec's adaptive quadtree grid~\cite{shape2vec}, and
+$D$ is the number of grid cells ($D\approx18$K for Parks). These vectors are sparse:
+about $73\%$ of their entries are zero. We call the WJ between two original vectors
+(Eq.~\ref{eq:wj}) the \emph{teacher similarity}. Given a corpus of polygons, we learn
+an encoder $f_\theta$ that maps each $\mathbf{x}$ to an embedding
+$\mathbf{z}=f_\theta(\mathbf{x})$ of width $d\ll D$. The goal is to preserve rankings.
+For a query polygon, sorting the corpus by the WJ between embeddings should place the
+same polygons at the top as sorting by the teacher similarity. Exact similarity values
+matter only insofar as they determine this order. The encoder is trained on corpus
+polygons only; all queries are held out.
+
+\subsection{Encoder}
 \label{sec:embed}
-The encoder's core, $h_\theta$, is a two-layer MLP ($D\!\to\!4096\!\to\!4096$,
-$\sim$92M parameters); its $4096$-d output is $\ell_1$-normalised
-(Eq.~\ref{eq:simplex}, \S\ref{sec:simplex}) and truncated to width $d$ at inference
-(Matryoshka, \S\ref{sec:distill}). Three considerations dictate this design, each
-driven by the structure of WJ and of the quadtree input rather than by convention.
+Before encoding, we divide each ShapeToVec vector by the sum of its entries. The raw
+sums span many orders of magnitude, mirroring the area variation of the polygons
+themselves, and normalization places every input on a common scale. The teacher
+similarity is still computed on the original, unnormalized vectors.
 
-\noindent\textbf{Why an MLP, not a Transformer or graph encoder.} The neural polygon
-encoders common in the literature, boundary Transformers~\cite{mai22}, vertex graph
-networks~\cite{polygongnn24}, and set encoders~\cite{deepsets17}, target cosine or
-Euclidean output spaces and are ill-suited to WJ retrieval. Two mismatches explain
-this. First, \emph{space mismatch}: an encoder trained under an L2 or cosine
-objective learns a metric structure that is destroyed when its outputs are forced
-onto the WJ simplex via ReLU\,+\,$\ell_1$-normalisation. Second, \emph{loss of
-global structure}: sequence- and graph-based encoders aggregate \emph{local}
-context (token windows, vertex hops), whereas WJ is a global statistic summed over
-all $D$ dimensions that cannot be decomposed into local sub-computations. A plain
-MLP trained \emph{natively} in WJ space avoids both.
+The encoder is a two-layer multilayer perceptron (MLP). Each layer applies a linear
+map, then batch normalization~\cite{ioffe15bn}, then a ReLU. Both layers have 4096
+units, for about 92M parameters in total. Three design choices follow from the
+nature of the input.
 
-\noindent\textbf{Global projection.} Accordingly, the first layer is a single dense
-projection $\mathbb{R}^{D}\!\to\!\mathbb{R}^{4096}$ that mixes \emph{all} input
-dimensions in one matrix multiply, so every pair of quadtree cells can interact and
-the cross-dimension co-occurrence statistics WJ depends on are preserved. This
-global mixing is why $\sim$75M of the $\sim$92M parameters reside in this first
-layer.
+\noindent\textbf{Why an MLP.} The input is already a fixed-length vector over a grid
+shared by all polygons, and an MLP maps it directly to a fixed-length output. Neural
+polygon encoders in the literature instead consume raw geometry: Transformers over
+boundary points~\cite{mai22}, graph networks over vertices~\cite{polygongnn24}, and
+set encoders~\cite{deepsets17}. Using them would discard the quadtree encoding that
+makes ShapeToVec robust to area variation. They are also trained for Euclidean or
+cosine similarity, not WJ.
 
-\noindent\textbf{BatchNorm before ReLU.} Quadtree rasterisation yields extremely
-sparse vectors ($\sim$73\% zeros), so pre-activation responses have near-zero
-variance; applying ReLU directly would suppress almost all activations and produce a
-degenerate output whose pairwise WJ is too flat to rank candidates. Placing
-BatchNorm~\cite{ioffe15bn} \emph{before} each ReLU re-centers and rescales the
-activations first, guaranteeing a non-degenerate output distribution.
+\noindent\textbf{A dense first layer.} The first layer connects every grid cell to
+every hidden unit. Each hidden unit can therefore combine cells from anywhere in the
+grid, such as cells that tend to be occupied together. This layer holds about 75M of
+the 92M parameters.
 
-\subsection{Probability Simplex Output Constraint}
+\noindent\textbf{Batch normalization before ReLU.} Because most input entries are
+zero, many pre-activations sit near zero, and a ReLU applied directly could leave
+many units inactive. Batch normalization re-centers and rescales each unit before
+the ReLU, which helps keep units active on these sparse inputs.
+
+\subsection{Output Normalization}
 \label{sec:simplex}
-WJ (Eq.~\ref{eq:wj}) requires non-negative inputs. We enforce this with a final
-simplex projection layer:
+WJ is defined for nonnegative vectors. The encoder's final ReLU makes every output
+entry nonnegative, and dividing by the sum makes the entries sum to one. Writing
+$h_\theta$ for the MLP,
 \begin{equation}
   f_\theta(\mathbf{x}) = \frac{\mathrm{ReLU}(h_\theta(\mathbf{x}))}
-       {\max(\|\mathrm{ReLU}(h_\theta(\mathbf{x}))\|_1,\;\epsilon)} \in \Delta^{d}.
+       {\max(\|\mathrm{ReLU}(h_\theta(\mathbf{x}))\|_1,\;\epsilon)},
   \label{eq:simplex}
 \end{equation}
-The sequence BatchNorm~$\to$~ReLU~$\to$~$\ell_1$-normalisation is necessary and
-sufficient for WJ compatibility: non-negativity makes the element-wise $\min$/$\max$
-in Eq.~\ref{eq:wj} meaningful, and $\ell_1$-normalisation places every embedding on
-the probability simplex $\Delta^{d}$ so the $\min$/$\max$ ratio is computed at a
-comparable scale regardless of polygon size. Together this makes
-$WJ(f_\theta(\mathbf{x}),f_\theta(\mathbf{y}))$ well-defined for any input pair and
-enables direct use of nmslib's \texttt{WeightedJaccard} HNSW
-space~\cite{shape2vec,boytsov13} with no post-processing.
+where $\|\cdot\|_1$ is the sum of absolute entries and $\epsilon$ is a small
+constant that avoids division by zero. A vector with nonnegative entries that sum to
+one lies on the \emph{probability simplex}. This is the only sense in which we use
+the term, and it describes our embeddings, not the ShapeToVec input. Normalizing has
+two benefits. First, every embedding has the same total mass, and WJ then compares
+how that mass is distributed across entries rather than how large it is. Second,
+for two such vectors WJ has a closed form in their $\ell_1$ distance,
+$WJ(\mathbf{z},\mathbf{z}')=(2-\|\mathbf{z}-\mathbf{z}'\|_1)/(2+\|\mathbf{z}-\mathbf{z}'\|_1)$,
+which makes computing all pairwise similarities in a training batch fast. The
+embeddings are indexed with the same WJ distance that ShapeToVec added to
+NMSLIB~\cite{shape2vec,boytsov13}, with no post-processing.
 
-\subsection{Why contrastive objectives are not enough}
-\label{sec:contrastive}
-Our first approach was metric learning, which we describe here and show why it
-fails, motivating \S\ref{sec:distill}. With anchor--positive pairs and in-batch
-cross-WJ $S_{ij}=WJ(f_\theta(\mathbf{a}_i),f_\theta(\mathbf{p}_j))$, a
-\emph{false-negative filter} $\mathcal{G}$ masks a query's true neighbours before
-mining the hardest negative
-$j^\star=\arg\max_{j\neq i,(i,j)\notin\mathcal{G}}S_{ij}$, and a triplet
-loss~\cite{schroff15} with margin $m$,
-\begin{equation}
-  \mathcal{L}_{\mathrm{trip}}=\big[\,WJ(\mathbf{n}_{j^\star},\mathbf{a})
-     -WJ(\mathbf{p},\mathbf{a})+m\,\big]_{+},
-  \label{eq:triplet}
-\end{equation}
-separates positives from negatives; a decoder reconstruction term and a
-non-saturating InfoNCE~\cite{oord18},
-\begin{equation}
-  \mathcal{L}_{\mathrm{NCE}}=-\log\frac{\exp(S_{ii}/\tau)}
-       {\sum_{j:(i,j)\notin\mathcal{G}}\exp(S_{ij}/\tau)},
-  \label{eq:infonce}
-\end{equation}
-extend the supervised neighbourhood. These are strong at 10k
-(Table~\ref{tab:results}) but fail to scale: all optimise the same thing,
-pushing positives above negatives, which does not guarantee the global WJ
-\emph{ranking} that recall depends on. Their recall collapses to that of an
-untrained random projection, and the loss \emph{damages the very layer it is
-applied to}, so the deployed output is not the network's best representation
-(\S\ref{sec:exp}). This motivates supervising the metric itself, directly, next.
-
-\subsection{WJ-native distillation}
+\subsection{Training Objective: Listwise WJ Distillation}
 \label{sec:distill}
-We align the objective with the metric directly. For a batch of $N$ encodings we
-form the true WJ on the original $D$-dim vectors, $T_{ij}=WJ(\mathbf{x}_i,\mathbf{x}_j)$,
-and the embedding WJ, $\hat T_{ij}=WJ(f_\theta(\mathbf{x}_i),f_\theta(\mathbf{x}_j))$.
-Each batch's $N$ rows are anchors and their top-30 WJ neighbours (mined once per
-corpus, \S\ref{sec:contrastive}), so $T$ spans both genuine near-neighbour pairs and
-the far more numerous low-similarity cross-pairs a random polygon pair would have.
-Figure~\ref{fig:batchdist} shows this empirically for one 10k training batch: the
-curated anchor--positive pairs concentrate at high similarity (mean $T{=}0.78$),
-while the remaining, uncurated cross-pairs are not degenerately concentrated at
-zero either (mean $0.19$, median $0.13$; only $10.5\%$ fall below $0.01$).
+We train the encoder by \emph{distillation}~\cite{hinton15}, in which a compact
+student learns to reproduce the outputs of a more expensive teacher. Here the student
+is the encoder, and the teacher is not a network but the exact WJ between original
+vectors. What the student must reproduce is the ranking this teacher induces.
 
-The most direct way to align objective and metric is absolute value regression,
-minimising $\mathcal{L}_{\mathrm{MSE}}=\frac{1}{N^2}\sum_{i,j}(\hat T_{ij}-T_{ij})^2$.
-This is what we originally deployed, and it already beats every contrastive
-baseline (\S\ref{sec:contrastive}). But MSE treats every row independently and
-penalises absolute error uniformly, giving no special credit for getting a row's
-\emph{relative order} right, which is what recall actually measures. We instead
-use a \emph{listwise} objective~\cite{cao07}: turn each anchor row of $T$ and
-$\hat T$ into a probability distribution over the batch via a temperature-scaled
-softmax (self-pair masked out), and minimise the cross-entropy between them,
+\noindent\textbf{Training batches.} Before training, we find each corpus polygon's
+$P$ most similar corpus polygons by exact search over the normalized input vectors
+($P{=}30$ at the 50K and full-dataset scales). Each training batch samples 512
+polygon--neighbor (anchor--positive) pairs, giving $N{=}1024$ polygons. A batch therefore contains a few
+highly similar pairs and many pairs of unrelated polygons. As
+Fig.~\ref{fig:batchdist} shows, the teacher similarities of the unrelated pairs are
+spread out rather than concentrated at zero. Each polygon's row of similarities thus
+carries graded information beyond its one paired neighbor.
+
+\noindent\textbf{Loss.} For polygons $i$ and $j$ in a batch, let $T_{ij}$ be their
+teacher similarity and $\hat T_{ij}$ the WJ between their embeddings. For each
+polygon $i$, a softmax with temperature $\tau$ turns its row of teacher similarities
+into a probability distribution $p_i$ over the other polygons in the batch. The same
+operation on the embedding similarities gives $\hat p_i$. The loss is the
+cross-entropy between the two, averaged over the batch:
 \begin{align}
-  p_{ij}&=\frac{\exp(T_{ij}/\tau)}{\sum_{k\neq i}\exp(T_{ik}/\tau)},\notag\\
-  \hat p_{ij}&=\frac{\exp(\hat T_{ij}/\tau)}{\sum_{k\neq i}\exp(\hat T_{ik}/\tau)},\notag\\
-  \mathcal{L}_{\mathrm{list}}&=-\frac{1}{N}\sum_i\sum_{j\neq i} p_{ij}\log\hat p_{ij},
+  p_{ij}&=\frac{\exp(T_{ij}/\tau)}{\sum_{k\neq i}\exp(T_{ik}/\tau)},\quad
+  \hat p_{ij}=\frac{\exp(\hat T_{ij}/\tau)}{\sum_{k\neq i}\exp(\hat T_{ik}/\tau)},\notag\\
+  \mathcal{L}_{\mathrm{list}}&=-\frac{1}{N}\sum_i\sum_{j\neq i} p_{ij}\log\hat p_{ij}.
   \label{eq:distill}
 \end{align}
-with $\tau=0.1$. Unlike a single hardest-negative margin (\S\ref{sec:contrastive}),
-$p_i$ is graded over the \emph{whole} row, so $\mathcal{L}_{\mathrm{list}}$ still
-supervises the full similarity structure Eq.~\eqref{eq:distill}'s MSE variant
-does, just through relative rather than absolute error. Controlled head-to-head
-comparisons (identical architecture, data, and epoch budget; only the loss
-differs) show $\mathcal{L}_{\mathrm{list}}$ beats $\mathcal{L}_{\mathrm{MSE}}$
-decisively at every scale we test: 10K/512-d Stage-1 R@50 $0.973$ vs.\ $0.930$;
-50K/256-d R@50 $0.921$ vs.\ $0.794$; 233K/256-d R@50 $0.906$ vs.\ $0.797$ (full
-numbers in Table~\ref{tab:lossablation}). We further tested five rank-aware and
-Matryoshka-training refinements layered on top of listwise
-(\S\ref{sec:related}); none improved on it, and three (an RKD-style angle
-term~\cite{park19rkd}, learnable dimension selection, and sequential Matryoshka
-training~\cite{smec25}) measurably hurt retrieval. $\mathcal{L}_{\mathrm{list}}$
-is therefore our method throughout the rest of the paper; we report MSE only as
-an ablation baseline (Table~\ref{tab:lossablation}).
+We use $\tau=0.1$. At this temperature the teacher distribution places most of its
+weight on each polygon's most similar batch members. The loss is lowest when the
+embedding ranks the same polygons at the top, in the same order, as the teacher,
+which is what recall@$k$ measures. This formulation follows the listwise
+learning-to-rank approach of ListNet~\cite{cao07}.
+
+\noindent\textbf{Why not match similarity values directly.} The simplest distillation
+loss is the mean squared error (MSE) between $\hat T_{ij}$ and $T_{ij}$ over all
+pairs. MSE spends equal effort on every pair, including the many low-similarity pairs
+that never appear in a top-$k$ result. It also rewards reproducing each value rather
+than reproducing the order. The listwise loss concentrates on the order at the top of
+each row. With architecture, data, and training budget held fixed, it improves
+recall@50 over MSE by 4 to 13 points at every scale we test
+(Table~\ref{tab:lossablation}). Five further refinements from recent literature,
+layered on top of the listwise loss, did not improve on it
+(Section~\ref{sec:related}).
 
 \begin{table}[t]\centering
-\caption{Loss-function ablation, Stage-1 R@50 (no rerank), identical
-architecture/data/epoch budget, only the loss differs. Listwise
-(Eq.~\ref{eq:distill}) beats MSE at every scale tested. $\ddagger$~=~ours.}
+\caption{Loss comparison: recall@50 before reranking. Architecture, data, and
+training budget are identical; only the loss differs. $\ddagger$~=~ours.}
 \label{tab:lossablation}\small\setlength{\tabcolsep}{5pt}
 \begin{tabular}{@{}lrrr@{}}
 \toprule
@@ -489,31 +487,64 @@ Scale (dim) & MSE R@50 & Listwise R@50$^\ddagger$ & $\Delta$ \\
 
 \begin{figure}[t]\centering
 \includegraphics[width=0.85\columnwidth]{fig_batch_wj_dist.png}
-\caption{Distribution of the WJ distillation target $T_{ij}$ within one training
-batch (10k), split into curated anchor--positive pairs (top-30 neighbours) and the
-remaining in-batch cross-pairs. The cross-pairs are broadly spread, not
-concentrated at zero.}
+\caption{Teacher similarities $T_{ij}$ within one training batch (10K), split into
+sampled anchor--positive pairs and all remaining pairs in the batch. The remaining
+pairs are broadly spread, not concentrated at zero.}
 \label{fig:batchdist}
 \end{figure}
 
-The objective \emph{is} the retrieval metric's ranking, so the deployed output is
-directly the optimised quantity: a listwise metric distillation~\cite{hinton15,cao07}
-with exact $D$-dim WJ as teacher and the compact simplex embedding as student. We
-apply Eq.~\eqref{eq:distill} on nested prefixes $\{256, 512, \dots,4096\}$
-(Matryoshka~\cite{matryoshka22}, each $\ell_1$-renormalised), so one model truncates
-to any width; the smallest %already
-dominates (\S\ref{sec:exp}).
+\subsection{One Encoder for Many Widths}
+\label{sec:matryoshka}
+Following Matryoshka representation learning~\cite{matryoshka22}, one encoder serves
+several widths. During training, the loss in Eq.~\eqref{eq:distill} is computed on
+the first $m$ entries of each embedding, renormalized to sum to one, for every
+$m\in\{256,512,1024,2048,4096\}$, and the five losses are averaged. The leading
+entries are thereby trained to be useful on their own. At deployment, choosing a
+width means keeping the first $d$ entries and renormalizing, with no retraining. The
+set of widths is a training setting, not part of the architecture. A different
+range, such as widths below 256, needs a new training run but no change to the
+model. Within the trained range, recall is nearly flat from 256 to 4096 dimensions
+(Section~\ref{sec:exp}), which makes 256 the natural operating point.
 
-This joint multi-width training is not free. Comparing to encoders trained
-independently for a single width (identical architecture, data, and epoch budget, but
-one loss term instead of five), we measure a consistent $+1.1$--$1.2$pp Stage-1 R@50
-cost from serving all five widths jointly, at both the narrowest (256-d) and widest
-(4096-d) width we test. Since the widest case involves no truncation at all, this
-isolates the cost as a genuine joint-training effect (gradient interference across
-simultaneous per-width objectives), not a smaller-widths-are-starved effect; reranking
-closes the gap to noise. We consider $1$--$2$pp of Stage-1 recall a reasonable price
-for one trained model serving the full recall--throughput frontier, rather than five
-separately trained and deployed models.
+Sharing one encoder across widths has a small cost. Compared with encoders trained
+for a single width under the same architecture, data, and budget, the shared encoder
+loses about 1.1 to 1.2 points of recall@50 before reranking, at both 256 and 4096
+dimensions. The 4096-dimensional case involves no truncation, which indicates that
+the cost comes from the five losses competing during training, not from truncation.
+Reranking reduces the difference to within noise. We accept this cost in exchange for
+a single trained model that covers every operating point.
+
+\subsection{Two-Stage Retrieval}
+\label{sec:twostage}
+Search runs in two stages. In the first stage, an HNSW index~\cite{hnsw20} over the
+compact embeddings, using ShapeToVec's WJ distance, returns $K$ candidates for a
+query. In the second stage, we compute exact WJ between the query's original vector
+and each candidate's original vector, and re-sort the candidates. The HNSW index
+stores only the compact embeddings. The original vectors are accessed only for each
+query's $K$ candidates. The second stage can reorder candidates but cannot add new
+ones. The value of $K$ therefore sets the trade-off between speed and recall: a
+larger $K$ costs more time but is more likely to contain the true top-$k$ neighbors.
+A good embedding lets a small $K$ contain them. We use $K{=}2000$ and the same HNSW
+settings throughout ($M{=}20$; efConstruction and efSearch both $200$). Results
+labeled Stage-1 use the first stage alone.
+
+\subsection{Contrastive Alternatives}
+\label{sec:contrastive}
+We compare against contrastive objectives widely used to train retrieval embeddings,
+applied to the same encoder with WJ as the similarity. A \emph{triplet}
+loss~\cite{schroff15} requires each polygon to be more similar to a true neighbor
+than to the most similar non-neighbor in the batch, by a fixed margin. A batch can
+contain other true neighbors of the same polygon, and a \emph{false-negative filter}
+excludes these before the hardest non-neighbor is chosen. \emph{InfoNCE}~\cite{oord18}
+also applies a softmax over the batch, but its target places all weight on the one
+paired neighbor. Variants add a decoder reconstruction term or a WJ regression term
+(Table~\ref{tab:ablation}). All of these objectives use binary targets: a pair is
+either a neighbor or not. They push neighbors above non-neighbors but say nothing
+about the order among neighbors, or among the rest of the corpus. The listwise loss
+instead uses graded targets taken from the teacher similarity itself. This
+difference matters at scale. The contrastive models perform reasonably at 10K but fall
+to the level of an untrained random projection at 50K, while distillation does not
+(Section~\ref{sec:exp}).
 
 \subsection{Two-stage retrieval}
 \label{sec:twostage}
@@ -793,7 +824,7 @@ with a real but bounded pre-rerank cost, fully recovered after reranking.
 \caption{The full 448,550-polygon water-body dataset: WJ-distillation (listwise) on
 \emph{all} 89,710 held-out queries (358,840-polygon corpus-trained), 256-d prefix.
 MSE row shown for comparison.}
-\label{tab:wbfull}\setlength{\tabcolsep}{4pt}\small
+\label{tab:wbfull}\setlength{\tabcolsep}{4pt}\small`
 \begin{tabular}{@{}lrrrr@{}}
 \toprule
 Stage & R@10 & R@50 & R@500 & QPS \\
@@ -899,7 +930,8 @@ polygons and on a second polygon class. Future work targets billion-scale corpor
 other simplex-embeddable set metrics.
 
 \section*{Acknowledgment}
-Claude (Anthropic) assisted with debugging and manuscript formatting.
+Claude (Anthropic) assisted with debugging and manuscript formatting. 
+Research support: NSF award \#2313039.
 
 \bibliographystyle{IEEEtran}
 \bibliography{refs}
