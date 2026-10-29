@@ -1,4 +1,4 @@
-# Learned Weighted-Jaccard Signatures for Compact Polygon Similarity Search
+# Learning Compact Polygon Signatures via Weighted-Jaccard-Native Distillation
 
 Code and evaluation scripts for the paper:
 
