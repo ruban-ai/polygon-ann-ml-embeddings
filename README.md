@@ -1,160 +1,183 @@
-# Weighted-Jaccard-Native Distillation for Compact Polygon Similarity Search
+# Learned Weighted-Jaccard Signatures for Compact Polygon Similarity Search
 
-Learned, **Weighted-Jaccard-native** compression of high-dimensional ShapeToVec
-polygon encodings into compact embeddings that stay directly indexable under
-Weighted Jaccard (WJ) — for fast approximate nearest-neighbor (ANN) similarity
-search over polygonal datasets with extreme area variability.
+Code and evaluation scripts for the paper:
 
-> **Paper:** *Weighted-Jaccard-Native Distillation for Compact Polygon Similarity
-> Search under Extreme Area Variation* — Ruban Sampath, Buddhi Ashan M. K.,
-> Sushil K. Prasad (University of Texas at San Antonio). Submitted to **ACM
-> SIGSPATIAL 2026** (short paper). Sources in [`paper/`](paper/).
+> **Learning Compact Polygon Signatures via Weighted-Jaccard-Native Distillation for
+> Large-Scale Similarity Search under Extreme Area Variation**
+> Ruban Sampath, Buddhi Ashan M. K., Sushil K. Prasad (University of Texas at San Antonio).
+> Submitted to the BSD 2026 workshop at IEEE BigData 2026 (under review).
+
+We compress ShapeToVec's high-dimensional polygon vectors into short **learned
+signatures** that are searched directly under the Weighted Jaccard (WJ) distance with
+an HNSW index. A two-layer encoder is trained by **Listwise WJ distillation**: for each
+polygon, its ranking of similar shapes under the exact WJ similarity of the original
+float32 vectors is distilled into the compact embedding.
 
 ---
 
-## Motivation
+## Background
 
-Finding similar shapes in large polygon datasets underpins deduplication,
-conflation, and map integration. The natural overlap metric is **Weighted
-Jaccard**:
+[ShapeToVec](https://doi.org/10.5281/zenodo.11522173) encodes each polygon on an
+adaptive quadtree grid as a high-dimensional float32 vector, whose WJ similarity
 
 ```
 WJ(a, b) = Σ min(aᵢ, bᵢ) / Σ max(aᵢ, bᵢ),   a, b ≥ 0
 ```
 
-[**ShapeToVec**](https://doi.org/10.5281/zenodo.11522173) handles extreme area
-variability with an adaptive *quadtree* grid, encoding each polygon as a
-high-dimensional probability-simplex vector (~18k dims) whose WJ preserves shape
-overlap, indexed with a custom WJ distance in HNSW (NMSLIB). The accuracy is
-strong but the vectors are large — heavy to store and slow to search. **This
-project learns a compact, WJ-compatible replacement.**
+approximates the polygons' Jaccard index, even when areas span many orders of
+magnitude. Its vectors are large. ShapeToVec+ shrinks them with bit-quantized
+signatures, but loses recall at its most compact (1-bit) setting. This repository
+replaces those designed signatures with learned ones.
 
-## Approach
+## Method
 
-- **WJ-native simplex encoder** — a 2-layer MLP (`D → 4096 → 4096`) with
-  BatchNorm-before-ReLU and a `ReLU + ℓ1` output, so every embedding lies on the
-  probability simplex and is indexable *directly* under WJ (no post-processing).
-- **WJ-native distillation** — regress the *embedding* WJ onto the *true* WJ of
-  the original D-dim vectors (`L = ‖ŴJ − WJ‖²`). The training objective **is** the
-  retrieval metric, so the deployed output is exactly the optimized quantity.
-- **Contrastive autoencoder (baseline route)** — encoder + decoder trained with a
-  WJ triplet / InfoNCE loss (false-negative filtered) plus reconstruction. Strong
-  at small scale, but collapses to random-projection level on held-out queries —
-  it optimizes *separation*, not the global WJ *ranking* recall needs.
-- **Matryoshka deployment** — one trained model serves every width
-  `{256, 512, …, 4096}`; 256-d already dominates (72× compression).
-- **Two-stage retrieval** — HNSW Stage-1 over the compact embeddings, then exact-WJ
-  rerank on the original vectors (Numba/GPU).
+- **Preprocessing.** Each input vector is divided by its sum before it enters the
+  encoder. The teacher always uses the original, unnormalized vectors.
+- **Encoder.** A two-layer MLP (`D → 4096 → 4096`; linear, batch norm, ReLU) whose
+  output is made nonnegative and normalized to sum to one, so embeddings lie on the
+  probability simplex and are compared directly under the WJ distance. About 29M
+  parameters at a 3K input.
+- **Listwise WJ distillation.** Within each training batch, a softmax over the
+  teacher's exact WJ similarities is matched by a softmax over the embeddings' WJ
+  similarities (cross-entropy, τ = 0.1). Batches pair each polygon with one of its
+  30 nearest corpus neighbors, found once by exhaustive GPU search.
+- **One encoder, many widths.** Matryoshka-style training: the loss is applied to
+  nested prefixes (64 to 4,096 dimensions; 64 to 1,024 on Overture), so one trained
+  encoder serves every width by truncation and renormalization.
+- **8-bit signatures.** After training, each dimension is stored in 8 bits with one
+  shared per-dimension scale (99.9th percentile), with no retraining. A 256-dimensional
+  signature takes 256 bytes.
 
-## Headline results
+## Main results
 
-**50K benchmark** (40k corpus / 10k held-out queries; geometric-Jaccard GT;
-methods corpus-trained, shown at **256-d = 72× compression**):
+Recall@50 at 256 dimensions (8-bit signatures, 256 bytes per polygon), all methods
+starting from the same 3K-dimensional input vectors:
 
-| Method (256-d)      | Stage-1 R@500 | + rerank R@500 | Stage-1 QPS |
-|---------------------|:-------------:|:--------------:|:-----------:|
-| Random projection   | 0.766         | 0.955          | 3,890       |
-| Triplet + recon     | 0.725         | 0.859          | 3,810       |
-| InfoNCE–WJ          | 0.720         | 0.821          | 7,128       |
-| **WJ-distillation** | **0.924**     | **0.976**      | **6,772**   |
+| Dataset | Polygons | Ours (256 B) | ShapeToVec+ 1-bit (~384 B) | ShapeToVec+ ARE 8-bit (~3 KB) |
+|---|---|:---:|:---:|:---:|
+| Parks | 234K | **0.90** | 0.76 | 0.96 |
+| Water Bodies | 449K | **0.89** | 0.74 | 0.96 |
+| Sports | 1.75M | **0.89** | 0.74 | 0.96 |
+| Overture 1M | 1M | **0.79** | ~0.64 | ~0.94 |
+| Overture 10M | 10M | **0.73** | ~0.55 | ~0.91 |
 
-- **10K subset:** WJ-distillation R@50 = 0.930 @ 14,552 QPS; R@10 > 0.996 after rerank.
-- **Full 187K Parks corpus** (all 46,754 queries held out, same encoder unchanged):
-  Stage-1 R@500 = 0.890 @ 2,136 QPS → 0.966 after rerank.
+Index memory and search throughput on Overture 10M (64 threads, ShapeToVec+'s SIMD
+distance kernel, median of 20 runs). Throughput covers search only; queries are
+encoded beforehand, and memory excludes the encoder (117 MB).
 
-First learned WJ embedding to beat an untrained random projection on **both** the
-near- and wide-net recall–throughput frontiers.
+| Method | Bytes / polygon | Index | QPS | Recall@50 |
+|---|:---:|:---:|:---:|:---:|
+| Ours, 64-d | 64 | 2.2 GB | 20.1K | 0.64 |
+| Ours, 256-d | 256 | 4.1 GB | 15.6K | 0.73 |
+| ShapeToVec+ 1-bit | 384 | ~5.8 GB | ~7.0K | ~0.55 |
+| ShapeToVec+ 2-level | 768 | ~10.1 GB | ~4.7K | ~0.69 |
+| ShapeToVec+ ARE (8-bit) | 3,072 | ~35.6 GB | ~2.3K | ~0.91 |
 
-## Repository layout
+Baselines on Parks at 256 dimensions (Recall@50): Listwise WJ distillation 0.90,
+exhaustive ICWS sketches 0.74, MSE distillation 0.80, random projection 0.63, NMF 0.58,
+triplet 0.54, InfoNCE 0.51, PCA 0.08.
 
-```
-.
-├── paper/                      # SIGSPATIAL '26 LaTeX (main_distill.tex, refs.bib, tables)
-├── figures/                    # paper figures (+ plotting fonts)
-├── logs/                       # run logs (+ logs/scripts analysis helpers)
-└── term_project/
-    ├── 00–34_*.ipynb           # research notebooks (data prep, baselines, distillation, plots)
-    ├── *.py                    # standalone eval / sweep / generalization scripts
-    ├── utils/                  # requirements, nmslib WJ build helper, figure assets
-    └── SigSpatial/             # paper experiment runners (the reproducible core)
-        ├── build_50k.py                  # build the 50K dataset + GT-metric oracle
-        ├── run_50k_ddp.py                # 50K benchmark: --method {distill,triplet,infonce,rp}
-        ├── run_matdistill_fulleval_ddp.py# full 187K corpus, all queries held out
-        ├── run_matdistill_10k.py         # 10K subset distillation
-        ├── sota_experiment_common.py     # shared loaders, nmslib HNSW, GPU rerank, recall
-        └── RESULTS_LOG.csv / NEW_RESULTS.csv  # single source of truth for results
-```
+Offline cost (Overture): training the encoder on 1M polygons takes 83 minutes on eight
+A100 GPUs (22 of them for neighbor mining); encoding all 10M polygons takes 2.3 minutes
+on one GPU; building the 256-dimensional HNSW index takes 15 minutes.
 
-## Datasets
+## Where each result comes from
 
-We use the **publicly released ShapeToVec dataset** (quadtree encodings + shape-
-similarity ground truth) — DOI [10.5281/zenodo.11522173](https://doi.org/10.5281/zenodo.11522173)
-— derived from the SpatialHadoop Parks polygons. Subsets:
+All experiment code is in [`term_project/SigSpatial/`](term_project/SigSpatial/).
+Configurations (`parksfull`, `wbres_3k`, `sportsres_3k`, `ov1m`, `ov10m`, ...) are
+defined in [`fulls_common.py`](term_project/SigSpatial/fulls_common.py).
 
-| Split | Corpus | Queries | Dim (D) |
-|-------|:------:|:-------:|:-------:|
-| 10K   | 8k     | 2k      | ~18,499 |
-| 50K   | 40k    | 10k     | 18,382  |
-| 187K  | 187k   | 46,754  | ~18,220 |
+| Paper item | Script(s) |
+|---|---|
+| Encoder training (all datasets; `--method listwise\|triplet\|infonce`) | `run_fulls_listwise_train.py` |
+| Recall of the float32 embeddings, all widths | `eval_fulls_listwise.py` |
+| 8-bit and 4-bit signatures (Tables IV, V; Fig. 8) | `eval_quant.py` |
+| Untrained baselines: PCA, NMF, random projection (Fig. 4) | `run_parksfull_unsup_baselines.py` |
+| Exhaustive ICWS sketches, 256 samples (Fig. 4) | `run_icws_brute_full_256.py` |
+| MSE distillation baseline (Table II) | `run_matdistill_fulleval_ddp.py` |
+| Robustness across area quartiles (Table III) | `eval_bucketed_parksfull_m64.py` |
+| Input-dimension study, 3K/6K/12K inputs (Fig. 5) | `build_parks_res.py`, `build_res.py` |
+| Hidden vs. output layer of each loss (Section IV-F) | `analysis_layer_tap_v2.py` |
+| Recall vs. index size, 1M to 10M (Table VI) | `eval_ov10m_slices.py` |
+| Throughput, latency, and index memory (Table VII, Fig. 6) | `export_codes_are.py`, `bench_are_v2.py`, `run_bench_v2_20261026.sh` |
+| Figures 4 to 8 | `make_fig_baselines_20261025.py`, `make_fig_resolution.py`, `make_fig_pareto_10m_v2.py`, `make_fig_recall_bytes_opt1.py`, `make_fig_precision.py` |
 
-> The raw encodings (~10 GB, `encoding/`) and all checkpoints/`.npy`/`.pkl` outputs
-> are **git-ignored** — only code, notebooks, paper, and logs are tracked. Point
-> the builders at your local copy of the ShapeToVec data before running.
+Every evaluation appends a row (date, dataset, method, width, R@10/50/100/500, QPS) to
+[`RESULTS_LOG.csv`](term_project/SigSpatial/RESULTS_LOG.csv), the source of all
+numbers in the paper.
+
+## Data
+
+- **Parks, Water Bodies, Sports:** the public ShapeToVec dataset (quadtree encodings
+  and geometric Jaccard ground truth), DOI
+  [10.5281/zenodo.11522173](https://doi.org/10.5281/zenodo.11522173). Each collection
+  is split 80/20 into an indexed corpus and held-out queries; every query is unseen
+  during training.
+- **Overture 1M and 10M:** encodings and ground truth from ShapeToVec+, with the same
+  1,000 held-out queries at both sizes. The 10M index uses the encoder trained on only
+  the first 1M corpus polygons.
+
+Encodings, checkpoints, embeddings, and other large outputs are not tracked in git.
+Data paths are set at the top of `fulls_common.py`; point them at your local copy
+before running.
 
 ## Setup
 
 ```bash
-pip install -r term_project/utils/requirements.txt
-# numpy · torch · nmslib · tqdm · psutil · jupyter/notebook/ipykernel
+pip install -r term_project/utils/requirements.txt   # numpy, torch, nmslib, ...
 ```
 
-**NMSLIB Weighted-Jaccard space:** retrieval uses ShapeToVec's *custom* WJ distance
-added to NMSLIB. Use the prebuilt module (see
-`term_project/utils/copy_nmslib_weighted_from_dgx.sh`) or build NMSLIB with the WJ
-space enabled — the stock `nmslib` package does **not** include it.
+- **WJ distance in HNSW.** Recall evaluations use ShapeToVec's custom Weighted Jaccard
+  space in NMSLIB; the stock `nmslib` package does not include it (see
+  `term_project/utils/` for the build helper).
+- **Throughput benchmark.** `bench_are_v2.py` uses ShapeToVec+'s patched NMSLIB space
+  (`WeightedJaccardRatio`, its SIMD integer kernel), so the comparison with ShapeToVec+
+  uses the same code, machine, and HNSW parameters.
 
 ## Usage
 
 ```bash
 cd term_project/SigSpatial
 
-# 1) Build the 50K dataset (parses encodings + GT, runs the raw-vs-normalized WJ oracle)
-python build_50k.py
+# Train one encoder (8 GPUs); cfg is one of the CONFIGS in fulls_common.py
+torchrun --standalone --nproc_per_node=8 run_fulls_listwise_train.py ov10m
 
-# 2) 50K benchmark — 8-GPU DDP, one method at a time
-CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 \
-  torchrun --standalone --nproc_per_node=8 run_50k_ddp.py --method distill
-#   --method ∈ {distill, triplet, infonce, rp}
+# Recall of the float32 embeddings at every width
+python eval_fulls_listwise.py ov10m --threads 64
 
-# 3) Full 187K corpus, all queries held out
-CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 \
-  torchrun --standalone --nproc_per_node=8 run_matdistill_fulleval_ddp.py
+# 8-bit signatures
+python eval_quant.py ov10m --prefixes 64,256 --bits 8
 
-# 4) 10K moderate-scale study
-python run_matdistill_10k.py
+# Throughput and memory with ShapeToVec+'s kernel
+python export_codes_are.py ov10m --prefixes 64,256
+python bench_are_v2.py ov10m 256
 ```
 
-Each run appends `date, dataset, method, dim, stage, cand_k, R@10/50/100/500, QPS`
-to `RESULTS_LOG.csv` — the single source of truth for the paper tables.
+HNSW parameters in all evaluations: M = 20, efConstruction = 200, efSearch = 200.
 
-## Platform
+## Hardware
 
-Experiments ran on an **NVIDIA DGX A100**: 8 × A100-SXM4 80 GB GPUs, dual 64-core
-AMD EPYC 7742 CPUs, 2 TB RAM. QPS is reported on a single GPU; NMSLIB HNSW queries
-use multi-threaded CPU candidate generation followed by GPU exact-WJ reranking.
+NVIDIA DGX A100: 8 × A100 80 GB GPUs, dual 64-core AMD EPYC 7742 CPUs, 2 TB RAM.
+Throughput uses 64 CPU query threads, matching ShapeToVec+.
 
 ## Citation
 
 ```bibtex
-@inproceedings{sampath2026wjdistill,
-  title     = {Weighted-Jaccard-Native Distillation for Compact Polygon
-               Similarity Search under Extreme Area Variation},
-  author    = {Sampath, Ruban and Ashan M. K., Buddhi and Prasad, Sushil K.},
-  booktitle = {Proceedings of the 34th ACM SIGSPATIAL International Conference
-               on Advances in Geographic Information Systems},
+@inproceedings{sampath2026learned,
+  title     = {Learning Compact Polygon Signatures via Weighted-Jaccard-Native
+               Distillation for Large-Scale Similarity Search under Extreme Area Variation},
+  author    = {Sampath, Ruban and Mallika Kankanamalage, Buddhi Ashan and Prasad, Sushil K.},
+  booktitle = {IEEE International Conference on Big Data (BigData), BSD Workshop},
   year      = {2026},
-  note      = {Short paper, under review}
+  note      = {Under review}
 }
 ```
 
-Built on **ShapeToVec** (Ashan M. K. et al., IEEE BigData 2025) and **NMSLIB**.
+Built on [ShapeToVec](https://doi.org/10.5281/zenodo.11522173), ShapeToVec+, and
+[NMSLIB](https://github.com/nmslib/nmslib).
+
+## Earlier work in this repository
+
+`term_project/` notebooks and the 10K/50K scripts (`build_50k.py`, `run_50k_ddp.py`,
+`run_matdistill_10k.py`) are from earlier stages of this project and are kept for
+reference; `paper/` holds an earlier draft. The results above supersede them.
