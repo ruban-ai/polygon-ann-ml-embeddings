@@ -39,3 +39,6 @@ Legacy files/
 *.zip
 *_backup.tex
 email_to_dr_prasad.*
+
+# Paper drafts with review comments (keep local; never auto-push)
+term_project/SigSpatial/IEEE/conference_101719.tex
