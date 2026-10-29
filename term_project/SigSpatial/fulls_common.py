@@ -33,10 +33,43 @@ CONFIGS = {
                        eval_prefixes=[256, 512, 1024, 2048, 4096],
                        epochs=5, gt=f'{BASE}/gt_sportsfull.pkl'),
 }
+# eval/baseline-only configs for the earlier full-scale runs (same data those runs used)
+CONFIGS['parksfull'] = dict(dataset='parks_full', train_n=187_019, corpus_n=187_019, total=233_773,
+                            prefixes=[256, 512, 1024, 2048, 4096], emb=4096, eval_prefixes=[256, 4096],
+                            epochs=5, gt=f'{BASE}/gt_lookup_full.pkl')
+CONFIGS['wbfull'] = dict(dataset='wb_full', train_n=358_840, corpus_n=358_840, total=448_550,
+                         prefixes=[256, 512, 1024, 2048, 4096], emb=4096, eval_prefixes=[256, 4096],
+                         epochs=5, gt=f'{BASE}/gt_wbfull.pkl')
+# 2026-10-03 Parks full: single-width controls (joint-vs-independent) and a {64..4096} Matryoshka run
+_pk = {k: v for k, v in CONFIGS['parksfull'].items()}
+CONFIGS['parksfull_i256'] = dict(_pk, prefixes=[256], emb=256, eval_prefixes=[256])
+CONFIGS['parksfull_i4096'] = dict(_pk, prefixes=[4096], emb=4096, eval_prefixes=[4096])
+CONFIGS['parksfull_m64'] = dict(_pk, prefixes=[64, 128, 256, 512, 1024, 2048, 4096], emb=4096,
+                                eval_prefixes=[64, 128, 256, 4096])
+# 2026-10-09 input-resolution sweep (Parks at ~3K/6K/12K quadtree dims; identical recipe to parksfull_m64)
+for _t in ('3k', '6k', '12k', '18k'):   # 18k = qtree_vectors_full.npy (symlink), 7-GPU rerun of m64
+    CONFIGS[f'parksres_{_t}'] = dict(_pk, prefixes=[64, 128, 256, 512, 1024, 2048, 4096], emb=4096,
+                                     eval_prefixes=[64, 128, 256, 1024, 4096])
+# 2026-10-10: Water bodies + Sports at ~3K input (same resolution as ShapeToVec+), widths 64..4096 like Parks
+CONFIGS['wbres_3k'] = dict(CONFIGS['wbfull'], prefixes=[64, 128, 256, 512, 1024, 2048, 4096], emb=4096,
+                           eval_prefixes=[64, 128, 256, 1024, 4096])
+CONFIGS['sportsres_3k'] = dict(CONFIGS['sportsfull'], prefixes=[64, 128, 256, 512, 1024, 2048, 4096], emb=4096,
+                               eval_prefixes=[64, 128, 256, 1024, 4096])
+# 2026-10-02 Overture probes
+CONFIGS['ov1m_e10'] = dict(CONFIGS['ov1m'], epochs=10)
+CONFIGS['ov10m_t3m'] = dict(CONFIGS['ov10m'], train_n=3_000_000)
+
 for k, c in CONFIGS.items():
     c['name'] = k
     c['knn'] = f'{BASE}/corpus_knn_{k}.npy'
     c['ckpt'] = f'{BASE}/best_{k}_listwise.pt'
+CONFIGS['ov1m_e10']['knn'] = CONFIGS['ov1m']['knn']            # same corpus, reuse mined kNN
+for _k in ('parksfull_i256', 'parksfull_i4096', 'parksfull_m64'):
+    CONFIGS[_k]['knn'] = CONFIGS['parksfull']['knn']           # same corpus, reuse the existing kNN
+CONFIGS['parksres_18k']['knn'] = CONFIGS['parksfull']['knn']    # same 18K vectors, reuse mined kNN
+CONFIGS['parksfull']['ckpt'] = f'{BASE}/best_full187k_listwise.pt'   # run_full187k_listwise.py output
+PARKS_QT = f'{BASE}/qtree_vectors_full.npy'
+WB_QT = f'{BASE}/qt_wbfull.npy'
 
 
 class ShardedRows:
@@ -65,9 +98,15 @@ class ShardedRows:
 
 def raw_matrix(cfg):
     """Raw (unnormalized) ShapeToVec vectors for ALL rows, id order, memory-mapped."""
-    if cfg['name'] == 'ov1m':
+    if cfg['name'] in ('ov1m', 'ov1m_e10'):
         return np.load(OV1M_X, mmap_mode='r')
-    if cfg['name'] == 'ov10m':
+    if cfg['name'].startswith(('parksres_', 'wbres_', 'sportsres_')):
+        return np.load(f"{BASE}/qt_{cfg['name']}.npy", mmap_mode='r')
+    if cfg['name'].startswith('parksfull'):
+        return np.load(PARKS_QT, mmap_mode='r')
+    if cfg['name'] == 'wbfull':
+        return np.load(WB_QT, mmap_mode='r')
+    if cfg['name'] in ('ov10m', 'ov10m_t3m'):
         fs = sorted(glob.glob(f'{OV10M_DIR}/real_*.npy'),
                     key=lambda f: int(os.path.basename(f)[5:-4]))
         return ShardedRows(fs)

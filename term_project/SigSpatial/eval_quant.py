@@ -26,14 +26,15 @@ EF = 200; K = 500
 def quantize(zc, zq, bits):
     L = 2 ** bits - 1
     s = np.percentile(zc, 99.9, axis=0).astype(np.float32); s[s <= 0] = zc.max(0)[s <= 0]; s[s <= 0] = 1.0
-    out = []
+    out = []; ndead = 0
     for z in (zc, zq):
         code = np.clip(np.rint(z / s * L), 0, L)
         dead = code.sum(1) == 0                                   # all coords rounded to 0 -> keep top coord
+        ndead += int(dead.sum())
         if dead.any():
             code[dead, np.argmax(z[dead] / s, 1)] = 1
         out.append((code * (s / L)).astype(np.float32))
-    return out[0], out[1], int(((code.sum(1) == 0)).sum())
+    return out[0], out[1], ndead
 
 
 def main():
@@ -72,7 +73,7 @@ def main():
             r = eval_recall(gt, nb, corpus_n, K)
             byt = m * 4 if b == 32 else m * b // 8
             print(f"[{CFG['name']} d={m} {'fp32' if b == 32 else f'int{b}'} {byt}B] R@10={r[10]:.4f} R@50={r[50]:.4f} "
-                  f"R@100={r[100]:.4f} R@500={r[500]:.4f} QPS={info['qps']:.0f} dead_query_vecs={dead} "
+                  f"R@100={r[100]:.4f} R@500={r[500]:.4f} QPS={info['qps']:.0f} dead_vecs={dead} "
                   f"({(time.time()-tm)/60:.1f}min)", flush=True)
             out.append(dict(dim=m, bits=b, bytes=byt, r10=r[10], r50=r[50], r100=r[100], r500=r[500], qps=info['qps']))
     if SMOKE:

@@ -19,13 +19,18 @@ sys.path.insert(0, '/raid/ruban/hpmlproj/term_project/SigSpatial')
 from fulls_common import CONFIGS, BASE, raw_matrix, rows
 
 CFG = CONFIGS[sys.argv[1]]; SMOKE = '--smoke' in sys.argv
+# --method listwise (default) | triplet | infonce : the contrastive baselines are ported unchanged from
+# run_50k_ddp.py (MatAE encoder+decoder, MARGIN=0.3, TEMP=0.07, LAM_REC=0.1, kNN false-negative mask)
+METHOD = sys.argv[sys.argv.index('--method') + 1] if '--method' in sys.argv else 'listwise'
+MARGIN = 0.3; TEMP = 0.07; LAM_REC = 0.1
 PREFIXES = CFG['prefixes']; EMB = CFG['emb']
 B = 512; EPOCHS = 1 if SMOKE else CFG['epochs']; LR = 1e-3; WD = 1e-4; MAX_POS = 30; TAU = 0.1; SEED = 42
 TRAIN_N = 20_000 if SMOKE else CFG['train_n']
 KNN_CACHE = CFG['knn'].replace('.npy', '_SMOKE.npy') if SMOKE else CFG['knn']
-CKPT = CFG['ckpt'].replace('.pt', '_SMOKE.pt') if SMOKE else CFG['ckpt']
+CKPT = CFG['ckpt'] if METHOD == 'listwise' else CFG['ckpt'].replace('_listwise.pt', f'_{METHOD}.pt')
+CKPT = CKPT.replace('.pt', '_SMOKE.pt') if SMOKE else CKPT
 MAX_STEPS = 60 if SMOKE else None
-TILE = 250_000            # corpus rows per GPU tile during kNN mining
+TILE = int(os.environ.get("KNN_TILE", 250_000))            # corpus rows per GPU tile during kNN mining
 NEG_INF = -1e9
 
 
@@ -64,6 +69,30 @@ class Net(nn.Module):
 
     def forward(s, x): return F.relu(s.encoder(x))
     def embed(s, x): return F.relu(s.encoder(x))
+
+
+class MatAE(nn.Module):                         # contrastive encoder+decoder (run_50k_ddp.py)
+    def __init__(s, d):
+        super().__init__()
+        s.encoder = nn.Sequential(nn.Linear(d, 4096, bias=False), nn.BatchNorm1d(4096), nn.ReLU(),
+            nn.Linear(4096, EMB, bias=False), nn.BatchNorm1d(EMB))
+        s.decoder = nn.Sequential(nn.Linear(EMB, 1024, bias=False), nn.BatchNorm1d(1024), nn.ReLU(),
+            nn.Linear(1024, d, bias=False))
+    def embed(s, x): return F.relu(s.encoder(x))
+    def forward(s, x): z = s.embed(x); return z, F.relu(s.decoder(norm(z)))
+
+
+def triplet_loss(za, zb, gtm):
+    sim = emb_wj(za, zb); ap_ = sim.diagonal(); sc = sim.clone(); sc.fill_diagonal_(-1e9)
+    if gtm is not None and gtm.any(): sc[gtm] = -1e9
+    loss = F.relu(sc.max(1).values - ap_ + MARGIN); v = loss > 0
+    return loss[v].mean() if v.any() else torch.tensor(0., device=za.device, requires_grad=True)
+
+
+def infonce_loss(za, zb, gtm):
+    logits = emb_wj(za, zb) / TEMP
+    if gtm is not None: m = gtm.clone(); m.fill_diagonal_(False); logits = logits.masked_fill(m, -1e9)
+    lab = torch.arange(za.shape[0], device=za.device); return F.cross_entropy(logits, lab)
 
 
 class PairDS(Dataset):
@@ -121,14 +150,17 @@ def main():
     random.seed(SEED); np.random.seed(SEED); torch.manual_seed(SEED)
     X = raw_matrix(CFG); IN = X.shape[1]
     if main:
-        print(f"[{CFG['name']}] DDP world={world} method=listwise rows={X.shape[0]:,} train_n={TRAIN_N:,} "
+        print(f"[{CFG['name']}] DDP world={world} method={METHOD} rows={X.shape[0]:,} train_n={TRAIN_N:,} "
               f"dim={IN} prefixes={PREFIXES} emb={EMB} epochs={EPOCHS} B={B} tau={TAU} smoke={SMOKE}", flush=True)
     if not os.path.exists(KNN_CACHE):
         mine_knn(X, lr, world, DEV, main)
     knn = np.load(KNN_CACHE)
     if main: print(f"corpus kNN {knn.shape} loaded", flush=True)
 
-    model = DDP(Net(IN).to(DEV), device_ids=[lr])
+    Model = Net if METHOD == 'listwise' else MatAE
+    lossfn = {'triplet': triplet_loss, 'infonce': infonce_loss}.get(METHOD)
+    knn_t = torch.from_numpy(knn).to(DEV)
+    model = DDP(Model(IN).to(DEV), device_ids=[lr])
     opt = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=WD)
     ds = PairDS(knn); sampler = DistributedSampler(ds, shuffle=True, seed=SEED)
     loader = DataLoader(ds, batch_size=B, sampler=sampler, num_workers=4, drop_last=True, pin_memory=False)
@@ -141,9 +173,16 @@ def main():
             ids = torch.cat([ai, pi]).numpy()
             rb = torch.from_numpy(rows(X, ids)).to(DEV, non_blocking=True)
             xb = gnorm(rb)
-            z = model(xb)
-            with torch.no_grad(): tw = raw_wj(rb)
-            loss = matry_listwise(z, tw)
+            if METHOD == 'listwise':
+                z = model(xb)
+                with torch.no_grad(): tw = raw_wj(rb)
+                loss = matry_listwise(z, tw)
+            else:
+                bn = ai.shape[0]; aid = ai.to(DEV); pid = pi.to(DEV)
+                z, xr = model(xb); za, zb = z[:bn], z[bn:]
+                gtm = (knn_t[aid][:, None, :] == pid[None, :, None]).any(2)
+                main_l = sum(lossfn(norm(za[:, :mm]), norm(zb[:, :mm]), gtm) for mm in PREFIXES) / len(PREFIXES)
+                loss = main_l + LAM_REC * F.mse_loss(xr[:bn], xb[:bn])
             opt.zero_grad(set_to_none=True); loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0); opt.step(); tl += loss.item(); st += 1
             if main and (st % 200 == 0 or st == 1 or (SMOKE and st % 20 == 0)):
@@ -154,7 +193,7 @@ def main():
                 break
         sch.step()
         if main:
-            print(f"ep{ep:02d} listwise_ce={tl/st:.5f} {(time.time()-t0)/60:.1f}min", flush=True)
+            print(f"ep{ep:02d} {METHOD}_loss={tl/st:.5f} {(time.time()-t0)/60:.1f}min", flush=True)
             if tl / st < best: best = tl / st; torch.save(model.module.state_dict(), CKPT)
     dist.barrier()
     if main: print(f"TRAIN DONE {CFG['name']} best_ce={best:.5f} ckpt={CKPT} total {(time.time()-t0)/60:.1f}min", flush=True)

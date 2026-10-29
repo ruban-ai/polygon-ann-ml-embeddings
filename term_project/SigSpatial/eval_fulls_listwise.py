@@ -15,7 +15,11 @@ import run_fulls_listwise_train as T   # Net / norm / gnorm, same definitions as
 CFG = CONFIGS[sys.argv[1]]; SMOKE = '--smoke' in sys.argv
 THREADS = int(sys.argv[sys.argv.index('--threads') + 1]) if '--threads' in sys.argv else 96
 EF = 200; K = 500
-CKPT = CFG['ckpt'].replace('.pt', '_SMOKE.pt') if SMOKE else CFG['ckpt']
+METHOD = sys.argv[sys.argv.index('--method') + 1] if '--method' in sys.argv else 'listwise'
+CKPT = CFG['ckpt'] if METHOD == 'listwise' else CFG['ckpt'].replace('_listwise.pt', f'_{METHOD}.pt')
+CKPT = CKPT.replace('.pt', '_SMOKE.pt') if SMOKE else CKPT
+if '--prefixes' in sys.argv:
+    CFG = dict(CFG, eval_prefixes=[int(x) for x in sys.argv[sys.argv.index('--prefixes') + 1].split(',')])
 
 
 def main():
@@ -25,10 +29,10 @@ def main():
     gt = load_gt(CFG)
     if SMOKE:   # small corpus + its own queries, only checks the plumbing end to end
         q_ids = np.arange(corpus_n, total)[:200]
-        c_ids = np.unique(np.concatenate([np.arange(20_000)] + [np.array(gt[q][:50]) for q in q_ids]))
+        c_ids = np.unique(np.concatenate([np.arange(20_000)] + [np.array(gt.get(q, [0])[:50]) for q in q_ids]))
     else:
         q_ids = np.arange(corpus_n, total); c_ids = None
-    enc = T.Net(IN).to(DEV); enc.load_state_dict(torch.load(CKPT, map_location=DEV, weights_only=True)); enc.eval()
+    enc = (T.Net if METHOD == 'listwise' else T.MatAE)(IN).to(DEV); enc.load_state_dict(torch.load(CKPT, map_location=DEV, weights_only=True)); enc.eval()
     maxp = max(CFG['eval_prefixes'])
     print(f"[{CFG['name']}] eval rows={total:,} corpus={corpus_n:,} queries={total-corpus_n:,} dim={IN} "
           f"eval_prefixes={CFG['eval_prefixes']} threads={THREADS} smoke={SMOKE}", flush=True)
@@ -50,7 +54,7 @@ def main():
     print(f"embedding done {(time.time()-t0)/60:.1f}min", flush=True)
     if c_ids is not None:   # remap GT ids into the smoke corpus positions
         pos = {int(c): i for i, c in enumerate(c_ids)}
-        gt = {corpus_n + k: [pos[n] for n in gt[q] if n in pos] for k, q in enumerate(q_ids)}
+        gt = {corpus_n + k: [pos[n] for n in gt.get(q, []) if n in pos] for k, q in enumerate(q_ids)}
 
     today = datetime.date.today().isoformat(); out = []
     for m in CFG['eval_prefixes']:
@@ -59,7 +63,7 @@ def main():
         nb, info = nmslib_neighbors(ce, qe, space="WeightedJaccard", k=K, threads=THREADS,
                                     query_params={"efSearch": EF})
         r = eval_recall(gt, nb, corpus_n, K)
-        print(f"[{CFG['name']}-listwise d={m} base ALLq] R@10={r[10]:.4f} R@50={r[50]:.4f} R@100={r[100]:.4f} "
+        print(f"[{CFG['name']}-{METHOD} d={m} base ALLq] R@10={r[10]:.4f} R@50={r[50]:.4f} R@100={r[100]:.4f} "
               f"R@500={r[500]:.4f} HNSW_QPS={info['qps']:.0f} build={info['build_s']/60:.1f}min "
               f"(width total {(time.time()-tm)/60:.1f}min)", flush=True)
         out.append(dict(dim=m, r10=r[10], r50=r[50], r100=r[100], r500=r[500], qps=info['qps'],
@@ -67,7 +71,7 @@ def main():
     if SMOKE:
         print(f"SMOKE OK {(time.time()-t0)/60:.1f}min", flush=True); return
 
-    note = (f"{CFG['dataset']} FULL-SCALE listwise (2026-10-01 queue), trained on {CFG['train_n']:,} corpus rows, "
+    note = (f"{CFG['dataset']} FULL-SCALE {METHOD} (2026-10-01 queue), trained on {CFG['train_n']:,} corpus rows, "
             f"indexed {corpus_n:,}, eval ALL {total-corpus_n:,} held-out queries; Stage-1 only (no rerank, scope "
             f"decision 2026-10-01); prefixes={CFG['prefixes']}; tau=0.1; M=20 efC=200 efS={EF}")
     if CFG['name'] == 'ov1m':
@@ -76,10 +80,10 @@ def main():
         with open(csvp, 'a', newline='') as f:
             w = csv.writer(f)
             for o in out:
-                w.writerow([today, f"{CFG['name']}_allq", f"{CFG['name']}-listwise-d{o['dim']}", o['dim'], 'base', '',
+                w.writerow([today, f"{CFG['name']}_allq", f"{CFG['name']}-{METHOD}-d{o['dim']}", o['dim'], 'base', '',
                             round(o['r10'], 4), round(o['r50'], 4), round(o['r100'], 4), round(o['r500'], 4),
                             round(o['qps']), 'eval_fulls_listwise.py', note])
-    json.dump(out, open(f"{BASE}/results_{CFG['name']}_listwise.json", 'w'), indent=1)
+    json.dump(out, open(f"{BASE}/results_{CFG['name']}_{METHOD}.json", 'w'), indent=1)
     print(f"EVAL DONE {CFG['name']} -> NEW_RESULTS.csv, RESULTS_LOG.csv, results_{CFG['name']}_listwise.json "
           f"total {(time.time()-t0)/60:.1f}min", flush=True)
 
