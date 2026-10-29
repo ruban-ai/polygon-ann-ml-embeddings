@@ -1,44 +1,35 @@
-# Jupyter
-.ipynb_checkpoints/
-
-# Python
-__pycache__/
-*.py[cod]
-*.egg-info/
-.venv/
-venv/
-.env
-
-# Large data, checkpoints, and run outputs (keep code + notebooks only)
-embedding/
-best_model/
-outputs_*/
-*.pt
-*.pth
-*.ckpt
-*.npy
-*.npz
-*.h5
-*.pkl
-*.pickle
-*.parquet
-*.feather
-
-# OS / editor
-.DS_Store
-.idea/
-.vscode/
-
-# Large raw data (encoding/ holds ~10GB of ShapeToVec vectors) + analysis outputs
-encoding/
-area_distribution/
-area_distribution_10k/
-
-# Backups, archives, correspondence (keep code + notebooks + logs only)
-Legacy files/
-*.zip
-*_backup.tex
-email_to_dr_prasad.*
-
-# Paper drafts with review comments (keep local; never auto-push)
-term_project/SigSpatial/IEEE/conference_101719.tex
+# Whitelist: this repository holds only the code for the BSD 2026 paper.
+# Everything is ignored except the files listed below.
+/*
+!/.gitignore
+!/README.md
+!/term_project/
+/term_project/*
+!/term_project/requirements.txt
+!/term_project/SigSpatial/
+/term_project/SigSpatial/*
+!/term_project/SigSpatial/fulls_common.py
+!/term_project/SigSpatial/sota_experiment_common.py
+!/term_project/SigSpatial/run_fulls_listwise_train.py
+!/term_project/SigSpatial/knn_fill_rows.py
+!/term_project/SigSpatial/eval_fulls_listwise.py
+!/term_project/SigSpatial/eval_quant.py
+!/term_project/SigSpatial/eval_ov10m_slices.py
+!/term_project/SigSpatial/run_parksfull_unsup_baselines.py
+!/term_project/SigSpatial/run_icws_brute_full_256.py
+!/term_project/SigSpatial/run_matdistill_fulleval_ddp.py
+!/term_project/SigSpatial/eval_bucketed_parksfull_m64.py
+!/term_project/SigSpatial/build_parks_res.py
+!/term_project/SigSpatial/build_res.py
+!/term_project/SigSpatial/analysis_layer_tap_v2.py
+!/term_project/SigSpatial/export_codes_are.py
+!/term_project/SigSpatial/bench_are_v2.py
+!/term_project/SigSpatial/run_bench_v2_20261026.sh
+!/term_project/SigSpatial/build_wbfull.py
+!/term_project/SigSpatial/build_sportsfull.py
+!/term_project/SigSpatial/make_fig_baselines_20261025.py
+!/term_project/SigSpatial/make_fig_resolution.py
+!/term_project/SigSpatial/make_fig_pareto_10m_v2.py
+!/term_project/SigSpatial/make_fig_recall_bytes_opt1.py
+!/term_project/SigSpatial/make_fig_precision.py
+!/term_project/SigSpatial/RESULTS_LOG.csv

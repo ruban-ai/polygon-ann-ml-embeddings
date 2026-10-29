@@ -89,6 +89,7 @@ defined in [`fulls_common.py`](term_project/SigSpatial/fulls_common.py).
 
 | Paper item | Script(s) |
 |---|---|
+| Building the full Water Bodies and Sports benchmarks | `build_wbfull.py`, `build_sportsfull.py` |
 | Encoder training (all datasets; `--method listwise\|triplet\|infonce`) | `run_fulls_listwise_train.py` |
 | Recall of the float32 embeddings, all widths | `eval_fulls_listwise.py` |
 | 8-bit and 4-bit signatures (Tables IV, V; Fig. 8) | `eval_quant.py` |
@@ -124,12 +125,12 @@ before running.
 ## Setup
 
 ```bash
-pip install -r term_project/utils/requirements.txt   # numpy, torch, nmslib, ...
+pip install -r term_project/requirements.txt   # numpy, torch, nmslib, scikit-learn, matplotlib, tqdm
 ```
 
 - **WJ distance in HNSW.** Recall evaluations use ShapeToVec's custom Weighted Jaccard
-  space in NMSLIB; the stock `nmslib` package does not include it (see
-  `term_project/utils/` for the build helper).
+  space in NMSLIB; the stock `nmslib` package does not include it, so build NMSLIB
+  with that space enabled.
 - **Throughput benchmark.** `bench_are_v2.py` uses ShapeToVec+'s patched NMSLIB space
   (`WeightedJaccardRatio`, its SIMD integer kernel), so the comparison with ShapeToVec+
   uses the same code, machine, and HNSW parameters.
@@ -175,9 +176,3 @@ Throughput uses 64 CPU query threads, matching ShapeToVec+.
 
 Built on [ShapeToVec](https://doi.org/10.5281/zenodo.11522173), ShapeToVec+, and
 [NMSLIB](https://github.com/nmslib/nmslib).
-
-## Earlier work in this repository
-
-`term_project/` notebooks and the 10K/50K scripts (`build_50k.py`, `run_50k_ddp.py`,
-`run_matdistill_10k.py`) are from earlier stages of this project and are kept for
-reference; `paper/` holds an earlier draft. The results above supersede them.

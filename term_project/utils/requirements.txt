@@ -1,8 +1,0 @@
-numpy
-torch
-nmslib
-tqdm
-psutil
-jupyter
-notebook
-ipykernel

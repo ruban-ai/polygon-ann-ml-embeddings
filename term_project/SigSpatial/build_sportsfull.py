@@ -22,6 +22,8 @@ OUT_GT = f'{BASE}/gt_sportsfull.pkl'
 OUT_META = f'{BASE}/sportsfull_meta.pkl'
 CORPUS_N = 1_403_192; TOTAL_N = 1_753_989; D = 12_430; GT_CAP = 1000
 SMOKE = '--smoke' in sys.argv
+if SMOKE:
+    OUT_QT = f'{BASE}/qt_sportsfull_SMOKE.npy'
 
 
 def kf(f): return int(os.path.basename(f).split('real_')[1].split('.txt')[0])
